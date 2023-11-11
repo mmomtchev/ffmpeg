@@ -1,0 +1,29 @@
+{
+  "name": "node-ffmpeg",
+  "version": "1.0.0",
+  "description": "avcpp (ffmpeg) bindings for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmomtchev/node-ffmpeg.git"
+  },
+  "keywords": [
+    "node.js",
+    "ffmpeg",
+    "video",
+    "encoding",
+    "codec"
+  ],
+  "author": "Momtchil Momtchev <momtchil@momtchev.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mmomtchev/node-ffmpeg/issues"
+  },
+  "homepage": "https://github.com/mmomtchev/node-ffmpeg#readme",
+  "dependencies": {
+    "node-addon-api": "^7.0.0"
+  }
+}
