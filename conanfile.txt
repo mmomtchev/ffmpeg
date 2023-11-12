@@ -1,6 +1,5 @@
 [requires]
-avcpp/2.1.0
-ffmpeg/5.0
+ffmpeg/6.0
 
 [options]
 ffmpeg:shared=False
@@ -16,4 +15,3 @@ libx265:shared=False
 
 [generators]
 json
-pkg_config

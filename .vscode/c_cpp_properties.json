@@ -3,8 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/mmom/.conan/data/ffmpeg/5.0/_/_/package/24aac96ce681e649b6a93e17addc8bb474c4b97a/include/",
-                "/home/mmom/.conan/data/avcpp/2.1.0/_/_/package/8e6934f87fdb992c8b0786614989421fefc90871/include",
+                "/home/mmom/.conan/data/ffmpeg/6.0/_/_/package/1c13123d5463c99dc0691873ef33ed5cf02302bb/include/",
+                "${workspaceFolder}/deps/avcpp/src",
                 "/usr/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind/include"

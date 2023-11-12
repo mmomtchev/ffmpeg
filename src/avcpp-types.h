@@ -1,5 +1,5 @@
 #pragma once
-#include <avcpp/codec.h>
+#include <codec.h>
 #include <libavutil/avutil.h>
 #include <nooverrides.h>
 

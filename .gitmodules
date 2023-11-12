@@ -1,0 +1,3 @@
+[submodule "deps/avcpp"]
+	path = deps/avcpp
+	url = https://github.com/h4tr3d/avcpp.git

@@ -11,9 +11,11 @@ const {
   OutputFormat,
   Codec,
   Rational,
+  Timestamp,
   Stream,
   Packet,
-  VideoFrame
+  VideoFrame,
+  timestampToString
 } = ffmpeg;
 
 if (!process.argv[3]) {
@@ -84,16 +86,17 @@ ofrmt.setFormat('', outp, '');
 octx.setOutputFormat(ofrmt);
 
 const ocodec = findEncodingCodec(ofrmt, true);
-const ost = octx.addStream(ocodec, oc);
-check(oc);
-console.log('tt', ost.isValid(), ost.isVideo(), ost.mediaType());
-const encoder = new VideoEncoderContext(ost);
+const encoder = new VideoEncoderContext(ocodec);
 
 // Settings
 encoder.setWidth(vdec.width());
 encoder.setHeight(vdec.height());
 if (vdec.pixelFormat().get() > -1) {
+  console.log(`Pixel format ${vdec.pixelFormat()}`);
   encoder.setPixelFormat(vdec.pixelFormat());
+  console.log(`Pixel format ${encoder.pixelFormat()}`);
+} else {
+  console.warn('Invalid pixel format');
 }
 
 encoder.setTimeBase(new Rational(1, 1000));
@@ -103,6 +106,8 @@ const encodec = new Codec;
 encoder.openCodec(encodec, oc);
 check(oc);
 
+const ost = octx.addVideoStream(encoder, oc);
+check(oc);
 ost.setFrameRate(vst.frameRate());
 
 octx.openOutput(outp, oc);
@@ -117,6 +122,7 @@ octx.flush();
 //
 // PROCESS
 //
+let counter = 0;
 while (true) {
   // READING
   const pkt = ictx.readPacket(oc);
@@ -134,8 +140,12 @@ while (true) {
 
   do {
     // DECODING
-    const frame = vdec.decode(pkt, oc);
+    const frame = vdec.decode(pkt, oc, true);
     check(oc);
+    if (!frame.isValid()) {
+      console.warn('Received invalid frame');
+      continue;
+    }
 
     let flushEncoder = false;
     if (frame === null) {
@@ -149,17 +159,20 @@ while (true) {
 
       frame.setTimeBase(encoder.timeBase());
       frame.setStreamIndex(0);
-      frame.setPictureType();
+      frame.setPictureType(ffmpeg.AVPicture_Type_None);
+      frame.setPts(new Timestamp(counter, encoder.timeBase()));
       console.log(`Processed frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
     }
 
     if (frame || flushEncoder) {
       do {
         // ENCODING
-        const opkt = frame ? encoder.encode(frame, oc) : encode.finalize(oc);
+        const opkt = frame ? encoder.encode(frame, oc) : encoder.finalize(oc);
         check(oc);
 
         opkt.setStreamIndex(0);
+        opkt.setPts(new Timestamp(counter, encoder.timeBase()));
+        opkt.setDts(new Timestamp(counter, encoder.timeBase()));
 
         console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}`);
 
@@ -168,13 +181,15 @@ while (true) {
       } while (flushEncoder);
     }
 
+    counter++;
+
     if (flushEncoder) break;
   } while (flushDecoder);
 
   if (flushDecoder) break;
 
-  octx.writeTrailer(oc);
   check(oc);
 }
 
+octx.writeTrailer(oc);
 console.log('done');

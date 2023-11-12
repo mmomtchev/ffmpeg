@@ -1,24 +1,34 @@
 #include <system_error>
 
-#include "avcpp/audioresampler.h"
-#include "avcpp/av.h"
-#include "avcpp/avutils.h"
-#include "avcpp/codec.h"
-#include "avcpp/ffmpeg.h"
-#include "avcpp/packet.h"
-#include "avcpp/videorescaler.h"
+#include <audioresampler.h>
+#include <av.h>
+#include <avutils.h>
+#include <codec.h>
+#include <ffmpeg.h>
+#include <packet.h>
+#include <videorescaler.h>
 
 // API2
-#include "avcpp/codec.h"
-#include "avcpp/codeccontext.h"
-#include "avcpp/format.h"
-#include "avcpp/formatcontext.h"
+#include <codec.h>
+#include <codeccontext.h>
+#include <format.h>
+#include <formatcontext.h>
 
 #include "avcpp-types.h"
 
 #include <nobind.h>
 
 using namespace av;
+
+#define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
+  constexpr static int __const_##CONST = CONST;                                                                        \
+  m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
+
+template <typename T> std::string ToString(T &v) {
+  std::stringstream r;
+  r << v;
+  return r.str();
+}
 
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
@@ -33,12 +43,19 @@ NOBIND_MODULE(ffmpeg, m) {
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
   // Some important constants
-  constexpr static int avmedia_t_audio = AVMEDIA_TYPE_AUDIO;
-  m.def<&avmedia_t_audio, Nobind::ReadOnly>("AVMedia_Type_Audio");
-  constexpr static int avmedia_t_video = AVMEDIA_TYPE_VIDEO;
-  m.def<&avmedia_t_video, Nobind::ReadOnly>("AVMedia_Type_Video");
-  constexpr static int avmedia_t_subtitle = AVMEDIA_TYPE_SUBTITLE;
-  m.def<&avmedia_t_subtitle, Nobind::ReadOnly>("AVMedia_Type_Subtitle");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_UNKNOWN, "AVMedia_Type_Unknown");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_AUDIO, "AVMedia_Type_Audio");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_VIDEO, "AVMedia_Type_Video");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_SUBTITLE, "AVMedia_Type_Subtitle");
+
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_NONE, "AVPicture_Type_None"); ///< Undefined
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_I, "AVPicture_Type_I");       ///< Intra
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_P, "AVPicture_Type_P");       ///< Predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_B, "AVPicture_Type_B");       ///< Bi-dir predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_S, "AVPicture_Type_S");       ///< S(GMC)-VOP MPEG-4
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_SI, "AVPicture_Type_SI");     ///< Switching Intra
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_SP, "AVPicture_Type_SP");     ///< Switching Predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_BI, "AVPicture_Type_BI");     ///< BI type
 
   m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodec");
   m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>("findDecodingCodec");
@@ -58,7 +75,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (FormatContext::*)(const OutputFormat &)>(&FormatContext::setFormat)>("setOutputFormat")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput)>(
           "openOutput")
-      .def<&FormatContext::addStream>("addStream")
+      .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
+          &FormatContext::addStream)>("addVideoStream")
       .def<&FormatContext::dump>("dump")
       .def<&FormatContext::flush>("flush")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
@@ -84,7 +102,7 @@ NOBIND_MODULE(ffmpeg, m) {
       // This an inherited overloaded method, it must be cast to its base class type
       // C++ does not allow to cast it to the inheriting class type
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>("open")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open)>(
           "openCodec")
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
           &VideoDecoderContext::decode)>("decode");
@@ -117,7 +135,8 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
 
-  m.def<PixelFormat>("PixelFormat").def < &PixelFormat::operator AVPixelFormat>("get");
+  m.def<PixelFormat>("PixelFormat").def <
+      &PixelFormat::operator AVPixelFormat>("get").ext<&ToString<PixelFormat>>("toString");
 
   m.def<Stream>("Stream")
       .def<&Stream::isNull>("isNull")
@@ -132,7 +151,9 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Packet::streamIndex>("streamIndex")
       .def<&Packet::setStreamIndex>("setStreamIndex")
       .def<&Packet::pts>("pts")
+      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setPts)>("setPts")
       .def<&Packet::dts>("dts")
+      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setDts)>("setDts")
       .def<&Packet::timeBase, Nobind::ReturnShared>("timeBase");
 
   m.def<VideoFrame>("VideoFrame")
@@ -142,6 +163,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::setTimeBase>("setTimeBase")
       .def<&VideoFrame::width>("width")
       .def<&VideoFrame::height>("height")
+      .def<&VideoFrame::isValid>("isValid")
+      .def<&VideoFrame::pixelFormat>("pixelFormat")
       .def<static_cast<size_t (av::Frame<av::VideoFrame>::*)() const>(&VideoFrame::size)>("size")
       .def<&VideoFrame::isReferenced>("isReferenced")
       .def<&VideoFrame::isKeyFrame>("isKeyFrame")
@@ -152,10 +175,11 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::setKeyFrame>("setKeyFrame")
       .def<&VideoFrame::setQuality>("setQuality")
       .def<&VideoFrame::streamIndex>("streamIndex")
-      .def<&VideoFrame::setStreamIndex>("setStreamIndex");
+      .def<&VideoFrame::setStreamIndex>("setStreamIndex")
+      .ext<&ToString<VideoFrame>>("toString");
 
-  m.def<Timestamp>("Timestamp").def<&Timestamp::seconds>("seconds");
-  m.def<Rational>("Rational").cons<int, int>();
+  m.def<Timestamp>("Timestamp").cons<int64_t, const Rational &>().def<&Timestamp::seconds>("seconds").ext<&ToString<Timestamp>>("toString");
+  m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
 
   av::init();
 #ifdef DEBUG
