@@ -14,7 +14,7 @@ public:
     }
     val_ = val.ToNumber().Int32Value();
   }
-  inline T operator*() { return static_cast<T>(val_); }
+  inline T Get() { return static_cast<T>(val_); }
 };
 
 template <typename T> class EnumToJS {
@@ -23,7 +23,7 @@ template <typename T> class EnumToJS {
 
 public:
   inline explicit EnumToJS(Napi::Env env, T val) : env_(env), val_(static_cast<int>(val)) {}
-  inline Napi::Value operator*() { return Napi::Number::New(env_, val_); }
+  inline Napi::Value Get() { return Napi::Number::New(env_, val_); }
 };
 
 namespace Nobind {
