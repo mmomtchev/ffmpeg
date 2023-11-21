@@ -20,10 +20,12 @@
 
 using namespace av;
 
+// A define to register constants in the global namespace of the JS module
 #define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
   constexpr static int __const_##CONST = CONST;                                                                        \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 
+// An universal toString() wrapper, to be used as a class extension
 template <typename T> std::string ToString(T &v) {
   std::stringstream r;
   r << v;
@@ -148,6 +150,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Stream::mediaType>("mediaType");
 
   m.def<Packet>("Packet")
+      .def<&Packet::isNull>("isNull")
       .def<&Packet::streamIndex>("streamIndex")
       .def<&Packet::setStreamIndex>("setStreamIndex")
       .def<&Packet::pts>("pts")
@@ -157,6 +160,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Packet::timeBase, Nobind::ReturnShared>("timeBase");
 
   m.def<VideoFrame>("VideoFrame")
+      .def<&VideoFrame::isNull>("isNull")
       .def<&VideoFrame::pts>("pts")
       .def<static_cast<void (av::Frame<av::VideoFrame>::*)(const Timestamp &)>(&VideoFrame::setPts)>("setPts")
       .def<&VideoFrame::timeBase>("timeBase")
@@ -178,7 +182,10 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
       .ext<&ToString<VideoFrame>>("toString");
 
-  m.def<Timestamp>("Timestamp").cons<int64_t, const Rational &>().def<&Timestamp::seconds>("seconds").ext<&ToString<Timestamp>>("toString");
+  m.def<Timestamp>("Timestamp")
+      .cons<int64_t, const Rational &>()
+      .def<&Timestamp::seconds>("seconds")
+      .ext<&ToString<Timestamp>>("toString");
   m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
 
   av::init();

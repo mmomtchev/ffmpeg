@@ -8,7 +8,7 @@ template <typename T> class EnumFromJS {
   int val_;
 
 public:
-  inline explicit EnumFromJS(Napi::Value val) {
+  inline explicit EnumFromJS(const Napi::Value &val) {
     if (!val.IsNumber()) {
       throw Napi::TypeError::New(val.Env(), "Enum must be a number");
     }
@@ -28,6 +28,15 @@ public:
 
 namespace Nobind {
 namespace Typemap {
+
+// A typemap that inserts an OptionalErrorCode w/o a JS argument
+template <> class FromJS<av::OptionalErrorCode> {
+
+public:
+  inline explicit FromJS(const Napi::Value &) {}
+  inline av::OptionalErrorCode Get() { return av::throws(); }
+  static const int Inputs = 0;
+};
 
 template <> class FromJS<AVPictureType> : public EnumFromJS<AVPictureType> {
 public:

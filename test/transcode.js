@@ -23,12 +23,6 @@ if (!process.argv[3]) {
   process.exit(1);
 }
 
-function check(oc) {
-  if (oc.code().isError()) {
-    throw new Error(oc.code().message());
-  }
-}
-
 const inp = process.argv[2];
 const outp = process.argv[3];
 
@@ -43,11 +37,9 @@ const ictx = new FormatContext;
 let videoStream = null;
 let vst = null;
 
-ictx.openInput(inp, oc);
-check(oc);
+ictx.openInput(inp);
 
-ictx.findStreamInfo(oc);
-check(oc);
+ictx.findStreamInfo();
 
 for (let i = 0; i < ictx.streamsCount(); i++) {
   const st = ictx.stream(i);
@@ -72,8 +64,7 @@ if (!vst.isValid()) {
 const vdec = new VideoDecoderContext(vst);
 vdec.setRefCountedFrames(true);
 const decodec = new Codec;
-vdec.openCodec(decodec, oc);
-check(oc);
+vdec.openCodec(decodec);
 
 
 //
@@ -103,19 +94,15 @@ encoder.setTimeBase(new Rational(1, 1000));
 encoder.setBitRate(vdec.bitRate());
 
 const encodec = new Codec;
-encoder.openCodec(encodec, oc);
-check(oc);
+encoder.openCodec(encodec);
 
-const ost = octx.addVideoStream(encoder, oc);
-check(oc);
+const ost = octx.addVideoStream(encoder);
 ost.setFrameRate(vst.frameRate());
 
-octx.openOutput(outp, oc);
-check(oc);
+octx.openOutput(outp);
 
 octx.dump();
-octx.writeHeader(oc);
-check(oc);
+octx.writeHeader();
 octx.flush();
 
 
@@ -125,8 +112,7 @@ octx.flush();
 let counter = 0;
 while (true) {
   // READING
-  const pkt = ictx.readPacket(oc);
-  check(oc);
+  const pkt = ictx.readPacket();
 
   let flushDecoder = false;
   if (!pkt.isNull()) {
@@ -140,8 +126,7 @@ while (true) {
 
   do {
     // DECODING
-    const frame = vdec.decode(pkt, oc, true);
-    check(oc);
+    const frame = vdec.decode(pkt, true);
     if (!frame.isValid()) {
       // Seems that this is something that is normal with the first few frames
       // Must read until the codec has received enough data
@@ -167,8 +152,7 @@ while (true) {
 
     if (frame || flushEncoder) {
       // ENCODING
-      const opkt = frame ? encoder.encode(frame, oc) : encoder.finalize(oc);
-      check(oc);
+      const opkt = frame ? encoder.encode(frame) : encoder.finalize();
 
       opkt.setStreamIndex(0);
       opkt.setPts(pkt.pts());
@@ -176,8 +160,7 @@ while (true) {
 
       console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}`);
 
-      octx.writePacket(opkt, oc);
-      check(oc);
+      octx.writePacket(opkt);
     }
 
     counter++;
@@ -186,9 +169,7 @@ while (true) {
   } while (flushDecoder);
 
   if (flushDecoder) break;
-
-  check(oc);
 }
 
-octx.writeTrailer(oc);
+octx.writeTrailer();
 console.log('done');
