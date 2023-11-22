@@ -90,7 +90,7 @@ if (vdec.pixelFormat().get() > -1) {
   console.warn('Invalid pixel format');
 }
 
-encoder.setTimeBase(new Rational(1, 1000));
+encoder.setTimeBase(vst.timeBase());
 encoder.setBitRate(vdec.bitRate());
 
 const encodec = new Codec;

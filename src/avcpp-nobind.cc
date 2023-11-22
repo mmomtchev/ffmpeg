@@ -147,6 +147,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Stream::isAudio>("isAudio")
       .def<&Stream::frameRate>("frameRate")
       .def<&Stream::setFrameRate>("setFrameRate")
+      .def<&Stream::timeBase>("timeBase")
+      .def<&Stream::setTimeBase>("setTimeBase")
       .def<&Stream::mediaType>("mediaType");
 
   m.def<Packet>("Packet")
