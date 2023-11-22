@@ -1,5 +1,3 @@
-#include <system_error>
-
 #include <audioresampler.h>
 #include <av.h>
 #include <avutils.h>
@@ -47,24 +45,32 @@ NOBIND_MODULE(ffmpeg, m) {
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
   // Some important constants
-  REGISTER_CONSTANT(AVMEDIA_TYPE_UNKNOWN, "AVMedia_Type_Unknown");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_AUDIO, "AVMedia_Type_Audio");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_VIDEO, "AVMedia_Type_Video");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_SUBTITLE, "AVMedia_Type_Subtitle");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_UNKNOWN, "AV_Media_Type_Unknown");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_AUDIO, "AV_Media_Type_Audio");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_VIDEO, "AV_Media_Type_Video");
+  REGISTER_CONSTANT(AVMEDIA_TYPE_SUBTITLE, "AV_Media_Type_Subtitle");
 
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_NONE, "AVPicture_Type_None"); ///< Undefined
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_I, "AVPicture_Type_I");       ///< Intra
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_P, "AVPicture_Type_P");       ///< Predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_B, "AVPicture_Type_B");       ///< Bi-dir predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_S, "AVPicture_Type_S");       ///< S(GMC)-VOP MPEG-4
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_SI, "AVPicture_Type_SI");     ///< Switching Intra
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_SP, "AVPicture_Type_SP");     ///< Switching Predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_BI, "AVPicture_Type_BI");     ///< BI type
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_NONE, "AV_Picture_Type_None"); ///< Undefined
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_I, "AV_Picture_Type_I");       ///< Intra
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_P, "AV_Picture_Type_P");       ///< Predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_B, "AV_Picture_Type_B");       ///< Bi-dir predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_S, "AV_Picture_Type_S");       ///< S(GMC)-VOP MPEG-4
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_SI, "AV_Picture_Type_SI");     ///< Switching Intra
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_SP, "AV_Picture_Type_SP");     ///< Switching Predicted
+  REGISTER_CONSTANT(AV_PICTURE_TYPE_BI, "AV_Picture_Type_BI");     ///< BI type
 
-  REGISTER_CONSTANT(AV_LOG_DEBUG, "AVLog_Debug");
-  REGISTER_CONSTANT(AV_LOG_INFO, "AVLog_Info");
-  REGISTER_CONSTANT(AV_LOG_WARNING, "AVLog_Warning");
-  REGISTER_CONSTANT(AV_LOG_ERROR, "AVLog_Error");
+  REGISTER_CONSTANT(AV_LOG_DEBUG, "AV_Log_Debug");
+  REGISTER_CONSTANT(AV_LOG_INFO, "AV_Log_Info");
+  REGISTER_CONSTANT(AV_LOG_WARNING, "AV_Log_Warning");
+  REGISTER_CONSTANT(AV_LOG_ERROR, "AV_Log_Error");
+
+  REGISTER_CONSTANT(AV_CH_LAYOUT_MONO, "AV_Channel_Layout_Mono");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_STEREO, "AV_Channel_Layout_Stereo");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_2POINT1, "AV_Channel_Layout_2.1");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_5POINT1, "AV_Channel_Layout_5.1");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_7POINT1, "AV_Channel_Layout_7.1");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_QUAD, "AV_Channel_Layout_Quad");
+  REGISTER_CONSTANT(AV_CH_LAYOUT_SURROUND, "AV_Channel_Layout_Surround");
 
   m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodec");
   m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>("findDecodingCodec");
@@ -86,6 +92,8 @@ NOBIND_MODULE(ffmpeg, m) {
           "openOutput")
       .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addVideoStream")
+      .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
+          &FormatContext::addStream)>("addAudioStream")
       .def<&FormatContext::dump>("dump")
       .def<&FormatContext::flush>("flush")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
@@ -137,6 +145,50 @@ NOBIND_MODULE(ffmpeg, m) {
           &VideoEncoderContext::encode)>("encode")
       .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>("finalize");
 
+  m.def<AudioDecoderContext>("AudioDecoderContext")
+      .cons<const Stream &>()
+      .def<&AudioDecoderContext::sampleRate>("sampleRate")
+      .def<&AudioDecoderContext::setSampleRate>("setSampleRate")
+      .def<&AudioDecoderContext::timeBase>("timeBase")
+      .def<&AudioDecoderContext::setTimeBase>("setTimeBase")
+      .def<&AudioDecoderContext::bitRate>("bitRate")
+      .def<&AudioDecoderContext::setBitRate>("setBitRate")
+      .def<&AudioDecoderContext::sampleFormat>("sampleFormat")
+      .def<&AudioDecoderContext::setSampleFormat>("setSampleFormat")
+      .def<&AudioDecoderContext::channelLayout>("channelLayout")
+      .def<static_cast<void (av::AudioCodecContext<AudioDecoderContext, Direction::Decoding>::*)(ChannelLayout)>(
+          &AudioDecoderContext::setChannelLayout)>("setChannelLayout")
+      .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
+      .def<&AudioDecoderContext::setRefCountedFrames>("setRefCountedFrames")
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
+          "openCodec")
+      .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
+          &AudioDecoderContext::decode)>("decode");
+
+  m.def<AudioEncoderContext>("AudioEncoderContext")
+      .cons<>()
+      .cons<const Stream &>()
+      .cons<const Codec &>()
+      .def<&AudioEncoderContext::sampleRate>("sampleRate")
+      .def<&AudioEncoderContext::setSampleRate>("setSampleRate")
+      .def<&AudioEncoderContext::timeBase>("timeBase")
+      .def<&AudioEncoderContext::setTimeBase>("setTimeBase")
+      .def<&AudioEncoderContext::setBitRate>("setBitRate")
+      .def<&AudioEncoderContext::bitRate>("bitRate")
+      .def<&AudioEncoderContext::setBitRate>("setBitRate")
+      .def<&AudioEncoderContext::sampleFormat>("sampleFormat")
+      .def<&AudioEncoderContext::setSampleFormat>("setSampleFormat")
+      .def<&AudioEncoderContext::channelLayout>("channelLayout")
+      .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
+          &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
+          "openCodec")
+      .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
+          &AudioEncoderContext::encode)>("encode")
+      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>("finalize");
+
   m.def<OutputFormat>("OutputFormat")
       .cons<>()
       .def<static_cast<bool (OutputFormat::*)(const std::string &, const std::string &, const std::string &)>(
@@ -146,6 +198,15 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<PixelFormat>("PixelFormat").def <
       &PixelFormat::operator AVPixelFormat>("get").ext<&ToString<PixelFormat>>("toString");
+
+  m.def<SampleFormat>("SampleFormat").def <
+      &SampleFormat::operator AVSampleFormat>("get").ext<&ToString<SampleFormat>>("toString");
+
+  m.def<ChannelLayout>("ChannelLayout")
+      .cons<int>()
+      .cons<const char *>()
+      .def<&ChannelLayout::channels>("channels")
+      .def<&ChannelLayout::layout>("layout");
 
   m.def<Stream>("Stream")
       .def<&Stream::isNull>("isNull")
@@ -192,6 +253,27 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::streamIndex>("streamIndex")
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
       .ext<&ToString<VideoFrame>>("toString");
+
+  m.def<AudioSamples>("AudioSamples")
+      .def<&AudioSamples::isNull>("isNull")
+      .def<&AudioSamples::isComplete>("isComplete")
+      .def<&AudioSamples::pts>("pts")
+      .def<static_cast<void (av::Frame<av::AudioSamples>::*)(const Timestamp &)>(&AudioSamples::setPts)>("setPts")
+      .def<&AudioSamples::timeBase>("timeBase")
+      .def<&AudioSamples::setTimeBase>("setTimeBase")
+      .def<&AudioSamples::sampleRate>("sampleRate")
+      .def<&AudioSamples::sampleBitDepth>("sampleBitDepth")
+      .def<&AudioSamples::isValid>("isValid")
+      .def<&AudioSamples::sampleFormat>("sampleFormat")
+      .def<&AudioSamples::channelsCount>("channelsCount")
+      .def<&AudioSamples::channelsLayout>("channelsLayout")
+      .def<&AudioSamples::channelsLayoutString>("channelsLayoutString")
+      .def<static_cast<size_t (av::Frame<av::AudioSamples>::*)() const>(&AudioSamples::size)>("size")
+      .def<&AudioSamples::isReferenced>("isReferenced")
+      .def<&AudioSamples::refCount>("refCount")
+      .def<&AudioSamples::streamIndex>("streamIndex")
+      .def<&AudioSamples::setStreamIndex>("setStreamIndex")
+      .ext<&ToString<AudioSamples>>("toString");
 
   m.def<Timestamp>("Timestamp")
       .cons<int64_t, const Rational &>()

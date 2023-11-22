@@ -38,41 +38,21 @@ public:
   static const int Inputs = 0;
 };
 
-template <> class FromJS<AVPictureType> : public EnumFromJS<AVPictureType> {
-public:
-  using EnumFromJS<AVPictureType>::EnumFromJS;
-};
-template <> class ToJS<AVPictureType> : public EnumToJS<AVPictureType> {
-public:
-  using EnumToJS<AVPictureType>::EnumToJS;
-};
+#define TYPEMAPS_FOR_ENUM(ENUM)                                                                                        \
+  template <> class FromJS<ENUM> : public EnumFromJS<ENUM> {                                                           \
+  public:                                                                                                              \
+    using EnumFromJS<ENUM>::EnumFromJS;                                                                                \
+  };                                                                                                                   \
+  template <> class ToJS<ENUM> : public EnumToJS<ENUM> {                                                               \
+  public:                                                                                                              \
+    using EnumToJS<ENUM>::EnumToJS;                                                                                    \
+  };
 
-template <> class FromJS<AVCodecID> : public EnumFromJS<AVCodecID> {
-public:
-  using EnumFromJS<AVCodecID>::EnumFromJS;
-};
-template <> class ToJS<AVCodecID> : public EnumToJS<AVCodecID> {
-public:
-  using EnumToJS<AVCodecID>::EnumToJS;
-};
-
-template <> class FromJS<AVMediaType> : public EnumFromJS<AVMediaType> {
-public:
-  using EnumFromJS<AVMediaType>::EnumFromJS;
-};
-template <> class ToJS<AVMediaType> : public EnumToJS<AVMediaType> {
-public:
-  using EnumToJS<AVMediaType>::EnumToJS;
-};
-
-template <> class FromJS<AVPixelFormat> : public EnumFromJS<AVPixelFormat> {
-public:
-  using EnumFromJS<AVPixelFormat>::EnumFromJS;
-};
-template <> class ToJS<AVPixelFormat> : public EnumToJS<AVPixelFormat> {
-public:
-  using EnumToJS<AVPixelFormat>::EnumToJS;
-};
+TYPEMAPS_FOR_ENUM(AVPictureType);
+TYPEMAPS_FOR_ENUM(AVCodecID);
+TYPEMAPS_FOR_ENUM(AVMediaType);
+TYPEMAPS_FOR_ENUM(AVPixelFormat);
+TYPEMAPS_FOR_ENUM(AVSampleFormat);
 
 } // namespace Typemap
 
