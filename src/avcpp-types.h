@@ -48,6 +48,7 @@ public:
     using EnumToJS<ENUM>::EnumToJS;                                                                                    \
   };
 
+// Create typemaps for all basic enums
 TYPEMAPS_FOR_ENUM(AVPictureType);
 TYPEMAPS_FOR_ENUM(AVCodecID);
 TYPEMAPS_FOR_ENUM(AVMediaType);

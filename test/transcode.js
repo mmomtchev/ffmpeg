@@ -134,6 +134,7 @@ while (true) {
       frame.setTimeBase(encoder.timeBase());
       frame.setStreamIndex(0);
       frame.setPictureType(ffmpeg.AV_Picture_Type_None);
+      // data is in frame.data()
       console.log(`Processed frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
     }
 

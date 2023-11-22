@@ -32,6 +32,16 @@ template <typename T> std::string ToString(T &v) {
 
 void SetLogLevel(int loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
+// An universal wrapper for Frame-derived types that returns a Buffer
+// by copying the underlying data
+template <typename T> Nobind::Typemap::Buffer ReturnBuffer(T &object) {
+  return Nobind::Typemap::Buffer{object.data(), object.size()};
+}
+// Version for multiplane data (ie stereo audio)
+template <typename T> Nobind::Typemap::Buffer ReturnBufferPlane(T &object, size_t plane) {
+  return Nobind::Typemap::Buffer{object.data(plane), object.size(plane)};
+}
+
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
@@ -252,6 +262,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::setQuality>("setQuality")
       .def<&VideoFrame::streamIndex>("streamIndex")
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
+      .ext<&ReturnBuffer<VideoFrame>>("data")
       .ext<&ToString<VideoFrame>>("toString");
 
   m.def<AudioSamples>("AudioSamples")
@@ -273,6 +284,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioSamples::refCount>("refCount")
       .def<&AudioSamples::streamIndex>("streamIndex")
       .def<&AudioSamples::setStreamIndex>("setStreamIndex")
+      .ext<&ReturnBuffer<AudioSamples>>("data")
+      .ext<&ReturnBufferPlane<AudioSamples>>("dataPlane")
       .ext<&ToString<AudioSamples>>("toString");
 
   m.def<Timestamp>("Timestamp")
