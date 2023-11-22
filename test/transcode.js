@@ -2,20 +2,12 @@
 // https://github.com/h4tr3d/avcpp/blob/master/example/api2-samples/api2-decode-encode-video.cpp
 const ffmpeg = require('../build/Debug/node-ffmpeg-avcpp.node');
 const {
-  error_code,
-  ErrorCode,
   FormatContext,
   findEncodingCodec,
   VideoDecoderContext,
   VideoEncoderContext,
   OutputFormat,
-  Codec,
-  Rational,
-  Timestamp,
-  Stream,
-  Packet,
-  VideoFrame,
-  timestampToString
+  Codec
 } = ffmpeg;
 
 if (!process.argv[3]) {
@@ -23,12 +15,14 @@ if (!process.argv[3]) {
   process.exit(1);
 }
 
+if (process.argv[4] && process.argv[4].startsWith('v')) {
+  ffmpeg.setLogLevel(ffmpeg.AVLog_Debug);
+} else {
+  ffmpeg.setLogLevel(ffmpeg.AVLog_Error);
+}
+
 const inp = process.argv[2];
 const outp = process.argv[3];
-
-// These probably need better handling from JS
-const ec = new error_code;
-const oc = new ErrorCode(ec);
 
 //
 // INPUT
@@ -145,7 +139,7 @@ while (true) {
     if (frame.isComplete() || flushEncoder) {
       // ENCODING
       const opkt = frame.isComplete() ? encoder.encode(frame) : encoder.finalize();
-      
+
       opkt.setStreamIndex(0);
 
       console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}`);

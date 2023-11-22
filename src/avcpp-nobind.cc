@@ -32,6 +32,8 @@ template <typename T> std::string ToString(T &v) {
   return r.str();
 }
 
+void SetLogLevel(int loglevel) { av::setFFmpegLoggingLevel(loglevel); }
+
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
@@ -58,6 +60,11 @@ NOBIND_MODULE(ffmpeg, m) {
   REGISTER_CONSTANT(AV_PICTURE_TYPE_SI, "AVPicture_Type_SI");     ///< Switching Intra
   REGISTER_CONSTANT(AV_PICTURE_TYPE_SP, "AVPicture_Type_SP");     ///< Switching Predicted
   REGISTER_CONSTANT(AV_PICTURE_TYPE_BI, "AVPicture_Type_BI");     ///< BI type
+
+  REGISTER_CONSTANT(AV_LOG_DEBUG, "AVLog_Debug");
+  REGISTER_CONSTANT(AV_LOG_INFO, "AVLog_Info");
+  REGISTER_CONSTANT(AV_LOG_WARNING, "AVLog_Warning");
+  REGISTER_CONSTANT(AV_LOG_ERROR, "AVLog_Error");
 
   m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodec");
   m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>("findDecodingCodec");
@@ -192,14 +199,17 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Timestamp::isNoPts>("isNoPts")
       .def<&Timestamp::isValid>("isValid")
       .def<&Timestamp::operator+= >("addTo")
+      .def<&Timestamp::operator-= >("subFrom")
       .def<&Timestamp::timebase>("timebase")
       .ext<&ToString<Timestamp>>("toString");
+
   m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
 
+  m.def<&SetLogLevel>("setLogLevel");
   av::init();
 #ifdef DEBUG
   av::setFFmpegLoggingLevel(AV_LOG_DEBUG);
 #else
-  av::setFFmpegLoggingLevel(AV_LOG_INFO);
+  av::setFFmpegLoggingLevel(AV_LOG_WARNING);
 #endif
 }
