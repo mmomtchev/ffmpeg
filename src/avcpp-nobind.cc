@@ -151,6 +151,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<Packet>("Packet")
       .def<&Packet::isNull>("isNull")
+      .def<&Packet::isComplete>("isComplete")
       .def<&Packet::streamIndex>("streamIndex")
       .def<&Packet::setStreamIndex>("setStreamIndex")
       .def<&Packet::pts>("pts")
@@ -161,6 +162,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<VideoFrame>("VideoFrame")
       .def<&VideoFrame::isNull>("isNull")
+      .def<&VideoFrame::isComplete>("isComplete")
       .def<&VideoFrame::pts>("pts")
       .def<static_cast<void (av::Frame<av::VideoFrame>::*)(const Timestamp &)>(&VideoFrame::setPts)>("setPts")
       .def<&VideoFrame::timeBase>("timeBase")
@@ -185,6 +187,10 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<Timestamp>("Timestamp")
       .cons<int64_t, const Rational &>()
       .def<&Timestamp::seconds>("seconds")
+      .def<&Timestamp::isNoPts>("isNoPts")
+      .def<&Timestamp::isValid>("isValid")
+      .def<&Timestamp::operator+= >("addTo")
+      .def<&Timestamp::timebase>("timebase")
       .ext<&ToString<Timestamp>>("toString");
   m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
 

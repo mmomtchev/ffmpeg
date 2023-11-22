@@ -127,16 +127,9 @@ while (true) {
   do {
     // DECODING
     const frame = vdec.decode(pkt, true);
-    if (!frame.isValid()) {
-      // Seems that this is something that is normal with the first few frames
-      // Must read until the codec has received enough data
-      // TODO: This must be fixed in the lower layers
-      console.warn('Received invalid frame');
-      continue;
-    }
 
     let flushEncoder = false;
-    if (frame.isNull()) {
+    if (!frame.isComplete()) {
       if (flushDecoder) {
         flushEncoder = true;
       }
@@ -146,17 +139,14 @@ while (true) {
       frame.setTimeBase(encoder.timeBase());
       frame.setStreamIndex(0);
       frame.setPictureType(ffmpeg.AVPicture_Type_None);
-      frame.setPts(new Timestamp(counter, encoder.timeBase()));
       console.log(`Processed frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
     }
 
-    if (frame || flushEncoder) {
+    if (frame.isComplete() || flushEncoder) {
       // ENCODING
-      const opkt = frame ? encoder.encode(frame) : encoder.finalize();
-
+      const opkt = frame.isComplete() ? encoder.encode(frame) : encoder.finalize();
+      
       opkt.setStreamIndex(0);
-      opkt.setPts(pkt.pts());
-      opkt.setDts(pkt.dts());
 
       console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}`);
 
