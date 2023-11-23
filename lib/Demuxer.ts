@@ -66,11 +66,11 @@ export class Demuxer extends Readable {
     if (this.reading) return;
     (async () => {
       this.reading = true;
-      verbose('start of _read');
+      verbose('Demuxer: start of _read');
       let pkt, frame;
       do {
         pkt = await this.formatContext.readPacketAsync();
-        verbose(`Read packet: pts=${pkt.pts()}, dts=${pkt.dts()} / ${pkt.pts().seconds()} / ${pkt.timeBase()} / stream ${pkt.streamIndex()}`);
+        verbose(`Demuxer: Read packet: pts=${pkt.pts()}, dts=${pkt.dts()} / ${pkt.pts().seconds()} / ${pkt.timeBase()} / stream ${pkt.streamIndex()}`);
         if (pkt.isNull()) {
           this.push(null);
           return;
@@ -83,17 +83,15 @@ export class Demuxer extends Readable {
         if (stream.isVideo()) {
           frame = await decoder.decode(pkt, true);
           if (frame.isComplete())
-            verbose(`Decoded   frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
+            verbose(`Demuxer: Decoded   frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
         }
         if (stream.isAudio()) {
           frame = await decoder.decode(pkt);
-          verbose(`frame: ${frame.isComplete()}, pkt: ${pkt.isNull()}`);
           if (frame.isComplete())
             verbose(`Decoded   samples: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.sampleFormat()}@${frame.sampleRate()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / layout: ${frame.channelsLayoutString()} }`);
         }
         if (frame && frame?.isComplete()) {
           size--;
-          verbose(`Sending to caller, will try for ${size} more`);
           this.push({
             data: frame,
             streamIndex: pkt.streamIndex(),
@@ -102,11 +100,15 @@ export class Demuxer extends Readable {
             isVideo: stream.isVideo()
           } as DemuxerFrame);
         }
+      // The somewhat unusual test is due to the fact that when reading
+      // it takes a few packets before the codec starts sending valid data
       } while ((!pkt.isNull() || frame.isComplete()) && size > 0 && frame);
-      verbose('end of _read');
-    })().then(() => {
-      this.reading = false;
-    }).catch((err) => this.destroy(err));
+      verbose('Demuxer: end of _read');
+    })()
+      .catch((err) => this.destroy(err))
+      .then(() => {
+        this.reading = false;
+      });
   }
 }
 
