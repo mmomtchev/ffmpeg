@@ -12,9 +12,10 @@
 #include <format.h>
 #include <formatcontext.h>
 
-#include "avcpp-types.h"
-
 #include <nobind.h>
+
+#include "avcpp-frame.h"
+#include "avcpp-types.h"
 
 using namespace av;
 
@@ -31,16 +32,6 @@ template <typename T> std::string ToString(T &v) {
 }
 
 void SetLogLevel(int loglevel) { av::setFFmpegLoggingLevel(loglevel); }
-
-// An universal wrapper for Frame-derived types that returns a Buffer
-// by copying the underlying data
-template <typename T> Nobind::Typemap::Buffer ReturnBuffer(T &object) {
-  return Nobind::Typemap::Buffer{object.data(), object.size()};
-}
-// Version for multiplane data (ie stereo audio)
-template <typename T> Nobind::Typemap::Buffer ReturnBufferPlane(T &object, size_t plane) {
-  return Nobind::Typemap::Buffer{object.data(plane), object.size(plane)};
-}
 
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
@@ -209,8 +200,12 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<PixelFormat>("PixelFormat").def <
       &PixelFormat::operator AVPixelFormat>("get").ext<&ToString<PixelFormat>>("toString");
 
-  m.def<SampleFormat>("SampleFormat").def <
-      &SampleFormat::operator AVSampleFormat>("get").ext<&ToString<SampleFormat>>("toString");
+  m.def<SampleFormat>("SampleFormat").cons<const std::string &>().def <
+      &SampleFormat::operator AVSampleFormat>("get")
+           .def<&SampleFormat::name>("name")
+           .def<&SampleFormat::bytesPerSample>("bytesPerSample")
+           .def<&SampleFormat::bitsPerSample>("bitsPerSample")
+           .ext<&ToString<SampleFormat>>("toString");
 
   m.def<ChannelLayout>("ChannelLayout")
       .cons<int>()
@@ -241,6 +236,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Packet::timeBase, Nobind::ReturnShared>("timeBase");
 
   m.def<VideoFrame>("VideoFrame")
+      // Every global function can also be registered as a static class method
+      .def<&CreateVideoFrame>("create")
       .def<&VideoFrame::isNull>("isNull")
       .def<&VideoFrame::isComplete>("isComplete")
       .def<&VideoFrame::pts>("pts")
@@ -266,6 +263,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .ext<&ToString<VideoFrame>>("toString");
 
   m.def<AudioSamples>("AudioSamples")
+      .def<&CreateAudioSamples>("create")
       .def<&AudioSamples::isNull>("isNull")
       .def<&AudioSamples::isComplete>("isComplete")
       .def<&AudioSamples::pts>("pts")
