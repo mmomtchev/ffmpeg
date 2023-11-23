@@ -81,9 +81,16 @@ NOBIND_MODULE(ffmpeg, m) {
       // Overloaded methods must be cast to be resolved
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput)>(
           "openInput")
+      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput),
+           Nobind::ReturnAsync>("openInputAsync")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput)>(
           "openOutput")
+      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
+           Nobind::ReturnAsync>("openOutputAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo),
+           Nobind::ReturnAsync>("findStreamInfoAsync")
       .def<&FormatContext::streamsCount>("streamsCount")
       .def<static_cast<Stream (FormatContext::*)(size_t)>(&FormatContext::stream)>("stream")
       // Typical example of registering two overloaded signatures with different names in JavaScript
@@ -91,17 +98,25 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (FormatContext::*)(const OutputFormat &)>(&FormatContext::setFormat)>("setOutputFormat")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput)>(
           "openOutput")
+      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
+           Nobind::ReturnAsync>("openOutputAsync")
       .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addVideoStream")
       .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addAudioStream")
       .def<&FormatContext::dump>("dump")
       .def<&FormatContext::flush>("flush")
+      .def<&FormatContext::flush, Nobind::ReturnAsync>("flushAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>("readPacket")
+      .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket), Nobind::ReturnAsync>(
+          "readPacketAsync")
       .def<static_cast<void (FormatContext::*)(const Packet &, OptionalErrorCode)>(&FormatContext::writePacket)>(
           "writePacket")
-      .def<&FormatContext::writeTrailer>("writeTrailer");
+      .def<static_cast<void (FormatContext::*)(const Packet &, OptionalErrorCode)>(&FormatContext::writePacket),
+           Nobind::ReturnAsync>("writePacketAsync")
+      .def<&FormatContext::writeTrailer>("writeTrailer")
+      .def<&FormatContext::writeTrailer, Nobind::ReturnAsync>("writeTrailerAsync");
 
   m.def<VideoDecoderContext>("VideoDecoderContext")
       .cons<const Stream &>()
@@ -122,8 +137,13 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open)>(
           "openCodec")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecAsync")
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
-          &VideoDecoderContext::decode)>("decode");
+          &VideoDecoderContext::decode)>("decode")
+      .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
+               &VideoDecoderContext::decode),
+           Nobind::ReturnAsync>("decodeAsync");
 
   m.def<VideoEncoderContext>("VideoEncoderContext")
       .cons<>()
@@ -142,9 +162,16 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
           "openCodec")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecAsync")
       .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
           &VideoEncoderContext::encode)>("encode")
-      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>("finalize");
+      .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
+               &VideoEncoderContext::encode),
+           Nobind::ReturnAsync>("encodeAsync")
+      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>("finalize")
+      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode),
+           Nobind::ReturnAsync>("finalizeAsync");
 
   m.def<AudioDecoderContext>("AudioDecoderContext")
       .cons<const Stream &>()
@@ -164,8 +191,13 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
           "openCodec")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecAsync")
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
-          &AudioDecoderContext::decode)>("decode");
+          &AudioDecoderContext::decode)>("decode")
+      .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
+               &AudioDecoderContext::decode),
+           Nobind::ReturnAsync>("decodeAsync");
 
   m.def<AudioEncoderContext>("AudioEncoderContext")
       .cons<>()
@@ -186,9 +218,16 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
           "openCodec")
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecAsync")
       .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
           &AudioEncoderContext::encode)>("encode")
-      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>("finalize");
+      .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
+               &AudioEncoderContext::encode),
+           Nobind::ReturnAsync>("encodeAsync")
+      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>("finalize")
+      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode),
+           Nobind::ReturnAsync>("finalizeAsync");
 
   m.def<OutputFormat>("OutputFormat")
       .cons<>()
@@ -224,6 +263,9 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Stream::isValid>("isValid")
       .def<&Stream::isVideo>("isVideo")
       .def<&Stream::isAudio>("isAudio")
+      .def<&Stream::isSubtitle>("isSubtitle")
+      .def<&Stream::isData>("isData")
+      .def<&Stream::duration>("duration")
       .def<&Stream::frameRate>("frameRate")
       .def<&Stream::setFrameRate>("setFrameRate")
       .def<&Stream::timeBase>("timeBase")

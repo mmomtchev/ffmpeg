@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2020",
+    "esModuleInterop": true,
+    "paths": {
+      "node-av": [
+        "."
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+  ]
+}
