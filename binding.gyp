@@ -12,7 +12,7 @@
       ],
       'include_dirs': [
         '<!@(node -p "require(\'node-addon-api\').include")',
-        '<!@(node -p "require(\'nobind\').include")'
+        '<!@(node -p "require(\'nobind17\').include")'
       ],
       'dependencies': [ 'deps/avcpp.gyp:avcpp' ]
     }
