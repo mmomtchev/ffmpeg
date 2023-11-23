@@ -1,0 +1,6 @@
+{
+  "spec": "test/*.test.js",
+  "reporter": "tap",
+  "timeout": 20000,
+  "v8-expose-gc": true
+}

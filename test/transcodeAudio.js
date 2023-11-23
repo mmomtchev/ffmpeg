@@ -133,6 +133,8 @@ while (true) {
       samples.setTimeBase(encoder.timeBase());
       samples.setStreamIndex(0);
       // stereo data is in samples.dataPlane(0) and samples.dataPlane(1)
+      console.log(samples.sampleFormat().name());
+
       console.log(`Processed samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
     }
 

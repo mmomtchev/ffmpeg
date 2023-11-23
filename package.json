@@ -2,9 +2,9 @@
   "name": "node-ffmpeg",
   "version": "1.0.0",
   "description": "avcpp (ffmpeg) bindings for Node.js",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "test"
+    "test": "npx mocha"
   },
   "repository": {
     "type": "git",
