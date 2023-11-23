@@ -197,15 +197,21 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
 
-  m.def<PixelFormat>("PixelFormat").def <
-      &PixelFormat::operator AVPixelFormat>("get").ext<&ToString<PixelFormat>>("toString");
+  m.def<PixelFormat>("PixelFormat")
+          .cons<const std::string &>()
+          .def<&PixelFormat::name>("name")
+          .def<&PixelFormat::planesCount>("planesCount")
+          .def<&PixelFormat::bitsPerPixel>("bitsPerPixel")
+          .ext<&ToString<PixelFormat>>("toString")
+          .def < &PixelFormat::operator AVPixelFormat>("get");
 
-  m.def<SampleFormat>("SampleFormat").cons<const std::string &>().def <
-      &SampleFormat::operator AVSampleFormat>("get")
-           .def<&SampleFormat::name>("name")
-           .def<&SampleFormat::bytesPerSample>("bytesPerSample")
-           .def<&SampleFormat::bitsPerSample>("bitsPerSample")
-           .ext<&ToString<SampleFormat>>("toString");
+  m.def<SampleFormat>("SampleFormat")
+          .cons<const std::string &>()
+          .def<&SampleFormat::name>("name")
+          .def<&SampleFormat::bytesPerSample>("bytesPerSample")
+          .def<&SampleFormat::bitsPerSample>("bitsPerSample")
+          .ext<&ToString<SampleFormat>>("toString")
+          .def < &SampleFormat::operator AVSampleFormat>("get");
 
   m.def<ChannelLayout>("ChannelLayout")
       .cons<int>()
