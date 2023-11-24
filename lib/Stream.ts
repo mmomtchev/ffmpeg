@@ -31,8 +31,7 @@ export interface AudioStreamDefinition extends StreamDefinition {
 }
 
 export interface MuxerChunk {
-  data: any;
-  type: StreamType;
+  packet: any;
   streamIndex: any;
   _stream: any;
 }
