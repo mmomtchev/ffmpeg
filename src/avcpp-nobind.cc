@@ -20,8 +20,9 @@
 using namespace av;
 
 // A define to register constants in the global namespace of the JS module
+// (these use an artificial type that holds an uint64_t and is converted to BigInt)
 #define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
-  constexpr static uint64_t __const_##CONST = CONST;                                                                        \
+  constexpr static ffmpeg_constant_t __const_##CONST{static_cast<uint64_t>(CONST)};                                    \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 
 // An universal toString() wrapper, to be used as a class extension
@@ -31,7 +32,7 @@ template <typename T> std::string ToString(T &v) {
   return r.str();
 }
 
-void SetLogLevel(int loglevel) { av::setFFmpegLoggingLevel(loglevel); }
+void SetLogLevel(ffmpeg_constant_t loglevel) { av::setFFmpegLoggingLevel(loglevel.value); }
 
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
@@ -45,8 +46,8 @@ NOBIND_MODULE(ffmpeg, m) {
           .def<&OptionalErrorCode::null, Nobind::ReturnShared>("null")
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
-  // Some important constants
-  #include "constants"
+// Some important constants
+#include "constants"
 
   m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodecFormat");
   m.def<static_cast<Codec (*)(AVCodecID)>(&findEncodingCodec)>("findEncodingCodec");
@@ -96,6 +97,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<VideoDecoderContext>("VideoDecoderContext")
       .cons<const Stream &>()
+      .def<&VideoDecoderContext::codecType>("codecType")
       .def<&VideoDecoderContext::width>("width")
       .def<&VideoDecoderContext::height>("height")
       .def<&VideoDecoderContext::setWidth>("setWidth")
@@ -125,6 +127,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
+      .def<&VideoEncoderContext::codecType>("codecType")
       .def<&VideoEncoderContext::width>("width")
       .def<&VideoEncoderContext::height>("height")
       .def<&VideoEncoderContext::setWidth>("setWidth")
@@ -151,6 +154,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<AudioDecoderContext>("AudioDecoderContext")
       .cons<const Stream &>()
+      .def<&AudioDecoderContext::codecType>("codecType")
       .def<&AudioDecoderContext::sampleRate>("sampleRate")
       .def<&AudioDecoderContext::setSampleRate>("setSampleRate")
       .def<&AudioDecoderContext::timeBase>("timeBase")
@@ -179,6 +183,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
+      .def<&AudioEncoderContext::codecType>("codecType")
       .def<&AudioEncoderContext::sampleRate>("sampleRate")
       .def<&AudioEncoderContext::setSampleRate>("setSampleRate")
       .def<&AudioEncoderContext::timeBase>("timeBase")

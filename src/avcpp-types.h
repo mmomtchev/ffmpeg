@@ -33,6 +33,13 @@ public:
   inline Napi::Value Get() { return Napi::BigInt::New(env_, val_); }
 };
 
+// Use an artificial type for the numeric constants
+// so that we can register them as BigInts without
+// converting all size_t
+struct ffmpeg_constant_t {
+  uint64_t value;
+};
+
 namespace Nobind {
 namespace Typemap {
 
@@ -46,13 +53,13 @@ public:
 };
 
 #define TYPEMAPS_FOR_ENUM(ENUM)                                                                                        \
-  template <> class FromJS<ENUM> : public BigIntEnumFromJS<ENUM> {                                                           \
+  template <> class FromJS<ENUM> : public BigIntEnumFromJS<ENUM> {                                                     \
   public:                                                                                                              \
-    using BigIntEnumFromJS<ENUM>::BigIntEnumFromJS;                                                                                \
+    using BigIntEnumFromJS<ENUM>::BigIntEnumFromJS;                                                                    \
   };                                                                                                                   \
-  template <> class ToJS<ENUM> : public BigIntEnumToJS<ENUM> {                                                               \
+  template <> class ToJS<ENUM> : public BigIntEnumToJS<ENUM> {                                                         \
   public:                                                                                                              \
-    using BigIntEnumToJS<ENUM>::BigIntEnumToJS;                                                                                    \
+    using BigIntEnumToJS<ENUM>::BigIntEnumToJS;                                                                        \
   };
 
 // Create typemaps for all basic enums
@@ -62,11 +69,36 @@ TYPEMAPS_FOR_ENUM(AVMediaType);
 TYPEMAPS_FOR_ENUM(AVPixelFormat);
 TYPEMAPS_FOR_ENUM(AVSampleFormat);
 
+template <> class FromJS<ffmpeg_constant_t> {
+  uint64_t val_;
+
+public:
+  inline explicit FromJS(const Napi::Value &val) {
+    if (!val.IsBigInt()) {
+      throw Napi::TypeError::New(val.Env(), "value must be a BigInt");
+    }
+    bool lossless;
+    val_ = val.As<Napi::BigInt>().Uint64Value(&lossless);
+    if (!lossless) {
+      throw Napi::RangeError::New(val.Env(), "constant will overflow uint64_t");
+    }
+  }
+  inline ffmpeg_constant_t Get() { return ffmpeg_constant_t{val_}; }
+};
+
+template <> class ToJS<ffmpeg_constant_t> {
+  Napi::Env env_;
+  uint64_t val_;
+
+public:
+  inline explicit ToJS(Napi::Env env, ffmpeg_constant_t val) : env_(env), val_(val.value) {}
+  inline Napi::Value Get() { return Napi::BigInt::New(env_, val_); }
+};
+
 } // namespace Typemap
 
 namespace TypemapOverrides {
 
-
-}
+} // namespace TypemapOverrides
 
 } // namespace Nobind
