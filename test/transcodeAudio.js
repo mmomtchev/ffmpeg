@@ -3,7 +3,7 @@
 const ffmpeg = require('../build/Debug/node-ffmpeg-avcpp.node');
 const {
   FormatContext,
-  findEncodingCodec,
+  findEncodingCodecFormat,
   AudioDecoderContext,
   AudioEncoderContext,
   ChannelLayout,
@@ -17,9 +17,9 @@ if (!process.argv[3]) {
 }
 
 if (process.argv[4] && process.argv[4].startsWith('v')) {
-  ffmpeg.setLogLevel(ffmpeg.AV_Log_Debug);
+  ffmpeg.setLogLevel(ffmpeg.AV_LOG_DEBUG);
 } else {
-  ffmpeg.setLogLevel(ffmpeg.AV_Log_Error);
+  ffmpeg.setLogLevel(ffmpeg.AV_LOG_ERROR);
 }
 
 const inp = process.argv[2];
@@ -70,13 +70,12 @@ const octx = new FormatContext;
 ofrmt.setFormat('', outp, '');
 octx.setOutputFormat(ofrmt);
 
-const ocodec = findEncodingCodec(ofrmt, false);
+const ocodec = findEncodingCodecFormat(ofrmt, false);
 console.log(`Using codec ${ocodec.name()}`);
 const encoder = new AudioEncoderContext(ocodec);
 
 // Settings
 encoder.setSampleRate(adec.sampleRate());
-console.log(adec.sampleFormat().toString());
 if (adec.sampleFormat().get() > -1) {
   console.log(`Sample format ${adec.sampleFormat()}`);
   encoder.setSampleFormat(adec.sampleFormat());
@@ -133,7 +132,6 @@ while (true) {
       samples.setTimeBase(encoder.timeBase());
       samples.setStreamIndex(0);
       // stereo data is in samples.dataPlane(0) and samples.dataPlane(1)
-      console.log(samples.sampleFormat().name());
 
       console.log(`Processed samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
     }

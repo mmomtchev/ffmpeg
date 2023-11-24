@@ -7,7 +7,7 @@
                 "${workspaceFolder}/deps/avcpp/src",
                 "/usr/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
-                "${workspaceFolder}/node_modules/nobind/include"
+                "${workspaceFolder}/node_modules/nobind17/include"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",

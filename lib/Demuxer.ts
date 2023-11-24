@@ -1,5 +1,6 @@
 import { Readable, ReadableOptions } from 'node:stream';
 import ffmpeg from '..';
+import { MuxerChunk, StreamType, StreamTypes } from './Stream';
 
 const { FormatContext, VideoDecoderContext, AudioDecoderContext, Codec } = ffmpeg;
 
@@ -8,14 +9,6 @@ export const verbose = process.env.DEBUG_DEMUXER ? console.debug.bind(console) :
 export interface DemuxerOptions extends ReadableOptions {
   inputFile: string;
   objectMode?: never;
-}
-
-export interface DemuxerFrame {
-  data: any;
-  isVideo: boolean;
-  isAudio: boolean;
-  streamIndex: any;
-  _stream: any;
 }
 
 export class Demuxer extends Readable {
@@ -80,25 +73,27 @@ export class Demuxer extends Readable {
           return;
         }
         const { stream, decoder } = this.stream[pkt.streamIndex()];
+        let type: StreamType | undefined;
         if (stream.isVideo()) {
           frame = await decoder.decode(pkt, true);
           if (frame.isComplete())
             verbose(`Demuxer: Decoded   frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
+          type = StreamTypes.Video;
         }
         if (stream.isAudio()) {
           frame = await decoder.decode(pkt);
           if (frame.isComplete())
-            verbose(`Decoded   samples: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.sampleFormat()}@${frame.sampleRate()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / layout: ${frame.channelsLayoutString()} }`);
+            verbose(`Demuxer: Decoded   samples: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.sampleFormat()}@${frame.sampleRate()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / layout: ${frame.channelsLayoutString()} }`);
+          type = StreamTypes.Audio;
         }
-        if (frame && frame?.isComplete()) {
+        if (frame && frame?.isComplete() && type) {
           size--;
           this.push({
             data: frame,
             streamIndex: pkt.streamIndex(),
             _stream: stream,
-            isAudio: stream.isAudio(),
-            isVideo: stream.isVideo()
-          } as DemuxerFrame);
+            type
+          } as MuxerChunk);
         }
       // The somewhat unusual test is due to the fact that when reading
       // it takes a few packets before the codec starts sending valid data

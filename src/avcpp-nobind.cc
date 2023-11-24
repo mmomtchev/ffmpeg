@@ -21,7 +21,7 @@ using namespace av;
 
 // A define to register constants in the global namespace of the JS module
 #define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
-  constexpr static int __const_##CONST = CONST;                                                                        \
+  constexpr static uint64_t __const_##CONST = CONST;                                                                        \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 
 // An universal toString() wrapper, to be used as a class extension
@@ -46,34 +46,10 @@ NOBIND_MODULE(ffmpeg, m) {
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
   // Some important constants
-  REGISTER_CONSTANT(AVMEDIA_TYPE_UNKNOWN, "AV_Media_Type_Unknown");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_AUDIO, "AV_Media_Type_Audio");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_VIDEO, "AV_Media_Type_Video");
-  REGISTER_CONSTANT(AVMEDIA_TYPE_SUBTITLE, "AV_Media_Type_Subtitle");
+  #include "constants"
 
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_NONE, "AV_Picture_Type_None"); ///< Undefined
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_I, "AV_Picture_Type_I");       ///< Intra
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_P, "AV_Picture_Type_P");       ///< Predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_B, "AV_Picture_Type_B");       ///< Bi-dir predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_S, "AV_Picture_Type_S");       ///< S(GMC)-VOP MPEG-4
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_SI, "AV_Picture_Type_SI");     ///< Switching Intra
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_SP, "AV_Picture_Type_SP");     ///< Switching Predicted
-  REGISTER_CONSTANT(AV_PICTURE_TYPE_BI, "AV_Picture_Type_BI");     ///< BI type
-
-  REGISTER_CONSTANT(AV_LOG_DEBUG, "AV_Log_Debug");
-  REGISTER_CONSTANT(AV_LOG_INFO, "AV_Log_Info");
-  REGISTER_CONSTANT(AV_LOG_WARNING, "AV_Log_Warning");
-  REGISTER_CONSTANT(AV_LOG_ERROR, "AV_Log_Error");
-
-  REGISTER_CONSTANT(AV_CH_LAYOUT_MONO, "AV_Channel_Layout_Mono");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_STEREO, "AV_Channel_Layout_Stereo");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_2POINT1, "AV_Channel_Layout_2.1");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_5POINT1, "AV_Channel_Layout_5.1");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_7POINT1, "AV_Channel_Layout_7.1");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_QUAD, "AV_Channel_Layout_Quad");
-  REGISTER_CONSTANT(AV_CH_LAYOUT_SURROUND, "AV_Channel_Layout_Surround");
-
-  m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodec");
+  m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodecFormat");
+  m.def<static_cast<Codec (*)(AVCodecID)>(&findEncodingCodec)>("findEncodingCodec");
   m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>("findDecodingCodec");
 
   m.def<FormatContext>("FormatContext")

@@ -3,7 +3,7 @@
 const ffmpeg = require('../build/Debug/node-ffmpeg-avcpp.node');
 const {
   FormatContext,
-  findEncodingCodec,
+  findEncodingCodecFormat,
   VideoDecoderContext,
   VideoEncoderContext,
   OutputFormat,
@@ -16,9 +16,9 @@ if (!process.argv[3]) {
 }
 
 if (process.argv[4] && process.argv[4].startsWith('v')) {
-  ffmpeg.setLogLevel(ffmpeg.AV_Log_Debug);
+  ffmpeg.setLogLevel(ffmpeg.AV_LOG_DEBUG);
 } else {
-  ffmpeg.setLogLevel(ffmpeg.AV_Log_Error);
+  ffmpeg.setLogLevel(ffmpeg.AV_LOG_ERROR);
 }
 
 const inp = process.argv[2];
@@ -37,7 +37,7 @@ ictx.findStreamInfo();
 
 for (let i = 0; i < ictx.streamsCount(); i++) {
   const st = ictx.stream(i);
-  if (st.mediaType() == ffmpeg.AV_Media_Type_Video) {
+  if (st.mediaType() == ffmpeg.AV_MEDIA_TYPE_VIDEO) {
     videoStream = i;
     vst = st;
     console.log(`Stream ${i} is a video stream`);
@@ -70,7 +70,7 @@ const octx = new FormatContext;
 ofrmt.setFormat('', outp, '');
 octx.setOutputFormat(ofrmt);
 
-const ocodec = findEncodingCodec(ofrmt, true);
+const ocodec = findEncodingCodecFormat(ofrmt, true);
 console.log(`Using codec ${ocodec.name()}`);
 const encoder = new VideoEncoderContext(ocodec);
 
@@ -133,7 +133,7 @@ while (true) {
 
       frame.setTimeBase(encoder.timeBase());
       frame.setStreamIndex(0);
-      frame.setPictureType(ffmpeg.AV_Picture_Type_None);
+      frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       // data is in frame.data()
       console.log(`Processed frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
     }
