@@ -1,4 +1,4 @@
-import { ReadableOptions, Transform } from 'node:stream';
+import { Transform } from 'node:stream';
 import ffmpeg from '..';
 import { MuxerChunk } from './Stream';
 import { TransformCallback } from 'stream';

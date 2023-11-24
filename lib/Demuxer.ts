@@ -1,6 +1,6 @@
 import { Readable, ReadableOptions } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk } from './Stream';
+import { MuxerChunk, StreamDefinition, VideoStreamDefinition } from './Stream';
 
 const { FormatContext } = ffmpeg;
 

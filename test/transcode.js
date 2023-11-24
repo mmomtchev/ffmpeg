@@ -100,6 +100,11 @@ octx.dump();
 octx.writeHeader();
 octx.flush();
 
+console.log(`VideoEncoder: encoder primed, codec ${ocodec.name()}, ` +
+  `bitRate: ${encoder.bitRate()}, pixelFormat: ${encoder.pixelFormat()}, ` +
+  `timeBase: ${encoder.timeBase()}, ${encoder.width()}x${encoder.height()}`
+);
+
 
 //
 // PROCESS

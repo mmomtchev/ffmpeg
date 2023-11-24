@@ -10,8 +10,8 @@ export type StreamType = keyof typeof StreamTypes;
 
 export interface StreamDefinition {
   type: StreamType;
-  bitRate?: number;
-  codec?: number;
+  bitRate: number;
+  codec: BigInt;
   timeBase?: any;
 }
 

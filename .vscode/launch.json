@@ -58,6 +58,23 @@
           "ignoreFailures": true
         }
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "(node) Launch mocha",
+      "skipFiles": [
+          "<node_internals>/**"
+      ],
+      "args": [
+          "-R", "tap",
+          "--timeout", "0",
+          "--v8-expose-gc",
+          "--require", "ts-node/register",
+          "--require", "tsconfig-paths/register",
+          "test/*.test.*"
+      ],
+      "program": "${workspaceFolder}/node_modules/.bin/mocha"
     }
   ]
 }

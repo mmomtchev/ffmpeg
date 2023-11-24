@@ -82,9 +82,11 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addAudioStream")
       .def<&FormatContext::dump>("dump")
+      .def<&FormatContext::dump, Nobind::ReturnAsync>("dumpAsync")
       .def<&FormatContext::flush>("flush")
       .def<&FormatContext::flush, Nobind::ReturnAsync>("flushAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader), Nobind::ReturnAsync>("writeHeaderAsync")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>("readPacket")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket), Nobind::ReturnAsync>(
           "readPacketAsync")
@@ -258,6 +260,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&Packet::isComplete>("isComplete")
       .def<&Packet::streamIndex>("streamIndex")
       .def<&Packet::setStreamIndex>("setStreamIndex")
+      .def<&Packet::size>("size")
       .def<&Packet::pts>("pts")
       .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setPts)>("setPts")
       .def<&Packet::dts>("dts")
