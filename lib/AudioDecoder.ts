@@ -7,11 +7,6 @@ const { AudioDecoderContext, Codec } = ffmpeg;
 
 export const verbose = process.env.DEBUG_AUDIO_DECODER ? console.debug.bind(console) : () => undefined;
 
-export interface DemuxerOptions extends ReadableOptions {
-  inputFile: string;
-  objectMode?: never;
-}
-
 export class AudioDecoder extends Transform {
   protected decoder: any;
 

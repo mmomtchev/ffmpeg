@@ -11,9 +11,6 @@ export interface DemuxerOptions extends ReadableOptions {
   objectMode?: never;
 }
 
-class DemuxReadable extends Readable {
-}
-
 export class Demuxer {
   protected inputFile: string;
   protected formatContext: any;
