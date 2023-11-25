@@ -55,6 +55,7 @@ export class Muxer {
       });
       this.streams[+idx] = writable;
       const def = this.rawStreams[idx].getDefinition();
+      this.rawStreams[idx].setOutputPriming(this.prime.bind(this));
 
       if (def.type === 'Video') {
         this.video.push(writable);
@@ -105,7 +106,7 @@ export class Muxer {
         await this.prime();
       }
       packet.setStreamIndex(idx);
-      verbose(`Muxing packet: pts=${packet.pts()}, dts=${packet.dts()} / ${packet.pts().seconds()} / ${packet.timeBase()} / stream ${packet.streamIndex()}`);
+      verbose(`Muxer: packet: pts=${packet.pts()}, dts=${packet.dts()} / ${packet.pts().seconds()} / ${packet.timeBase()} / stream ${packet.streamIndex()}`);
       await this.formatContext.writePacketAsync(packet);
     })().then(() => callback()).catch(callback).then(() => {
       this.writing = false;

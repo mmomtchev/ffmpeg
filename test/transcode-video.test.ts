@@ -5,7 +5,6 @@ import { assert } from 'chai';
 import ffmpeg from 'node-av';
 import { Muxer } from '../lib/Muxer';
 import { Demuxer } from '../lib/Demuxer';
-import { StreamTypes } from '../lib/Stream';
 import { VideoEncoder } from '../lib/VideoEncoder';
 import { VideoDecoder } from '../lib/VideoDecoder';
 import { AudioDecoder } from '../lib/AudioDecoder';
