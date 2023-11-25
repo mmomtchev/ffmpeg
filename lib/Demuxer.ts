@@ -1,6 +1,6 @@
-import { Readable, ReadableOptions } from 'node:stream';
+import { EventEmitter, Readable, ReadableOptions } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk, StreamDefinition, VideoStreamDefinition } from './Stream';
+import { MuxerChunk } from './Stream';
 
 const { FormatContext } = ffmpeg;
 
@@ -11,7 +11,7 @@ export interface DemuxerOptions extends ReadableOptions {
   objectMode?: never;
 }
 
-export class Demuxer {
+export class Demuxer extends EventEmitter {
   protected inputFile: string;
   protected formatContext: any;
   protected rawStreams: any[];
@@ -21,15 +21,17 @@ export class Demuxer {
   reading: boolean;
 
   constructor(options: DemuxerOptions) {
+    super();
     this.inputFile = options.inputFile;
     this.rawStreams = [];
     this.streams = [];
     this.video = [];
     this.audio = [];
     this.reading = false;
+    this.prime();
   }
 
-  async prime(): Promise<void> {
+  protected async prime(): Promise<void> {
     verbose(`Demuxer: opening ${this.inputFile}`);
     this.formatContext = new FormatContext;
     await this.formatContext.openInputAsync(this.inputFile);
@@ -43,13 +45,14 @@ export class Demuxer {
       this.streams[i] = new Readable({
         objectMode: true,
         read: (size: number) => {
-          this._read(i, size);
+          this.read(i, size);
         }
       });
       this.rawStreams[i] = stream;
       if (stream.isVideo()) this.video.push(this.streams[i]);
       if (stream.isAudio()) this.audio.push(this.streams[i]);
     }
+    this.emit('ready');
   }
 
   /**
@@ -58,7 +61,7 @@ export class Demuxer {
    * push data to all of them - until the one that requested data
    * has enough
    */
-  async _read(idx: number, size: number): Promise<void> {
+  protected async read(idx: number, size: number): Promise<void> {
     if (this.reading) return;
     (async () => {
       this.reading = true;

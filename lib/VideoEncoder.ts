@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk, VideoStreamDefinition } from './Stream';
+import { VideoStreamDefinition } from './Stream';
 import { TransformCallback } from 'stream';
 
 const { VideoEncoderContext, Codec, VideoFrame } = ffmpeg;
@@ -38,7 +38,7 @@ export class VideoEncoder extends Transform {
         `bitRate: ${this.encoder.bitRate()}, pixelFormat: ${this.encoder.pixelFormat()}, ` +
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
-    })().then(() => void callback()).catch(callback);
+    })().then(() => void callback()).then(() => this.emit('ready')).catch(callback);
   }
 
   _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {

@@ -2,9 +2,8 @@ import * as path from 'node:path';
 
 import { assert } from 'chai';
 
-import { Demuxer } from '../lib/Demuxer';
-import { StreamTypes } from '../lib/Stream';
 import ffmpeg from 'node-av';
+import { Demuxer } from '../lib/Demuxer';
 import { AudioDecoder } from '../lib/AudioDecoder';
 import { VideoDecoder } from '../lib/VideoDecoder';
 
@@ -16,8 +15,8 @@ describe('Demuxer', () => {
     let audioClosed = false, videoClosed = false;
     const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
-    input.prime()
-      .then(() => {
+    input.on('ready', () => {
+      try {
         assert.lengthOf(input.streams, 2);
         assert.lengthOf(input.audio, 1);
         assert.lengthOf(input.video, 1);
@@ -55,7 +54,9 @@ describe('Demuxer', () => {
         audioStream.on('error', (err) => {
           done(err);
         });
-      })
-      .catch(done);
-  });
+      } catch (err) {
+        done(err);
+      }
+    });
+  })
 });

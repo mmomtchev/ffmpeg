@@ -1,17 +1,7 @@
-import { Writable, WritableOptions } from 'node:stream';
+import { EventEmitter, Writable, WritableOptions } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk, StreamDefinition, StreamType, isAudioDefinition, isVideoDefinition } from './Stream';
 
-const {
-  FormatContext,
-  OutputFormat,
-  VideoEncoderContext,
-  AudioEncoderContext,
-  Codec,
-  findEncodingCodec,
-  findEncodingCodecFormat,
-  Rational
-} = ffmpeg;
+const { FormatContext, OutputFormat } = ffmpeg;
 
 export const verbose = process.env.DEBUG_MUXER ? console.debug.bind(console) : () => undefined;
 
@@ -21,7 +11,7 @@ export interface MuxerOptions extends WritableOptions {
   objectMode?: never;
 }
 
-export class Muxer {
+export class Muxer extends EventEmitter {
   protected outputFile: string;
   protected outputFormat: any;
   protected formatContext: any;
@@ -33,6 +23,7 @@ export class Muxer {
   audio: Writable[];
 
   constructor(options: MuxerOptions) {
+    super();
     this.outputFile = options.outputFile;
     this.rawStreams = options.streams;
     this.streams = [];
@@ -45,7 +36,7 @@ export class Muxer {
       const writable = new Writable({
         objectMode: true,
         write: (chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
-          this._write(+idx, chunk, callback);
+          this.write(+idx, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
           this.formatContext.writeTrailerAsync()
@@ -67,7 +58,7 @@ export class Muxer {
     }
   }
 
-  async prime(): Promise<void> {
+  protected async prime(): Promise<void> {
     verbose(`Muxer: opening ${this.outputFile}`);
     this.outputFormat = new OutputFormat;
     this.outputFormat.setFormat('', this.outputFile, '');
@@ -96,9 +87,10 @@ export class Muxer {
     await this.formatContext.writeHeaderAsync();
     await this.formatContext.flushAsync();
     this.primed = true;
+    this.emit('ready');
   }
 
-  _write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
+  protected write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
     if (this.writing) return void callback(new Error('Try again later'));
     (async () => {
       this.writing = true;

@@ -39,6 +39,6 @@ export class VideoDecoder extends Transform {
         verbose('VideoDecoder: empty frame');
       }
       callback();
-    })().catch(callback);
+    })().then(() => this.emit('ready')).catch(callback);
   }
 }

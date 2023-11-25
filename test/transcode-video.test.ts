@@ -11,11 +11,11 @@ import { AudioDecoder } from '../lib/AudioDecoder';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
-it.only('Transcode video', (done) => {
+it('Transcode video', (done) => {
   const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
-  input.prime()
-    .then(() => {
+  input.on('ready', () => {
+    try {
       assert.lengthOf(input.streams, 2);
       assert.lengthOf(input.audio, 1);
       assert.lengthOf(input.video, 1);
@@ -41,6 +41,8 @@ it.only('Transcode video', (done) => {
 
       input.audio[0].pipe(audioInput);
       input.video[0].pipe(videoInput).pipe(videoOutput).pipe(output.video[0]);
-    })
-    .catch(done);
+    } catch (err) {
+      done(err);
+    }
+  });
 });
