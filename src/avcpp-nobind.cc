@@ -22,7 +22,7 @@ using namespace av;
 // A define to register constants in the global namespace of the JS module
 // (these use an artificial type that holds an uint64_t and is converted to BigInt)
 #define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
-  constexpr static ffmpeg_constant_t __const_##CONST{static_cast<uint64_t>(CONST)};                                    \
+  constexpr static int64_t __const_##CONST{static_cast<int64_t>(CONST)};                                               \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 
 // An universal toString() wrapper, to be used as a class extension
@@ -32,7 +32,7 @@ template <typename T> std::string ToString(T &v) {
   return r.str();
 }
 
-void SetLogLevel(ffmpeg_constant_t loglevel) { av::setFFmpegLoggingLevel(loglevel.value); }
+void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
 NOBIND_MODULE(ffmpeg, m) {
   // These two probably need better handling from JS
@@ -86,7 +86,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&FormatContext::flush>("flush")
       .def<&FormatContext::flush, Nobind::ReturnAsync>("flushAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader), Nobind::ReturnAsync>("writeHeaderAsync")
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader), Nobind::ReturnAsync>(
+          "writeHeaderAsync")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>("readPacket")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket), Nobind::ReturnAsync>(
           "readPacketAsync")
