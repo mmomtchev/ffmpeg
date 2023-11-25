@@ -26,7 +26,7 @@ it.only('Transcode video', (done) => {
       const videoOutput = new VideoEncoder({
         type: 'Video',
         codec: ffmpeg.AV_CODEC_H264,
-        bitRate: 1e7,
+        bitRate: 12e6,
         width: 1280,
         height: 720,
         frameRate: new ffmpeg.Rational(30, 1),

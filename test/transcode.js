@@ -78,7 +78,6 @@ const encoder = new VideoEncoderContext(ocodec);
 encoder.setWidth(vdec.width());
 encoder.setHeight(vdec.height());
 if (vdec.pixelFormat().get() > -1) {
-  console.log(`Pixel format ${vdec.pixelFormat()}`);
   encoder.setPixelFormat(vdec.pixelFormat());
   console.log(`Pixel format ${encoder.pixelFormat()}`);
 } else {
@@ -99,11 +98,6 @@ octx.openOutput(outp);
 octx.dump();
 octx.writeHeader();
 octx.flush();
-
-console.log(`VideoEncoder: encoder primed, codec ${ocodec.name()}, ` +
-  `bitRate: ${encoder.bitRate()}, pixelFormat: ${encoder.pixelFormat()}, ` +
-  `timeBase: ${encoder.timeBase()}, ${encoder.width()}x${encoder.height()}`
-);
 
 
 //
@@ -149,7 +143,7 @@ while (true) {
 
       opkt.setStreamIndex(0);
 
-      console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}`);
+      console.log(`Write packet: pts=${opkt.pts()}, dts=${opkt.dts()} / ${opkt.pts().seconds()} / ${opkt.timeBase()} / stream ${opkt.streamIndex()}, size: ${opkt.size()}`);
 
       octx.writePacket(opkt);
     }

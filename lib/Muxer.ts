@@ -106,7 +106,11 @@ export class Muxer {
         await this.prime();
       }
       packet.setStreamIndex(idx);
-      verbose(`Muxer: packet: pts=${packet.pts()}, dts=${packet.dts()} / ${packet.pts().seconds()} / ${packet.timeBase()} / stream ${packet.streamIndex()}`);
+      if (!packet.isComplete()) {
+        verbose('Muxer: skipping empty packet (codec is still priming)');
+        return;
+      }
+      verbose(`Muxer: packet: pts=${packet.pts()}, dts=${packet.dts()} / ${packet.pts().seconds()} / ${packet.timeBase()} / stream ${packet.streamIndex()}, size: ${packet.size()}`);
       await this.formatContext.writePacketAsync(packet);
     })().then(() => callback()).catch(callback).then(() => {
       this.writing = false;

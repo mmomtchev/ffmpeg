@@ -16,7 +16,7 @@ export class VideoDecoder extends Transform {
   }
 
   _transform(chunk: MuxerChunk, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('VideoDecoder: start of _transform');
+    verbose('VideoDecoder: decoding chunk');
     (async () => {
       if (!this.decoder) {
         verbose('VideoDecoder: priming the decoder');
@@ -31,8 +31,6 @@ export class VideoDecoder extends Transform {
         await this.decoder.openCodecAsync(new Codec);
         verbose('VideoDecoder: decoder primed');
       }
-
-      verbose('VideoDecoder: decoding chunk');
       const frame = await this.decoder.decodeAsync(chunk.packet, true);
       if (frame.isComplete()) {
         verbose(`VideoDecoder: Decoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
@@ -40,7 +38,6 @@ export class VideoDecoder extends Transform {
       } else {
         verbose('VideoDecoder: empty frame');
       }
-      verbose('VideoDecoder: end of _transform');
       callback();
     })().catch(callback);
   }

@@ -24,7 +24,7 @@ export class VideoEncoder extends Transform {
     if (this.def.timeBase)
       this.encoder.setTimeBase(this.def.timeBase);
     else
-      this.encoder.setTimeBase(new ffmpeg.Rational(1, 90000));
+      this.encoder.setTimeBase(new ffmpeg.Rational(1, 1000));
     this.encoder.setBitRate(this.def.bitRate);
     this.encoder.setPixelFormat(this.def.pixelFormat);
     this.outputPriming = null;
@@ -42,7 +42,7 @@ export class VideoEncoder extends Transform {
   }
 
   _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('VideoEncoder: start of _transform');
+    verbose('VideoEncoder: encoding frame');
     (async () => {
       if (!this.encoder) {
         return void callback(new Error('VideoEncoder is not primed'));
@@ -54,18 +54,19 @@ export class VideoEncoder extends Transform {
         return void callback(new Error('Received incomplete frame'));
       }
       if (this.outputPriming) {
+        if (!frame.isKeyFrame()) {
+          verbose('VideoEncoder: discarding initial B-frame');
+          return;
+        }
         verbose('VideoEncoder: waiting for output to prime');
         await this.outputPriming();
         this.outputPriming = null;
       }
-      verbose('VideoEncoder: encoding frame');
-      frame.setTimeBase(this.encoder.timeBase());
-      frame.setStreamIndex(0);
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
+      frame.setTimeBase(this.encoder.timeBase());
       const packet = await this.encoder.encodeAsync(frame);
       verbose(`VideoEncoder: frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
-      verbose('VideoEncoder: end of _transform');
     })().then(() => void callback()).catch(callback);
   }
 
