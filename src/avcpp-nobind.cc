@@ -281,6 +281,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&CreateVideoFrame>("create")
       .def<&VideoFrame::isNull>("isNull")
       .def<&VideoFrame::isComplete>("isComplete")
+      .def<&VideoFrame::setComplete>("setComplete")
       .def<&VideoFrame::pts>("pts")
       .def<static_cast<void (av::Frame<av::VideoFrame>::*)(const Timestamp &)>(&VideoFrame::setPts)>("setPts")
       .def<&VideoFrame::timeBase>("timeBase")

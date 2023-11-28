@@ -59,8 +59,8 @@ export class VideoEncoder extends Transform {
       if (!(frame instanceof VideoFrame)) {
         return void callback(new Error('Input is not a raw video'));
       }
-      if (!frame.isComplete()) {
-        return void callback(new Error('Received incomplete frame'));
+      if (!frame.isValid()) {
+        return void callback(new Error('Received invalid frame'));
       }
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       frame.setTimeBase(this.encoder.timeBase());

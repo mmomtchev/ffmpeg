@@ -21,3 +21,4 @@ The easiest way to use `node-ffmpeg` is the high-level streams API.
 You should start by looking at the unit tests:
   * [`transcode.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/transcode.test.ts) contains simple examples for transcoding audio and video
   * [`extract.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
+  * [`encode.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
