@@ -7,6 +7,11 @@ const { VideoDecoderContext, Codec } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
+/**
+ * A VideoDecoder is Transform stream that can read raw encoded video data
+ * from a Demuxer and write decoded video frames.
+ * Its parameters are inherited from the Demuxer.
+ */
 export class VideoDecoder extends Transform {
   protected decoder: any;
   protected busy: boolean;

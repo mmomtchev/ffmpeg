@@ -7,6 +7,11 @@ const { VideoEncoderContext, Codec, VideoFrame } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
+/**
+ * A VideoEncoder is Transform stream that can read raw video frames
+ * and write encoded video data to a Muxer.
+ * Its parameters must be explicitly configured.
+ */
 export class VideoEncoder extends Transform {
   protected def: VideoStreamDefinition;
   protected encoder: any;

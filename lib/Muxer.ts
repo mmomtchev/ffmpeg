@@ -11,6 +11,15 @@ export interface MuxerOptions extends WritableOptions {
   objectMode?: never;
 }
 
+/**
+ * A Muxer is an object that creates a number of Writables
+ * that can accept data from encoders.
+ * The encoders must be created before creating the Muxer as
+ * their parameters must be known beforehand.
+ * 
+ * @example
+ * const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
+ */
 export class Muxer extends EventEmitter {
   protected outputFile: string;
   protected outputFormat: any;

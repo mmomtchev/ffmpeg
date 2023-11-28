@@ -23,6 +23,16 @@ class DemuxedStream extends Readable {
   }
 }
 
+/**
+ * A Demuxer is an object that exposes a number of Readables
+ * 
+ * @example
+ * const input = new Demuxer({ inputFile: 'input.mp4') });
+ * input.on('ready', () => {
+ *  const audioInput = new AudioDecoder(input.audio[0]);
+ *  const videoInput = new VideoDecoder(input.video[0]);
+ * });
+ */
 export class Demuxer extends EventEmitter {
   protected inputFile: string;
   protected formatContext: any;

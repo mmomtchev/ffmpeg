@@ -7,6 +7,11 @@ const { AudioEncoderContext, AudioSamples } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
+/**
+ * An AudioEncoder is Transform stream that can read raw audio samples
+ * and write encoded audio data to a Muxer.
+ * Its parameters must be explicitly configured.
+ */
 export class AudioEncoder extends Transform {
   protected def: AudioStreamDefinition;
   protected encoder: any;

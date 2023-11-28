@@ -7,6 +7,11 @@ const { AudioDecoderContext, Codec } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
+/**
+ * An AudioDecoder is Transform stream that can read raw encoded audio data
+ * from a Demuxer and write decoded audio samples
+ * Its parameters are inherited from the Demuxer.
+ */
 export class AudioDecoder extends Transform {
   protected decoder: any;
   protected busy: boolean;
