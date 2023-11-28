@@ -10,15 +10,17 @@ import { VideoEncoder } from '../lib/VideoEncoder';
 import { VideoDecoder } from '../lib/VideoDecoder';
 import { AudioDecoder } from '../lib/AudioDecoder';
 import { AudioEncoder } from '../lib/AudioEncoder';
-import { rmSync } from 'node:fs';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
-const tempFile = path.resolve(__dirname, 'data', 'temp.mp4');
+const tempFile = path.resolve(__dirname, 'temp.mp4');
 
 describe('Transcode with multiplexing', () => {
   afterEach('delete temporary', (done) => {
-    fs.rm(tempFile, done);
+    if (!process.env.DEBUG_ALL && !process.env.DEBUG_MUXER)
+      fs.rm(tempFile, done);
+    else
+      done();
   });
   it('Transcode video / audio', (done) => {
     const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });

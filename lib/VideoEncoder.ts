@@ -69,10 +69,14 @@ export class VideoEncoder extends Transform {
   _flush(callback: TransformCallback): void {
     verbose('VideoEncoder: flushing');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
-    this.encoder.finalizeAsync()
-      .then((pkt: any) => this.push(pkt))
-      .then(() => void callback())
-      .catch(callback);
+    let packet: any;
+    (async () => {
+      do {
+        packet = await this.encoder.finalizeAsync();
+        this.push(packet);
+      } while (packet && packet.isComplete());
+      callback();
+    })().catch(callback);
   }
 
   coder(): any {

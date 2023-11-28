@@ -109,7 +109,7 @@ export class Muxer extends EventEmitter {
 
     this.writingQueue.push({ idx, packet, callback });
     if (this.writing) {
-      verbose(`Muxer: enqueuing for writing on #${idx}, pts=${packet.pts()}`);
+      verbose(`Muxer: enqueuing for writing on #${idx}, pts=${packet.pts()}, queue length ${this.writingQueue.length}`);
       return;
     }
 
