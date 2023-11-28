@@ -300,7 +300,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::setQuality>("setQuality")
       .def<&VideoFrame::streamIndex>("streamIndex")
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
-      .ext<&ReturnBuffer<VideoFrame>>("data")
+      .ext<&CopyFrameToBuffer>("data")
       .ext<&ToString<VideoFrame>>("toString");
 
   m.def<AudioSamples>("AudioSamples")
@@ -323,8 +323,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioSamples::refCount>("refCount")
       .def<&AudioSamples::streamIndex>("streamIndex")
       .def<&AudioSamples::setStreamIndex>("setStreamIndex")
-      .ext<&ReturnBuffer<AudioSamples>>("data")
-      .ext<&ReturnBufferPlane<AudioSamples>>("dataPlane")
+      .ext<&ReturnBufferPlane<AudioSamples>>("data")
       .ext<&ToString<AudioSamples>>("toString");
 
   m.def<Timestamp>("Timestamp")

@@ -4,26 +4,20 @@ import * as fs from 'node:fs';
 import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
-import { Muxer } from '../lib/Muxer';
-import { Demuxer } from '../lib/Demuxer';
-import { VideoEncoder } from '../lib/VideoEncoder';
-import { VideoDecoder } from '../lib/VideoDecoder';
-import { AudioDecoder } from '../lib/AudioDecoder';
-import { AudioEncoder } from '../lib/AudioEncoder';
-import { Discarder } from '../lib/Discarder';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, Discarder } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
 const tempFile = path.resolve(__dirname, 'temp.mp4');
 
-describe('Transcode with multiplexing', () => {
+describe('transcode', () => {
   afterEach('delete temporary', (done) => {
     if (!process.env.DEBUG_ALL && !process.env.DEBUG_MUXER)
       fs.rm(tempFile, done);
     else
       done();
   });
-  it('Transcode video / audio', (done) => {
+  it('audio / video multiplexing', (done) => {
     const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
     input.on('ready', () => {
@@ -61,12 +55,10 @@ describe('Transcode with multiplexing', () => {
 
         let audioDone = false, videoDone = false;
         output.video[0].on('finish', () => {
-          console.log('video done');
           videoDone = true;
           if (audioDone) done();
         });
         output.audio[0].on('finish', () => {
-          console.log('audio done');
           audioDone = true;
           if (videoDone) done();
         });
@@ -84,7 +76,7 @@ describe('Transcode with multiplexing', () => {
     });
   });
 
-  it('Transcode only video', (done) => {
+  it('only video', (done) => {
     const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
     input.on('ready', () => {
@@ -124,7 +116,7 @@ describe('Transcode with multiplexing', () => {
     });
   });
 
-  it('Transcode only audio', (done) => {
+  it('only audio', (done) => {
     const input = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
     input.on('ready', () => {

@@ -8,7 +8,8 @@
     {
       'target_name': 'node-ffmpeg-avcpp',
       'sources': [
-        'src/avcpp-nobind.cc'
+        'src/avcpp-nobind.cc',
+        'src/avcpp-frame.cc'
       ],
       'include_dirs': [
         '<!@(node -p "require(\'node-addon-api\').include")',

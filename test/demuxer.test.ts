@@ -3,9 +3,7 @@ import * as path from 'node:path';
 import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
-import { Demuxer } from '../lib/Demuxer';
-import { AudioDecoder } from '../lib/AudioDecoder';
-import { VideoDecoder } from '../lib/VideoDecoder';
+import { Demuxer, AudioDecoder, VideoDecoder } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -38,13 +36,11 @@ describe('Demuxer', () => {
 
         videoStream.on('close', () => {
           assert.isAtLeast(videoFrames, 100);
-          console.log(`Received ${videoFrames} video frames`);
           videoClosed = true;
           if (audioClosed) done();
         });
         audioStream.on('close', () => {
           assert.isAtLeast(audioFrames, 100);
-          console.log(`Received ${audioFrames} audio frames`);
           audioClosed = true;
           if (videoClosed) done();
         });

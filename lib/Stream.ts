@@ -1,5 +1,3 @@
-import { Writable } from "node:stream";
-
 export const StreamTypes = {
   'Audio': 'Audio',
   'Video': 'Video',
@@ -38,3 +36,11 @@ export function isVideoDefinition(def: StreamDefinition): def is VideoStreamDefi
 export function isAudioDefinition(def: StreamDefinition): def is AudioStreamDefinition {
   return def.type === 'Audio';
 }
+
+export { Muxer } from '../lib/Muxer';
+export { Demuxer } from '../lib/Demuxer';
+export { VideoEncoder } from '../lib/VideoEncoder';
+export { VideoDecoder } from '../lib/VideoDecoder';
+export { AudioDecoder } from '../lib/AudioDecoder';
+export { AudioEncoder } from '../lib/AudioEncoder';
+export { Discarder } from '../lib/Discarder';
