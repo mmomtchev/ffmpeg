@@ -28,11 +28,15 @@ it('extract a still', (done) => {
           // Import in ImageMagick
           const blob = new Magick.Blob(frame.data().buffer);
           const image = new Magick.Image;
-          assert.strictEqual(frame.data().length, frame.width() * frame.height() * 1.5);
-          image.magick('yuv');
+
+          assert.strictEqual(frame.data().length, frame.width() * frame.height() * frame.pixelFormat().bitsPerPixel() / 8);
           image.size(`${frame.width()}x${frame.height()}`);
+
+          assert.strictEqual(frame.pixelFormat().toString(), 'yuv420p');
+          image.magick('yuv');
           image.depth(8);
           image.samplingFactor('4:2:0');
+
           image.read(blob);
           assert.strictEqual(image.size().toString(), `${frame.width()}x${frame.height()}`);
 
