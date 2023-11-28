@@ -339,6 +339,16 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
 
+  m.def<VideoRescaler>("VideoRescaler")
+      .cons<int, int, PixelFormat, int, int, PixelFormat, int>()
+      .def<&VideoRescaler::srcWidth>("srcWidth")
+      .def<&VideoRescaler::srcHeight>("srcHeight")
+      .def<&VideoRescaler::srcPixelFormat>("srcPixelFormat")
+      .def<&VideoRescaler::dstWidth>("dstWidth")
+      .def<&VideoRescaler::dstHeight>("dstHeight")
+      .def<&VideoRescaler::dstPixelFormat>("dstPixelFormat")
+      .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale)>("rescale");
+
   m.def<&SetLogLevel>("setLogLevel");
   av::init();
 #ifdef DEBUG
