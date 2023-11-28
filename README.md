@@ -12,6 +12,12 @@ Producing a completely safe wrapper that never segfaults no matter what the user
 
 The current goal is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
 
+## Performance
+
+All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools. Background processing is provided via the `libuv` thread pool of Node.js - which means that, at least in theory - you can be decoding and encoding on two different cores while V8/JavaScript runs on a third core. In practice, you need huge buffers for this to actually be the case.
+
+If you need to access the actual video data, then, depending on the applied processing, performance may be an order of magnitude lower.
+
 # Usage
 
 ## Streams API
