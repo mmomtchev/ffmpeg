@@ -24,14 +24,14 @@ export class AudioEncoder extends Transform {
     this.codec = ffmpeg.findEncodingCodec(this.def.codec);
     verbose(`AudioEncoder: using ${this.codec.name()}`);
     this.encoder = new AudioEncoderContext(this.codec);
-    this.encoder.setSampleRate(this.def.sampleRate);
-    this.encoder.setSampleFormat(this.def.sampleFormat);
-    this.encoder.setChannelLayout(this.def.channelLayout);
     if (this.def.timeBase)
       this.encoder.setTimeBase(this.def.timeBase);
     else
       this.encoder.setTimeBase(new ffmpeg.Rational(1, 1000));
     this.encoder.setBitRate(this.def.bitRate);
+    this.encoder.setChannelLayout(this.def.channelLayout);
+    this.encoder.setSampleFormat(this.def.sampleFormat);
+    this.encoder.setSampleRate(this.def.sampleRate);
     this.busy = false;
   }
 
@@ -49,7 +49,7 @@ export class AudioEncoder extends Transform {
   }
 
   _transform(samples: any, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('AudioEncoder: encoding frame');
+    verbose('AudioEncoder: encoding samples');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     (async () => {
       this.busy = true;

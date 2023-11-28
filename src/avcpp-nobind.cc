@@ -169,7 +169,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioDecoderContext::setBitRate>("setBitRate")
       .def<&AudioDecoderContext::sampleFormat>("sampleFormat")
       .def<&AudioDecoderContext::setSampleFormat>("setSampleFormat")
-      .def<&AudioDecoderContext::channelLayout>("channelLayout")
+      .def<&AudioDecoderContext::channelLayout2>("channelLayout")
       .def<static_cast<void (av::AudioCodecContext<AudioDecoderContext, Direction::Decoding>::*)(ChannelLayout)>(
           &AudioDecoderContext::setChannelLayout)>("setChannelLayout")
       .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
@@ -200,7 +200,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioEncoderContext::setBitRate>("setBitRate")
       .def<&AudioEncoderContext::sampleFormat>("sampleFormat")
       .def<&AudioEncoderContext::setSampleFormat>("setSampleFormat")
-      .def<&AudioEncoderContext::channelLayout>("channelLayout")
+      .def<&AudioEncoderContext::channelLayout2>("channelLayout")
       .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
           &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
       .def<&AudioEncoderContext::codec>("codec")
@@ -244,8 +244,11 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<ChannelLayout>("ChannelLayout")
       .cons<int>()
       .cons<const char *>()
+      .cons<const ChannelLayoutView &>()
       .def<&ChannelLayout::channels>("channels")
       .def<&ChannelLayout::layout>("layout");
+
+  m.def<ChannelLayoutView>("ChannelLayoutView");
 
   m.def<Stream>("Stream")
       .def<&Stream::isNull>("isNull")

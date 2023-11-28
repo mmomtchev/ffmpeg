@@ -69,7 +69,8 @@ export class AudioDecoder extends Transform {
       bitRate: this.decoder.bitRate(),
       codec: this.decoder.codec(),
       sampleFormat: this.decoder.sampleFormat(),
-      sampleRate: this.decoder.sampleFormat()
+      sampleRate: this.decoder.sampleRate(),
+      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout())
     } as AudioStreamDefinition;
   }
 }
