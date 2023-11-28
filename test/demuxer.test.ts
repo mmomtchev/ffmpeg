@@ -21,8 +21,8 @@ describe('Demuxer', () => {
         assert.lengthOf(input.audio, 1);
         assert.lengthOf(input.video, 1);
 
-        const audioStream = new AudioDecoder();
-        const videoStream = new VideoDecoder();
+        const audioStream = new AudioDecoder(input.audio[0]);
+        const videoStream = new VideoDecoder(input.video[0]);
 
         audioStream.on('data', (data) => {
           assert.instanceOf(data, ffmpeg.AudioSamples);

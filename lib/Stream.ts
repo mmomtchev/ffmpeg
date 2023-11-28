@@ -1,3 +1,4 @@
+import { Writable } from "node:stream";
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -11,7 +12,7 @@ export type StreamType = keyof typeof StreamTypes;
 export interface StreamDefinition {
   type: StreamType;
   bitRate: number;
-  codec: BigInt;
+  codec: number;
   timeBase?: any;
 }
 
@@ -28,12 +29,6 @@ export interface AudioStreamDefinition extends StreamDefinition {
   channelLayout: any;
   sampleFormat: any;
   sampleRate: any;
-}
-
-export interface MuxerChunk {
-  packet: any;
-  streamIndex: any;
-  _stream: any;
 }
 
 export function isVideoDefinition(def: StreamDefinition): def is VideoStreamDefinition {

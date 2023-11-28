@@ -5,13 +5,13 @@ import { TransformCallback } from 'stream';
 
 const { VideoEncoderContext, Codec, VideoFrame } = ffmpeg;
 
-export const verbose = process.env.DEBUG_VIDEO_ENCODER ? console.debug.bind(console) : () => undefined;
+export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export class VideoEncoder extends Transform {
   protected def: VideoStreamDefinition;
   protected encoder: any;
   protected codec: any;
-  protected outputPriming: (() => Promise<void>) | null;
+  protected busy: boolean;
 
   constructor(def: VideoStreamDefinition) {
     super({ objectMode: true });
@@ -27,23 +27,27 @@ export class VideoEncoder extends Transform {
       this.encoder.setTimeBase(new ffmpeg.Rational(1, 1000));
     this.encoder.setBitRate(this.def.bitRate);
     this.encoder.setPixelFormat(this.def.pixelFormat);
-    this.outputPriming = null;
+    this.busy = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
+      this.busy = true;
       verbose('VideoEncoder: priming the encoder');
       await this.encoder.openCodecAsync(this.codec);
       verbose(`VideoEncoder: encoder primed, codec ${this.codec.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, pixelFormat: ${this.encoder.pixelFormat()}, ` +
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
+      this.busy = false;
     })().then(() => void callback()).then(() => this.emit('ready')).catch(callback);
   }
 
   _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('VideoEncoder: encoding frame');
+    if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     (async () => {
+      this.busy = true;
       if (!this.encoder) {
         return void callback(new Error('VideoEncoder is not primed'));
       }
@@ -53,40 +57,29 @@ export class VideoEncoder extends Transform {
       if (!frame.isComplete()) {
         return void callback(new Error('Received incomplete frame'));
       }
-      if (this.outputPriming) {
-        if (!frame.isKeyFrame()) {
-          verbose('VideoEncoder: discarding initial B-frame');
-          return;
-        }
-        verbose('VideoEncoder: waiting for output to prime');
-        await this.outputPriming();
-        this.outputPriming = null;
-      }
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       frame.setTimeBase(this.encoder.timeBase());
       const packet = await this.encoder.encodeAsync(frame);
       verbose(`VideoEncoder: frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
+      this.busy = false;
     })().then(() => void callback()).catch(callback);
   }
 
   _flush(callback: TransformCallback): void {
     verbose('VideoEncoder: flushing');
+    if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     this.encoder.finalizeAsync()
       .then((pkt: any) => this.push(pkt))
       .then(() => void callback())
       .catch(callback);
   }
 
-  getEncoder(): any {
+  coder(): any {
     return this.encoder;
   }
 
-  getDefinition(): VideoStreamDefinition {
+  definition(): VideoStreamDefinition {
     return this.def;
-  }
-
-  setOutputPriming(primer: () => Promise<void>) {
-    this.outputPriming = primer;
   }
 }

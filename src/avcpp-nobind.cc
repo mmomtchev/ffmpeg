@@ -81,6 +81,7 @@ NOBIND_MODULE(ffmpeg, m) {
           &FormatContext::addStream)>("addVideoStream")
       .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addAudioStream")
+      .def<static_cast<Stream (FormatContext::*)(OptionalErrorCode)>(&FormatContext::addStream)>("addStream")
       .def<&FormatContext::dump>("dump")
       .def<&FormatContext::dump, Nobind::ReturnAsync>("dumpAsync")
       .def<&FormatContext::flush>("flush")
@@ -113,6 +114,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoDecoderContext::setBitRate>("setBitRate")
       .def<&VideoDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&VideoDecoderContext::setRefCountedFrames>("setRefCountedFrames")
+      .def<&VideoDecoderContext::codec>("codec")
       // This an inherited overloaded method, it must be cast to its base class type
       // C++ does not allow to cast it to the inheriting class type
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>("open")
@@ -141,6 +143,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoEncoderContext::setTimeBase>("setTimeBase")
       .def<&VideoEncoderContext::bitRate>("bitRate")
       .def<&VideoEncoderContext::setBitRate>("setBitRate")
+      .def<&VideoEncoderContext::codec>("codec")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
           "openCodec")
@@ -171,6 +174,7 @@ NOBIND_MODULE(ffmpeg, m) {
           &AudioDecoderContext::setChannelLayout)>("setChannelLayout")
       .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&AudioDecoderContext::setRefCountedFrames>("setRefCountedFrames")
+      .def<&AudioDecoderContext::codec>("codec")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
           "openCodec")
@@ -199,6 +203,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioEncoderContext::channelLayout>("channelLayout")
       .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
           &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
+      .def<&AudioEncoderContext::codec>("codec")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
           "openCodec")

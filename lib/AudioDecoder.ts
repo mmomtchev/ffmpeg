@@ -1,43 +1,70 @@
 import { Transform } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk } from './Stream';
+import { AudioStreamDefinition } from './Stream';
 import { TransformCallback } from 'stream';
 
 const { AudioDecoderContext, Codec } = ffmpeg;
 
-export const verbose = process.env.DEBUG_AUDIO_DECODER ? console.debug.bind(console) : () => undefined;
+export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export class AudioDecoder extends Transform {
   protected decoder: any;
+  protected busy: boolean;
 
-  constructor() {
+  constructor(options: { _stream: any; }) {
     super({ objectMode: true });
     this.decoder = null;
+    if (!options._stream) {
+      throw new Error('Input is not a demuxed stream');
+    }
+    if (!options._stream.isAudio()) {
+      throw new Error('Input is not video');
+    }
+    this.decoder = new AudioDecoderContext(options._stream);
+    this.decoder.setRefCountedFrames(true);
+    this.busy = false;
   }
 
-  _transform(chunk: MuxerChunk, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('AudioDecoder: start of _transform');
+  _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
-      if (!this.decoder) {
-        verbose('AudioDecoder: priming the decoder');
-        if (!chunk._stream) {
-          return void callback(new Error('Input is not a demuxed stream'));
-        }
-        if (!chunk._stream.isAudio()) {
-          return void callback(new Error('Input is not audio'));
-        }
-        this.decoder = new AudioDecoderContext(chunk._stream);
-        await this.decoder.openCodecAsync(new Codec);
-        verbose('AudioDecoder: decoder primed');
-      }
+      this.busy = true;
+      verbose('AudioDecoder: priming the decoder');
+      await this.decoder.openCodecAsync(new Codec);
+      verbose('AudioDecoder: decoder primed');
+      this.busy = false;
+      this.emit('ready');
+      callback();
+    })().catch(callback);
+  }
 
-      const samples = await this.decoder.decodeAsync(chunk.packet);
+  _transform(packet: any, encoding: BufferEncoding, callback: TransformCallback): void {
+    if (this.busy) return void callback(new Error('Decoder called while busy'));
+    verbose('AudioDecoder: decoding chunk');
+    (async () => {
+      this.busy = true;
+      const samples = await this.decoder.decodeAsync(packet);
       if (samples.isComplete()) {
         verbose(`AudioDecoder: Decoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
         this.push(samples);
+      } else {
+        verbose('AudioDecoder: empty frame');
       }
-      verbose('AudioDecoder: end of _transform');
+      this.busy = false;
       callback();
     })().catch(callback);
+  }
+
+  coder() {
+    return this.decoder;
+  }
+
+  definition(): AudioStreamDefinition {
+    return {
+      type: 'Audio',
+      bitRate: this.decoder.bitRate(),
+      codec: this.decoder.codec(),
+      sampleFormat: this.decoder.sampleFormat(),
+      sampleRate: this.decoder.sampleFormat()
+    } as AudioStreamDefinition;
   }
 }

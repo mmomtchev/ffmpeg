@@ -1,23 +1,35 @@
 import { EventEmitter, Readable, ReadableOptions } from 'node:stream';
 import ffmpeg from '..';
-import { MuxerChunk } from './Stream';
 
 const { FormatContext } = ffmpeg;
 
-export const verbose = process.env.DEBUG_DEMUXER ? console.debug.bind(console) : () => undefined;
+export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export interface DemuxerOptions extends ReadableOptions {
   inputFile: string;
   objectMode?: never;
 }
 
+interface DemuxedStreamOptions extends ReadableOptions {
+  _stream?: any;
+}
+
+class DemuxedStream extends Readable {
+  _stream: any;
+
+  constructor(options: DemuxedStreamOptions) {
+    super(options);
+    this._stream = options._stream;
+  }
+}
+
 export class Demuxer extends EventEmitter {
   protected inputFile: string;
   protected formatContext: any;
   protected rawStreams: any[];
-  streams: Readable[];
-  video: Readable[];
-  audio: Readable[];
+  streams: DemuxedStream[];
+  video: DemuxedStream[];
+  audio: DemuxedStream[];
   reading: boolean;
 
   constructor(options: DemuxerOptions) {
@@ -42,11 +54,12 @@ export class Demuxer extends EventEmitter {
       verbose(`Demuxer: identified stream ${i}: ${stream.mediaType()}, ` +
         `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''} ` +
         `duration ${stream.duration().toString()}`);
-      this.streams[i] = new Readable({
+      this.streams[i] = new DemuxedStream({
         objectMode: true,
         read: (size: number) => {
           this.read(i, size);
-        }
+        },
+        _stream: stream
       });
       this.rawStreams[i] = stream;
       if (stream.isVideo()) this.video.push(this.streams[i]);
@@ -83,10 +96,7 @@ export class Demuxer extends EventEmitter {
         // Decrement only if this is going to the stream that requested data
         if (idx === pkt.streamIndex()) size--;
         // But always push to whoever the packet was for
-        this.streams[pkt.streamIndex()].push({
-          packet: pkt,
-          _stream: this.rawStreams[pkt.streamIndex()]
-        } as MuxerChunk);
+        this.streams[pkt.streamIndex()].push(pkt);
       } while (!pkt.isNull() && size > 0);
       verbose('Demuxer: end of _read');
     })()
