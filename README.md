@@ -29,6 +29,7 @@ You should start by looking at the unit tests:
   * [`extract.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
   * [`encode.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
   * [`rescale.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/rescale.test.ts) contains a simple example for rescaling/resampling a video using ffmpeg's built-in `libswscale`
+  * [`resample.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
 
 ## Supported pixel and audio formats
 
