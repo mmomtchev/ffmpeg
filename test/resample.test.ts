@@ -8,7 +8,7 @@ import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder, 
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
-const tempFile = path.resolve(__dirname, 'resampled.mp4');
+const tempFile = path.resolve(__dirname, 'resampled.mkv');
 
 describe('transcode', () => {
   afterEach('delete temporary', (done) => {
@@ -47,7 +47,7 @@ describe('transcode', () => {
           input: audioInputDefintion
         });
 
-        const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });
+        const output = new Muxer({ outputFile: tempFile, outputFormat: 'mkv', streams: [audioOutput] });
 
         output.audio[0].on('finish', () => {
           done();

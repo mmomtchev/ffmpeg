@@ -7,6 +7,7 @@ export const verbose = (process.env.DEBUG_MUXER || process.env.DEBUG_ALL) ? cons
 
 export interface MuxerOptions extends WritableOptions {
   outputFile: string;
+  outputFormat?: string;
   streams: any[];
   objectMode?: never;
 }
@@ -22,6 +23,7 @@ export interface MuxerOptions extends WritableOptions {
  */
 export class Muxer extends EventEmitter {
   protected outputFile: string;
+  protected outputFormatName: string;
   protected outputFormat: any;
   protected formatContext: any;
   protected rawStreams: any;
@@ -36,6 +38,7 @@ export class Muxer extends EventEmitter {
   constructor(options: MuxerOptions) {
     super();
     this.outputFile = options.outputFile;
+    this.outputFormatName = options.outputFormat ?? '';
     this.rawStreams = options.streams;
     this.streams = [];
     this.audio = [];
@@ -79,7 +82,7 @@ export class Muxer extends EventEmitter {
   protected async prime(): Promise<void> {
     verbose(`Muxer: opening ${this.outputFile}`);
     this.outputFormat = new OutputFormat;
-    this.outputFormat.setFormat('', this.outputFile, '');
+    this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
     this.formatContext = new FormatContext;
     this.formatContext.setOutputFormat(this.outputFormat);
 
