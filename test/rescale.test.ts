@@ -5,7 +5,7 @@ import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
 import { Transform } from 'node:stream';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder } from '../lib/Stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -42,24 +42,11 @@ describe('transcode', () => {
           pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
         });
 
-        const videoRescaler = new ffmpeg.VideoRescaler(
-          320, 200, new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P),
-          videoDefintion.width, videoDefintion.height, videoDefintion.pixelFormat,
-          ffmpeg.SWS_BILINEAR
-        );
-
         // A standard Transform stream that rescales/resamples the video
-        const rescale = new Transform({
-          objectMode: true,
-          transform(chunk, encoding, callback) {
-            try {
-              const frame = videoRescaler.rescale(chunk);
-              this.push(frame);
-              callback();
-            } catch (err) {
-              callback(err as Error);
-            }
-          }
+        const videoRescaler = new VideoTransform({
+          srcWidth: 320, srcHeight: 200, srcPixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P),
+          dstWidth: videoDefintion.width, dstHeight: videoDefintion.height, dstPixelFormat: videoDefintion.pixelFormat,
+          interpolation: ffmpeg.SWS_BILINEAR
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
@@ -72,7 +59,7 @@ describe('transcode', () => {
         input.audio[0].on('error', done);
         output.video[0].on('error', done);
 
-        input.video[0].pipe(videoInput).pipe(rescale).pipe(videoOutput).pipe(output.video[0]);
+        input.video[0].pipe(videoInput).pipe(videoRescaler).pipe(videoOutput).pipe(output.video[0]);
         input.audio[0].pipe(audioDiscard);
       } catch (err) {
         done(err);

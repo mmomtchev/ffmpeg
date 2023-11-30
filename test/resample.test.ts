@@ -4,8 +4,7 @@ import * as fs from 'node:fs';
 import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
-import { Transform } from 'node:stream';
-import { Muxer, Demuxer, AudioDecoder, AudioEncoder, Discarder } from '../lib/Stream';
+import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -41,41 +40,14 @@ describe('transcode', () => {
           channelLayout: new ffmpeg.ChannelLayout(ffmpeg.AV_CH_LAYOUT_STEREO)
         });
 
-        const audioResampler = new ffmpeg.AudioResampler(
-          ffmpeg.AV_CH_LAYOUT_STEREO, 44100, new ffmpeg.SampleFormat(ffmpeg.AV_SAMPLE_FMT_FLTP),
-          audioDefintion.channelLayout.layout(), audioDefintion.sampleRate, audioDefintion.sampleFormat
-        );
-
         // A standard Transform stream that resamples the audio
-        const resample = new Transform({
-          objectMode: true,
-          transform(chunk, encoding, callback) {
-            try {
-              audioResampler.push(chunk);
-              let samples;
-              // At each tick we are sending 1024 samples and we are getting 941 samples
-              // audioResampler has an internal buffer that does the necessary queuing automatically
-              while (!(samples = audioResampler.pop(1024)).isNull()) {
-                this.push(samples);
-              }
-              callback();
-            } catch (err) {
-              callback(err as Error);
-            }
-          },
-          flush(callback) {
-            let samples;
-            try {
-              while (!(samples = audioResampler.pop(1024)).isNull()) {
-                this.push(samples);
-              }
-              samples = audioResampler.pop(0);
-              if (!samples.isNull) this.push(samples);
-              callback();
-            } catch (err) {
-              callback(err as Error);
-            }
-          },
+        const audioResampler = new AudioTransform({
+          dstChannelLayout: ffmpeg.AV_CH_LAYOUT_STEREO,
+          dstSampleRate: 44100,
+          dstSampleFormat: new ffmpeg.SampleFormat(ffmpeg.AV_SAMPLE_FMT_FLTP),
+          srcChannelLayout: audioDefintion.channelLayout.layout(),
+          srcSampleRate: audioDefintion.sampleRate,
+          srcSampleFormat: audioDefintion.sampleFormat
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });
@@ -89,7 +61,7 @@ describe('transcode', () => {
         output.audio[0].on('error', done);
 
         input.video[0].pipe(videoDiscard);
-        input.audio[0].pipe(audioInput).pipe(resample).pipe(audioOutput).pipe(output.audio[0]);
+        input.audio[0].pipe(audioInput).pipe(audioResampler).pipe(audioOutput).pipe(output.audio[0]);
       } catch (err) {
         done(err);
       }

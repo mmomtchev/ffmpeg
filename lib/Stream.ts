@@ -37,10 +37,12 @@ export function isAudioDefinition(def: StreamDefinition): def is AudioStreamDefi
   return def.type === 'Audio';
 }
 
-export { Muxer } from '../lib/Muxer';
-export { Demuxer } from '../lib/Demuxer';
-export { VideoEncoder } from '../lib/VideoEncoder';
-export { VideoDecoder } from '../lib/VideoDecoder';
-export { AudioDecoder } from '../lib/AudioDecoder';
-export { AudioEncoder } from '../lib/AudioEncoder';
-export { Discarder } from '../lib/Discarder';
+export { Muxer } from './Muxer';
+export { Demuxer } from './Demuxer';
+export { VideoEncoder } from './VideoEncoder';
+export { VideoDecoder } from './VideoDecoder';
+export { VideoTransform } from './VideoTransform';
+export { AudioDecoder } from './AudioDecoder';
+export { AudioEncoder } from './AudioEncoder';
+export { AudioTransform } from './AudioTransform';
+export { Discarder } from './Discarder';
