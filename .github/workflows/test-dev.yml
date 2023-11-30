@@ -13,11 +13,14 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        platform: [ubuntu-latest]
+        node-version: [18.x, 20.x]
+        platform: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
@@ -28,6 +31,10 @@ jobs:
       with:
         path: ~/.conan
         key: ${{ matrix.platform }}
-    - run: npm ci
-    - run: npx node-gyp configure build
+    - run: npm install --ignore-scripts --production
+    - run: npx node-pre-gyp configure --debug
+    - name: Show conan output
+      run: cat build/conan.log
+    - run: npx node-pre-gyp build
+    - run: npm install
     - run: npm test

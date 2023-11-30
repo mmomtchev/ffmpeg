@@ -4,7 +4,7 @@ import { Magick } from 'magickwand.js';
 
 import { assert } from 'chai';
 
-import ffmpeg from 'node-av';
+import ffmpeg from 'node-ffmpeg';
 import { Demuxer, VideoDecoder, Discarder } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);

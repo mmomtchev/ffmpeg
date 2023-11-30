@@ -20,6 +20,12 @@ If you need to access the actual video data, then, depending on the applied proc
 
 # Usage
 
+## Install
+
+Currently the only way to get `node-ffmpeg` is to build it from source using `node-pre-gyp` which will be automatically called by `npm install`.
+
+This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${USER}/.conan` which can be safely deleted.
+
 ## Streams API
 
 The easiest way to use `node-ffmpeg` is the high-level streams API.

@@ -6,12 +6,12 @@
     "target": "es2015",
     "esModuleInterop": true,
     "paths": {
-      "node-av": [
+      "node-ffmpeg": [
         "."
       ]
     }
   },
   "exclude": [
-    "node_modules",
+    "node_modules"
   ]
 }

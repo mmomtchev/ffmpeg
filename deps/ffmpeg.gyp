@@ -1,12 +1,26 @@
 {
   'targets': [
     {
-      'variables': {
-        'conaninfo': '<!(pip3 install --user "conan<2.0.0"'
-          ' && cd ../build'
-          ' && python3 -m conans.conan install .. -pr:b=../conan.profile -pr:h=../conan.profile -of build --build=nolibx265 --build=missing'
-          ' > conan.log 2>&1 )'
-      },
+      'conditions': [
+        ['OS == "win"', {
+          'variables': {
+            'conaninfo': '<!(python -m pip install --user "conan"'
+              ' && cd ../build'
+              ' && python -m conans.conan profile detect'
+              ' && python -m conans.conan install .. -of build --build'
+              ' > conan.log 2>&1 )'
+            }
+        }],
+        ['OS != "win"', {
+          'variables': {
+            'conaninfo': '<!(python3 -m pip install --user "conan"'
+              ' && cd ../build'
+              ' && python3 -m conans.conan profile detect'
+              ' && python3 -m conans.conan install .. -of build --build'
+              ' > conan.log 2>&1 )'
+            }
+        }]
+      ],
       'target_name': 'ffmpeg',
       'direct_dependent_settings': {
         'include_dirs': [

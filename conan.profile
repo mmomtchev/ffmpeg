@@ -10,6 +10,7 @@ compiler.version=11
 # (if you do not know the C++ ABI changed in gcc 5
 # https://developers.redhat.com/blog/2015/02/05/gcc5-and-the-c11-abi )
 compiler.libcxx=libstdc++11
+build_type=Release
 
 [options]
 

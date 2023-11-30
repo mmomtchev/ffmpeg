@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import { assert } from 'chai';
 
-import ffmpeg from 'node-av';
+import ffmpeg from 'node-ffmpeg';
 import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
