@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/mmomtchev/node-ffmpeg#readme",
   "dependencies": {
-    "nobind17": "^1.0.0",
+    "nobind17": "^1.1.0",
     "node-addon-api": "^7.0.0"
   },
   "devDependencies": {
