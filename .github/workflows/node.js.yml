@@ -1,0 +1,33 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        platform: [ubuntu-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Cache conan artifacts
+      id: conan-artifacts
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan
+        key: ${{ matrix.platform }}
+    - run: npm ci
+    - run: npx node-gyp configure build
+    - run: npm test
