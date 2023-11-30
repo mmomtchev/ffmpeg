@@ -5,7 +5,7 @@ import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
 import { Transform } from 'node:stream';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, Discarder } from '../lib/Stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -39,11 +39,11 @@ describe('transcode', () => {
           width: 320,
           height: 200,
           frameRate: new ffmpeg.Rational(25, 1),
-          pixelFormat: new ffmpeg.PixelFormat('yuv422p')
+          pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YVYU422)
         });
 
         const videoRescaler = new ffmpeg.VideoRescaler(
-          320, 200, new ffmpeg.PixelFormat('yuv422p'),
+          320, 200, new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YVYU422),
           videoDefintion.width, videoDefintion.height, videoDefintion.pixelFormat,
           ffmpeg.SWS_BILINEAR
         );
@@ -65,7 +65,7 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
 
         output.video[0].on('finish', () => {
-          done()
+          done();
         });
 
         input.video[0].on('error', done);

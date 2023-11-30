@@ -227,6 +227,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<PixelFormat>("PixelFormat")
           .cons<const std::string &>()
+          .cons<AVPixelFormat>()
           .def<&PixelFormat::name>("name")
           .def<&PixelFormat::planesCount>("planesCount")
           .def<&PixelFormat::bitsPerPixel>("bitsPerPixel")
@@ -235,6 +236,7 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.def<SampleFormat>("SampleFormat")
           .cons<const std::string &>()
+          .cons<AVSampleFormat>()
           .def<&SampleFormat::name>("name")
           .def<&SampleFormat::bytesPerSample>("bytesPerSample")
           .def<&SampleFormat::bitsPerSample>("bitsPerSample")
@@ -242,7 +244,7 @@ NOBIND_MODULE(ffmpeg, m) {
           .def < &SampleFormat::operator AVSampleFormat>("get");
 
   m.def<ChannelLayout>("ChannelLayout")
-      .cons<int>()
+      .cons<std::bitset<64>>()
       .cons<const char *>()
       .cons<const ChannelLayoutView &>()
       .def<&ChannelLayout::channels>("channels")
@@ -310,6 +312,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioSamples::isComplete>("isComplete")
       .def<&AudioSamples::pts>("pts")
       .def<static_cast<void (av::Frame<av::AudioSamples>::*)(const Timestamp &)>(&AudioSamples::setPts)>("setPts")
+      .def<&AudioSamples::samplesCount>("samplesCount")
       .def<&AudioSamples::timeBase>("timeBase")
       .def<&AudioSamples::setTimeBase>("setTimeBase")
       .def<&AudioSamples::sampleRate>("sampleRate")
@@ -347,7 +350,21 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoRescaler::dstWidth>("dstWidth")
       .def<&VideoRescaler::dstHeight>("dstHeight")
       .def<&VideoRescaler::dstPixelFormat>("dstPixelFormat")
-      .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale)>("rescale");
+      .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale)>(
+          "rescale");
+
+  m.def<AudioResampler>("AudioResampler")
+      .cons<uint64_t, int, SampleFormat, uint64_t, int, SampleFormat>()
+      .def<&AudioResampler::dstChannelLayout>("dstChannelLayout")
+      .def<&AudioResampler::dstChannels>("dstChannels")
+      .def<&AudioResampler::dstSampleRate>("dstSampleRate")
+      .def<&AudioResampler::srcSampleFormat>("srcSampleFormat")
+      .def<&AudioResampler::srcChannelLayout>("srcChannelLayout")
+      .def<&AudioResampler::srcChannels>("srcChannels")
+      .def<&AudioResampler::srcSampleRate>("srcSampleRate")
+      .def<&AudioResampler::srcSampleFormat>("srcSampleFormat")
+      .def<&AudioResampler::push>("push")
+      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop");
 
   m.def<&SetLogLevel>("setLogLevel");
   av::init();
