@@ -4,7 +4,7 @@ import * as fs from 'node:fs';
 import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
-import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder } from '../lib/Stream';
+import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder, AudioStreamDefinition } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -29,25 +29,22 @@ describe('transcode', () => {
 
         const videoDiscard = new Discarder();
         const audioInput = new AudioDecoder(input.audio[0]);
-        const audioDefintion = audioInput.definition();
+        const audioInputDefintion = audioInput.definition();
 
-        const audioOutput = new AudioEncoder({
+        const audioOutputDefinition = {
           type: 'Audio',
           codec: ffmpeg.AV_CODEC_AAC,
           bitRate: 128e3,
           sampleFormat: new ffmpeg.SampleFormat(ffmpeg.AV_SAMPLE_FMT_FLTP),
           sampleRate: 44100,
           channelLayout: new ffmpeg.ChannelLayout(ffmpeg.AV_CH_LAYOUT_STEREO)
-        });
+        } as AudioStreamDefinition;
+        const audioOutput = new AudioEncoder(audioOutputDefinition);
 
         // A standard Transform stream that resamples the audio
         const audioResampler = new AudioTransform({
-          dstChannelLayout: ffmpeg.AV_CH_LAYOUT_STEREO,
-          dstSampleRate: 44100,
-          dstSampleFormat: new ffmpeg.SampleFormat(ffmpeg.AV_SAMPLE_FMT_FLTP),
-          srcChannelLayout: audioDefintion.channelLayout.layout(),
-          srcSampleRate: audioDefintion.sampleRate,
-          srcSampleFormat: audioDefintion.sampleFormat
+          output: audioOutputDefinition,
+          input: audioInputDefintion
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });

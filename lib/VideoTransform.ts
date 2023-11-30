@@ -1,14 +1,11 @@
 import { Transform, TransformOptions, TransformCallback } from 'node:stream';
 import ffmpeg from '..';
+import { VideoStreamDefinition } from './MediaStream';
 
 export interface VideoTransformOptions extends TransformOptions {
   objectMode?: never;
-  dstWidth: number;
-  dstHeight: number;
-  dstPixelFormat: any;
-  srcWidth: number;
-  srcHeight: number;
-  srcPixelFormat: any;
+  input: VideoStreamDefinition;
+  output: VideoStreamDefinition;
   interpolation: number;
 }
 
@@ -22,8 +19,8 @@ export class VideoTransform extends Transform {
   constructor(options: VideoTransformOptions) {
     super({ ...options, objectMode: true });
     this.rescaler = new ffmpeg.VideoRescaler(
-      options.dstWidth, options.dstHeight, options.dstPixelFormat,
-      options.srcWidth, options.srcHeight, options.srcPixelFormat,
+      options.output.width, options.output.height, options.output.pixelFormat,
+      options.input.width, options.input.height, options.input.pixelFormat,
       options.interpolation
     );
   }
@@ -35,6 +32,6 @@ export class VideoTransform extends Transform {
       callback();
     } catch (err) {
       callback(err as Error);
-    }      
+    }
   }
 }

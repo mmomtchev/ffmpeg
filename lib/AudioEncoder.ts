@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream';
 import ffmpeg from '..';
-import { AudioStreamDefinition } from './Stream';
+import { AudioStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { AudioEncoderContext, AudioSamples } = ffmpeg;
@@ -12,7 +12,7 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
  * and write encoded audio data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class AudioEncoder extends Transform {
+export class AudioEncoder extends Transform implements MediaStream {
   protected def: AudioStreamDefinition;
   protected encoder: any;
   protected codec: any;

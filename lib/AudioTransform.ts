@@ -1,16 +1,13 @@
 import { Transform, TransformOptions, TransformCallback } from 'node:stream';
 import ffmpeg from '..';
+import { AudioStreamDefinition } from './MediaStream';
 
 export const verbose = (process.env.DEBUG_AUDIO_TRANSFORM || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export interface AudioTransformOptions extends TransformOptions {
   objectMode?: never;
-  dstChannelLayout: number;
-  dstSampleRate: number;
-  dstSampleFormat: any;
-  srcChannelLayout: number;
-  srcSampleRate: number;
-  srcSampleFormat: any;
+  input: AudioStreamDefinition;
+  output: AudioStreamDefinition;
 }
 
 /**
@@ -24,8 +21,8 @@ export class AudioTransform extends Transform {
   constructor(options: AudioTransformOptions) {
     super({ ...options, objectMode: true });
     this.resampler = new ffmpeg.AudioResampler(
-      options.dstChannelLayout, options.dstSampleRate, options.dstSampleFormat,
-      options.srcChannelLayout, options.srcSampleRate, options.srcSampleFormat
+      options.output.channelLayout.layout(), options.output.sampleRate, options.output.sampleFormat,
+      options.input.channelLayout.layout(), options.input.sampleRate, options.input.sampleFormat
     );
   }
 

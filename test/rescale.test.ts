@@ -4,8 +4,7 @@ import * as fs from 'node:fs';
 import { assert } from 'chai';
 
 import ffmpeg from 'node-av';
-import { Transform } from 'node:stream';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform } from '../lib/Stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from '../lib/Stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 
@@ -30,9 +29,9 @@ describe('transcode', () => {
 
         const audioDiscard = new Discarder();
         const videoInput = new VideoDecoder(input.video[0]);
-        const videoDefintion = videoInput.definition();
+        const videoInputDefintion = videoInput.definition();
 
-        const videoOutput = new VideoEncoder({
+        const videoOutputDefintion = {
           type: 'Video',
           codec: ffmpeg.AV_CODEC_H264,
           bitRate: 2.5e6,
@@ -40,12 +39,13 @@ describe('transcode', () => {
           height: 200,
           frameRate: new ffmpeg.Rational(25, 1),
           pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
-        });
+        } as VideoStreamDefinition;
+        const videoOutput = new VideoEncoder(videoOutputDefintion);
 
         // A standard Transform stream that rescales/resamples the video
         const videoRescaler = new VideoTransform({
-          srcWidth: 320, srcHeight: 200, srcPixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P),
-          dstWidth: videoDefintion.width, dstHeight: videoDefintion.height, dstPixelFormat: videoDefintion.pixelFormat,
+          input: videoInputDefintion,
+          output: videoOutputDefintion,
           interpolation: ffmpeg.SWS_BILINEAR
         });
 

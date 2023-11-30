@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream';
 import ffmpeg from '..';
-import { VideoStreamDefinition } from './Stream';
+import { VideoStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { VideoEncoderContext, Codec, VideoFrame } = ffmpeg;
@@ -12,7 +12,7 @@ export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL
  * and write encoded video data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class VideoEncoder extends Transform {
+export class VideoEncoder extends Transform implements MediaStream {
   protected def: VideoStreamDefinition;
   protected encoder: any;
   protected codec: any;

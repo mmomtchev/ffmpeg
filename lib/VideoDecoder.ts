@@ -1,6 +1,6 @@
 import { Transform } from 'node:stream';
 import ffmpeg from '..';
-import { VideoStreamDefinition } from './Stream';
+import { VideoStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { VideoDecoderContext, Codec } = ffmpeg;
@@ -12,7 +12,7 @@ export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded video frames.
  * Its parameters are inherited from the Demuxer.
  */
-export class VideoDecoder extends Transform {
+export class VideoDecoder extends Transform implements MediaStream {
   protected decoder: any;
   protected busy: boolean;
   protected stream: any;
