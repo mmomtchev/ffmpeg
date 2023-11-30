@@ -39,11 +39,11 @@ describe('transcode', () => {
           width: 320,
           height: 200,
           frameRate: new ffmpeg.Rational(25, 1),
-          pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YVYU422)
+          pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
         });
 
         const videoRescaler = new ffmpeg.VideoRescaler(
-          320, 200, new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YVYU422),
+          320, 200, new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P),
           videoDefintion.width, videoDefintion.height, videoDefintion.pixelFormat,
           ffmpeg.SWS_BILINEAR
         );
