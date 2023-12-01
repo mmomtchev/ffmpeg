@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave": true,
+  "clang-format.executable": "clang-format",
+  "clang-format.style": "file",
+  "clang-format.fallbackStyle": "LLVM",
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  }
+}

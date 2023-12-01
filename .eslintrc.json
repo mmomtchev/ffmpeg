@@ -1,0 +1,58 @@
+{
+  "env": {
+    "mocha": true,
+    "node": true,
+    "es6": true,
+    "es2020": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "rules": {
+    "semi": [
+      2,
+      "always"
+    ],
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "no-constant-condition": "off"
+  },
+  "plugins": [
+    "mocha"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "overrides": [
+    {
+      "files": [
+        "test/*.ts",
+        "lib/*.ts"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "plugins": [
+        "@typescript-eslint"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      },
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ]
+    },
+    {
+      "files": [
+        "*.mjs",
+        "wasm/*.js"
+      ],
+      "parserOptions": {
+        "ecmaVersion": 2022,
+        "sourceType": "module"
+      }
+    }
+  ]
+}

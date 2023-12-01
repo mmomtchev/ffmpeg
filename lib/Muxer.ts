@@ -59,7 +59,7 @@ export class Muxer extends EventEmitter {
           if (error) return void callback(error);
           this.destroyed++;
           if (this.destroyed === this.streams.length) {
-            verbose(`Muxer: All streams ended, writing trailer`);
+            verbose('Muxer: All streams ended, writing trailer');
             this.formatContext.writeTrailerAsync()
               .then(() => void callback(null))
               .catch(callback);

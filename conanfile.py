@@ -1,6 +1,6 @@
 from conan import ConanFile
 
-required_conan_version = ">=2.0.0"
+required_conan_version = ">=1.60.0"
 
 class ffmpeg(ConanFile):
     settings = 'os', 'compiler', 'build_type', 'arch'
@@ -10,12 +10,17 @@ class ffmpeg(ConanFile):
     def configure(self):
       self.options['ffmpeg'].shared = False
       self.options['libx256'].shared = False
+
+      # Linux and macOS
       if self.settings.os != 'Windows':
-        self.options['ffmpeg'].fPIC = False
+        self.options['ffmpeg'].fPIC = True
+        self.options['ffmpeg'].disable_all_devices = True
+
+      # Linux only
+      if self.settings.os == 'Linux':
         self.options['ffmpeg'].with_libalsa = False
         self.options['ffmpeg'].with_pulse = False
         self.options['ffmpeg'].with_vulkan = False
         self.options['ffmpeg'].with_xcb = False
         self.options['ffmpeg'].with_vaapi = False
         self.options['ffmpeg'].with_vdpau = False
-        self.options['ffmpeg'].disable_all_devices = True

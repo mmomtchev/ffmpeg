@@ -103,7 +103,6 @@ octx.flush();
 //
 // PROCESS
 //
-let counter = 0;
 while (true) {
   // READING
   const pkt = ictx.readPacket();
@@ -147,8 +146,6 @@ while (true) {
 
       octx.writePacket(opkt);
     }
-
-    counter++;
 
     if (flushEncoder) break;
   } while (flushDecoder);

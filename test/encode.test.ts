@@ -2,8 +2,6 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { Magick } from 'magickwand.js';
 
-import { assert } from 'chai';
-
 import ffmpeg from 'node-ffmpeg';
 import { VideoEncoder, Muxer } from '../lib/Stream';
 
@@ -66,7 +64,7 @@ it('produce a video from stills', (done) => {
         callback = () => {
           videoOutput.end();
           fs.rm(tmpFile, done);
-        }
+        };
       }
       const image = genFrame(state);
       const blob = new Magick.Blob;
@@ -74,7 +72,7 @@ it('produce a video from stills', (done) => {
 
       frame = ffmpeg.VideoFrame.create(Buffer.from(blob.data()), format, width, height);
       frame.setTimeBase(timeBase);
-      frame.setPts(new ffmpeg.Timestamp(pts++, timeBase))
+      frame.setPts(new ffmpeg.Timestamp(pts++, timeBase));
 
       // This is the Node.js Writable protocol
     } while (videoOutput.write(frame, 'binary', callback) && !callback);

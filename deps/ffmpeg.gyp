@@ -4,18 +4,16 @@
       'conditions': [
         ['OS == "win"', {
           'variables': {
-            'conaninfo': '<!(python -m pip install --user "conan"'
+            'conaninfo': '<!(python -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && python -m conans.conan profile detect'
               ' && python -m conans.conan install .. -of build --build="*"'
               ' 1>&2 )'
             }
         }],
         ['OS != "win"', {
           'variables': {
-            'conaninfo': '<!(python3 -m pip install --user "conan"'
+            'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && python3 -m conans.conan profile detect'
               ' && python3 -m conans.conan install .. -of build --build="*"'
               ' 1>&2 )'
             }

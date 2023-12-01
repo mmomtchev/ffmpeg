@@ -5,7 +5,11 @@
   "main": "lib/index.js",
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
-    "test": "npx mocha"
+    "test": "npx mocha",
+    "lint": "clang-format -i src/*.cc && eslint --fix lib/*.[jt]s test/*.[jt]s",
+    "preversion": "npm run lint && npm run test",
+    "postversion": "git push && git push --tags && node ./scripts/publish-packages.js",
+    "postpublish": "gh workflow run test-package.yml -F version=$npm_package_version"
   },
   "repository": {
     "type": "git",
@@ -41,6 +45,7 @@
     "node-addon-api": "^7.0.0"
   },
   "devDependencies": {
+    "@octokit/core": "^5.0.2",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.9.4",

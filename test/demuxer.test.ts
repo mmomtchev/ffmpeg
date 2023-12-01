@@ -54,5 +54,5 @@ describe('Demuxer', () => {
         done(err);
       }
     });
-  })
+  });
 });

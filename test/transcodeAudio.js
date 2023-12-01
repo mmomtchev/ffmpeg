@@ -90,8 +90,7 @@ encoder.setChannelLayout(new ChannelLayout(2));
 const encodec = new Codec;
 encoder.openCodec(encodec);
 
-const ost = octx.addAudioStream(encoder);
-
+octx.addAudioStream(encoder);
 octx.openOutput(outp);
 
 octx.dump();
@@ -102,7 +101,6 @@ octx.flush();
 //
 // PROCESS
 //
-let counter = 0;
 while (true) {
   // READING
   const pkt = ictx.readPacket();
@@ -146,8 +144,6 @@ while (true) {
 
       octx.writePacket(opkt);
     }
-
-    counter++;
 
     if (flushEncoder) break;
   } while (flushDecoder);

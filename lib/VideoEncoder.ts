@@ -3,7 +3,7 @@ import ffmpeg from '..';
 import { VideoStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 
-const { VideoEncoderContext, Codec, VideoFrame } = ffmpeg;
+const { VideoEncoderContext, VideoFrame } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
