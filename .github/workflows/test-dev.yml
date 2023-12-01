@@ -33,9 +33,6 @@ jobs:
         key: ${{ matrix.platform }}
     - run: npm install --ignore-scripts --production
     - run: npx node-pre-gyp configure --debug
-    - name: Show conan output
-      run: cat build/conan.log
-      shell: bash
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npm test

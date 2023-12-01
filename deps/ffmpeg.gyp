@@ -7,8 +7,8 @@
             'conaninfo': '<!(python -m pip install --user "conan"'
               ' && cd ../build'
               ' && python -m conans.conan profile detect'
-              ' && python -m conans.conan install .. -of build --build'
-              ' > conan.log 2>&1 )'
+              ' && python -m conans.conan install .. -of build --build="*"'
+              ' 1>&2 )'
             }
         }],
         ['OS != "win"', {
@@ -16,8 +16,8 @@
             'conaninfo': '<!(python3 -m pip install --user "conan"'
               ' && cd ../build'
               ' && python3 -m conans.conan profile detect'
-              ' && python3 -m conans.conan install .. -of build --build'
-              ' > conan.log 2>&1 )'
+              ' && python3 -m conans.conan install .. -of build --build="*"'
+              ' 1>&2 )'
             }
         }]
       ],
