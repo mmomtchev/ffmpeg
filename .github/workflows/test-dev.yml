@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-        platform: [ubuntu-latest, windows-latest]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -29,12 +29,13 @@ jobs:
       id: conan-artifacts
       uses: actions/cache@v3
       with:
-        path: ~/.conan
+        path: ~/.conan2
         key: ${{ matrix.platform }}
     - run: npm install --ignore-scripts --production
     - run: npx node-pre-gyp configure --debug
     - name: Show conan output
       run: cat build/conan.log
+      shell: bash
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npm test
