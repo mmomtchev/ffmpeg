@@ -1,27 +1,10 @@
 {
   'target_defaults': {
-    'includes': [
-      'except.gypi'
-    ],
-    'cflags_cc': [
-      '-fvisibility=hidden',
-      '-std=c++17'
-    ],
-    'msvs_settings': {
-      'VCCLCompilerTool': { 
-        'AdditionalOptions': [ '/std:c++17' ]
-      }
-    },
-    'xcode_settings': {
-      'OTHER_CPLUSPLUSFLAGS': [
-        '-fvisibility=hidden',
-        '-std=c++17'
-      ]
-    }
+    'includes': [ 'defaults.gypi' ],
   },
   'targets': [
     {
-      'target_name': 'node-ffmpeg',
+      'target_name': '<(module_name)',
       'sources': [
         'src/avcpp-nobind.cc',
         'src/avcpp-frame.cc'

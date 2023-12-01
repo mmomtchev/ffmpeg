@@ -1,8 +1,6 @@
 {
   'target_defaults': {
-    'includes': [
-      '../except.gypi'
-    ]
+    'includes': [ '../defaults.gypi' ],
   },
   'targets': [
     {

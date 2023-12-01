@@ -1,6 +1,7 @@
 {
   'targets': [
     {
+      'target_name': 'ffmpeg',
       'conditions': [
         ['OS == "win"', {
           'variables': {
@@ -17,9 +18,17 @@
               ' && python3 -m conans.conan install .. -of build --build="*"'
               ' 1>&2 )'
             }
+        }],
+        ['OS == "mac"', {
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              'OTHER_LDFLAGS': [
+                '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.frameworks.map((f) => \'-framework \' + f)).flat().join(\' \')")'
+              ]
+            }
+          }
         }]
       ],
-      'target_name': 'ffmpeg',
       'direct_dependent_settings': {
         'include_dirs': [
           '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.include_paths).flat().join(\' \')")'
