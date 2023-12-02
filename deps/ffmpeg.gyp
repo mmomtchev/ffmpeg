@@ -4,28 +4,37 @@
       'target_name': 'ffmpeg',
       'conditions': [
         ['OS == "win"', {
+          # On Windows all the binaries usually work very well
           'variables': {
             'conaninfo': '<!(python -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && python -m conans.conan install .. -of build --build="*"'
-              ' 1>&2 )'
-            }
-        }],
-        ['OS != "win"', {
-          'variables': {
-            'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
-              ' && cd ../build'
-              ' && python3 -m conans.conan install .. -of build --build="*"'
+              ' && python -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
             }
         }],
         ['OS == "mac"', {
+          # On macOS, there is the special frameworks link setting
+          'variables': {
+            'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
+              ' && cd ../build'
+              ' && python3 -m conans.conan install .. -of build --build=missing'
+              ' 1>&2 )'
+          },
           'direct_dependent_settings': {
             'xcode_settings': {
               'OTHER_LDFLAGS': [
                 '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.frameworks.map((f) => \'-framework \' + f)).flat().join(\' \')")'
               ]
             }
+          }
+        }],
+        ['OS == "linux"', {
+          # On Linux libx265 has the -ffast-math problem that plagues many math-heavy packages on conan
+          'variables': {
+            'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
+              ' && cd ../build'
+              ' && python3 -m conans.conan install .. -of build --build=libx265 --build=missing'
+              ' 1>&2 )'
           }
         }]
       ],
