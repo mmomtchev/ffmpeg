@@ -35,8 +35,6 @@ jobs:
       with:
         path: ~/.conan
         key: ${{ matrix.platform }}
-    - name: clear PKG_CONFIG_PATH
-      run: echo 'PKG_CONFIG_PATH=' >> $GITHUB_ENV
     - run: npm install --ignore-scripts --production
     - run: npx node-pre-gyp configure --debug
     - run: npx node-pre-gyp build
