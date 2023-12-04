@@ -6,9 +6,9 @@
         ['OS == "win"', {
           # On Windows all the binaries usually work very well
           'variables': {
-            'conaninfo': '<!(python -m pip install --user "conan<2.0.0"'
+            'conaninfo': '<!(set PKG_CONFIG_PATH='
+              ' && python -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && set PKG_CONFIG_PATH='
               ' && python -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
             }
