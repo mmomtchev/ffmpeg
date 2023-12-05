@@ -9,12 +9,12 @@ class ffmpeg(ConanFile):
 
     def configure(self):
       self.options['ffmpeg'].shared = False
+      self.options['ffmpeg'].disable_all_devices = True
       self.options['libx256'].shared = False
 
       # Linux and macOS
       if self.settings.os != 'Windows':
         self.options['ffmpeg'].fPIC = True
-        self.options['ffmpeg'].disable_all_devices = True
 
       # Linux only
       if self.settings.os == 'Linux':
