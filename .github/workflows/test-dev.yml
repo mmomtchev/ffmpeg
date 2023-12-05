@@ -37,6 +37,8 @@ jobs:
         key: ${{ matrix.platform }}
     - run: npm install --ignore-scripts --production
     - run: npx node-pre-gyp configure --debug
+      env:
+        PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npm test
