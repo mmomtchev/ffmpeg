@@ -6,8 +6,7 @@
         ['OS == "win"', {
           # On Windows all the binaries usually work very well
           'variables': {
-            'conaninfo': '<!(set PKG_CONFIG_PATH='
-              ' && python -m pip install --user "conan<2.0.0"'
+            'conaninfo': '<!(python -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
               ' && python -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
@@ -41,14 +40,14 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.include_paths).flat().join(\' \')")'
+          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => \'\\"\' + dep.include_paths + \'\\"\').flat().join(\' \')")'
         ],
         'defines': [
           '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.defines).flat().join(\' \')")'
         ],
         'libraries': [
           '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.libs).flat().map((path) => \'-l\' + path).join(\' \')")',
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.lib_paths).flat().map((path) => \'-L\' + path).join(\' \')")'
+          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => \'\\"\' + dep.lib_paths + \'\\"\').flat().map((path) => \'-L\' + path).join(\' \')")'
           '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.system_libs).flat().map((path) => \'-l\' + path).join(\' \')")',
         ],
         'ldflags': [
