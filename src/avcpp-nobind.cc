@@ -31,6 +31,8 @@ template <typename T> std::string ToString(T &v) {
   r << v;
   return r.str();
 }
+// The type of a pointer to the previous function, required for MSVC
+template <typename T> using ToString_t = std::string (*)(T &v);
 
 void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
@@ -231,7 +233,11 @@ NOBIND_MODULE(ffmpeg, m) {
           .def<&PixelFormat::name>("name")
           .def<&PixelFormat::planesCount>("planesCount")
           .def<&PixelFormat::bitsPerPixel>("bitsPerPixel")
-          .ext<&ToString<PixelFormat>>("toString")
+          // The static cast is needed to help MSVC with the template argument deduction
+          // .ext() uses three-stage deduction with an auto argument in the first stage
+          // MSVC picks a function reference instead of a function pointer during this stage
+          // and is unable to backtrack when it cannot deduce the second stage
+          .ext<static_cast<ToString_t<PixelFormat>>(&ToString<PixelFormat>)>("toString")
           .def < &PixelFormat::operator AVPixelFormat>("get");
 
   m.def<SampleFormat>("SampleFormat")
@@ -240,7 +246,7 @@ NOBIND_MODULE(ffmpeg, m) {
           .def<&SampleFormat::name>("name")
           .def<&SampleFormat::bytesPerSample>("bytesPerSample")
           .def<&SampleFormat::bitsPerSample>("bitsPerSample")
-          .ext<&ToString<SampleFormat>>("toString")
+          .ext<static_cast<ToString_t<SampleFormat>>(&ToString<SampleFormat>)>("toString")
           .def < &SampleFormat::operator AVSampleFormat>("get");
 
   m.def<ChannelLayout>("ChannelLayout")
@@ -304,7 +310,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::streamIndex>("streamIndex")
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
       .ext<&CopyFrameToBuffer>("data")
-      .ext<&ToString<VideoFrame>>("toString");
+      .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
       .def<&CreateAudioSamples>("create")
@@ -327,18 +333,20 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioSamples::refCount>("refCount")
       .def<&AudioSamples::streamIndex>("streamIndex")
       .def<&AudioSamples::setStreamIndex>("setStreamIndex")
-      .ext<&ReturnBufferPlane<AudioSamples>>("data")
-      .ext<&ToString<AudioSamples>>("toString");
+      .ext<static_cast<Nobind::Typemap::Buffer (*)(AudioSamples &, size_t)>(&ReturnBufferPlane<AudioSamples>)>("data")
+      .ext<static_cast<ToString_t<AudioSamples>>(&ToString<AudioSamples>)>("toString");
 
   m.def<Timestamp>("Timestamp")
-          .cons<int64_t, const Rational &>()
-          .def<&Timestamp::seconds>("seconds")
-          .def<&Timestamp::isNoPts>("isNoPts")
-          .def<&Timestamp::isValid>("isValid")
-          .def < &Timestamp::operator+=>("addTo").def <
-      &Timestamp::operator-=>("subFrom").def<&Timestamp::timebase>("timebase").ext<&ToString<Timestamp>>("toString");
+      .cons<int64_t, const Rational &>()
+      .def<&Timestamp::seconds>("seconds")
+      .def<&Timestamp::isNoPts>("isNoPts")
+      .def<&Timestamp::isValid>("isValid")
+      .def<&Timestamp::operator+= >("addTo")
+      .def<&Timestamp::operator-= >("subFrom")
+      .def<&Timestamp::timebase>("timebase")
+      .ext<static_cast<ToString_t<Timestamp>>(&ToString<Timestamp>)>("toString");
 
-  m.def<Rational>("Rational").cons<int, int>().ext<&ToString<Rational>>("toString");
+  m.def<Rational>("Rational").cons<int, int>().ext<static_cast<ToString_t<Rational>>(&ToString<Rational>)>("toString");
 
   m.def<VideoRescaler>("VideoRescaler")
       .cons<int, int, PixelFormat, int, int, PixelFormat, int>()

@@ -3,13 +3,26 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/mmom/.conan/data/ffmpeg/**",
+                "${env:HOME}/.conan/data/ffmpeg/**",
                 "${workspaceFolder}/deps/avcpp/src",
                 "/usr/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
             "compilerPath": "/usr/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        },
+        {
+            "name": "Windows",
+            "includePath": [
+                "${env:USERPROFILE}/.conan/data/ffmpeg/**",
+                "${workspaceFolder}/deps/avcpp/src",
+                "${env:USERPROFILE}/AppData/Local/node-gyp/Cache/**",
+                "${workspaceFolder}/node_modules/node-addon-api",
+                "${workspaceFolder}/node_modules/nobind17/include"
+            ],
+            "compilerPath": "cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++17"
         }
