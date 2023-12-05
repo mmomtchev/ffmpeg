@@ -23,7 +23,7 @@
           'direct_dependent_settings': {
             'xcode_settings': {
               'OTHER_LDFLAGS': [
-                '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.frameworks.map((f) => \'-framework \' + f)).flat().join(\' \')")'
+                '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json frameworks "" "-framework ")'
               ]
             }
           }
@@ -33,25 +33,25 @@
           'variables': {
             'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && python3 -m conans.conan install .. -of build --build=libx265 --build=missing'
+              ' && python3 -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
           }
         }]
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => \'\\"\' + dep.include_paths + \'\\"\').flat().join(\' \')")'
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json include_paths)'
         ],
         'defines': [
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.defines).flat().join(\' \')")'
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json defines)'
         ],
         'libraries': [
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.libs).flat().map((path) => \'-l\' + path).join(\' \')")',
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => \'\\"\' + dep.lib_paths + \'\\"\').flat().map((path) => \'-L\' + path).join(\' \')")'
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.system_libs).flat().map((path) => \'-l\' + path).join(\' \')")',
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json libs -l)',
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths -L)',
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json system_libs -l)'
         ],
         'ldflags': [
-          '<!@(node -p "JSON.parse(fs.readFileSync(\'../build/conanbuildinfo.json\')).dependencies.map((dep) => dep.exelinkflags).flat().join(\' \')")'
+          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json exelinkflags)'
         ]
       }
     }
