@@ -13,7 +13,7 @@ class ffmpeg(ConanFile):
       # On Windows we prefer /MT builds as these are not affected
       # by the infamous Windows DLL hell
       if self.settings.os == 'Windows':
-        self.settings.compiler.runtime = 'MT'
+        self.settings.compiler['Visual Studio'].runtime = 'MT'
 
       # Linux and macOS
       if self.settings.os != 'Windows':
