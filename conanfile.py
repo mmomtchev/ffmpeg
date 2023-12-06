@@ -8,9 +8,12 @@ class ffmpeg(ConanFile):
     generators = 'json'
 
     def configure(self):
-      self.options['ffmpeg'].shared = False
       self.options['ffmpeg'].disable_all_devices = True
-      self.options['libx256'].shared = False
+
+      # On Windows we prefer /MT builds as these are not affected
+      # by the infamous Windows DLL hell
+      if self.settings.os == 'Windows':
+        self.settings.compiler.runtime = 'MT'
 
       # Linux and macOS
       if self.settings.os != 'Windows':

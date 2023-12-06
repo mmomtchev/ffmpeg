@@ -3,4 +3,5 @@ build
 lib/binding
 
 *.mp4
+*.mkv
 !test/data/*.mp4
