@@ -10,11 +10,6 @@ class ffmpeg(ConanFile):
     def configure(self):
       self.options['ffmpeg'].disable_all_devices = True
 
-      # On Windows we prefer /MT builds as these are not affected
-      # by the infamous Windows DLL hell
-      if self.settings.os == 'Windows':
-        self.settings.compiler['Visual Studio'].runtime = 'MT'
-
       # Linux and macOS
       if self.settings.os != 'Windows':
         self.options['ffmpeg'].fPIC = True
