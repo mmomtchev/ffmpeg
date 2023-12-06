@@ -11,7 +11,7 @@
               ' && cd ../build'
               # On Windows we prefer /MT builds as these are not affected
               # by the infamous Windows DLL hell
-              ' && python -m conans.conan profile new conan-windows-mt --detect || echo profile already created'
+              ' && (python -m conans.conan profile new conan-windows-mt --detect || echo profile already created)'
               ' && python -m conans.conan profile update settings.compiler.runtime=MT conan-windows-mt'
               ' && python -m conans.conan install .. --profile=conan-windows-mt -of build --build=missing'
               ' 1>&2 )'
