@@ -2,6 +2,7 @@
   'targets': [
     {
       'target_name': 'ffmpeg',
+      'type': 'none',
       'conditions': [
         ['OS == "win"', {
           # On Windows all the binaries usually work very well
@@ -10,7 +11,16 @@
               ' && cd ../build'
               ' && python -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
+          },
+          'direct_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'AdditionalLibraryDirectories': [
+                  '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths)'
+                ]
+              }
             }
+          }
         }],
         ['OS == "mac"', {
           # On macOS, there is the special frameworks link setting
@@ -26,6 +36,11 @@
                 '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json frameworks "" "-framework ")'
               ]
             }
+          },
+          'direct_dependent_settings': {
+            'libraries': [
+              '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths -L)',
+            ]
           }
         }],
         ['OS == "linux"', {
@@ -35,6 +50,11 @@
               ' && cd ../build'
               ' && python3 -m conans.conan install .. -of build --build=missing'
               ' 1>&2 )'
+          },
+          'direct_dependent_settings': {
+            'libraries': [
+              '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths -L)',
+            ]
           }
         }]
       ],
@@ -47,7 +67,6 @@
         ],
         'libraries': [
           '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json libs -l)',
-          '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths -L)',
           '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json system_libs -l)'
         ],
         'ldflags': [
