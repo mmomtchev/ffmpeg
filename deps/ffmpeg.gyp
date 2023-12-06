@@ -35,9 +35,7 @@
               'OTHER_LDFLAGS': [
                 '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json frameworks "" "-framework ")'
               ]
-            }
-          },
-          'direct_dependent_settings': {
+            },
             'libraries': [
               '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json lib_paths -L)',
             ]
