@@ -37,7 +37,7 @@
               'action': [ 'npx', 'tsc' ]
             }],
             ['OS == "win"', {
-              'action': [ 'npx tsc' ]
+              'action': [ 'cmd', '/c"npx tsc"' ]
             }]
           ]
         }
