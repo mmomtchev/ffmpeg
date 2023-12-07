@@ -29,9 +29,9 @@ describe('transcode', () => {
 
         const audioDiscard = new Discarder();
         const videoInput = new VideoDecoder(input.video[0]);
-        const videoInputDefintion = videoInput.definition();
+        const videoInputDefinition = videoInput.definition();
 
-        const videoOutputDefintion = {
+        const videoOutputDefinition = {
           type: 'Video',
           codec: ffmpeg.AV_CODEC_H264,
           bitRate: 2.5e6,
@@ -40,12 +40,12 @@ describe('transcode', () => {
           frameRate: new ffmpeg.Rational(25, 1),
           pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
         } as VideoStreamDefinition;
-        const videoOutput = new VideoEncoder(videoOutputDefintion);
+        const videoOutput = new VideoEncoder(videoOutputDefinition);
 
         // A standard Transform stream that rescales/resamples the video
         const videoRescaler = new VideoTransform({
-          input: videoInputDefintion,
-          output: videoOutputDefintion,
+          input: videoInputDefinition,
+          output: videoOutputDefinition,
           interpolation: ffmpeg.SWS_BILINEAR
         });
 

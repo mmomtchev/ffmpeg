@@ -29,7 +29,7 @@ describe('transcode', () => {
 
         const videoDiscard = new Discarder();
         const audioInput = new AudioDecoder(input.audio[0]);
-        const audioInputDefintion = audioInput.definition();
+        const audioInputDefinition = audioInput.definition();
 
         const audioOutputDefinition = {
           type: 'Audio',
@@ -44,7 +44,7 @@ describe('transcode', () => {
         // A standard Transform stream that resamples the audio
         const audioResampler = new AudioTransform({
           output: audioOutputDefinition,
-          input: audioInputDefintion
+          input: audioInputDefinition
         });
 
         const output = new Muxer({ outputFile: tempFile, outputFormat: 'mkv', streams: [audioOutput] });

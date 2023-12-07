@@ -6,9 +6,9 @@
 
 The project is still unpublished, but basic video and audio demultiplexing, transcoding and multiplexing are functional.
 
-`ffmpeg` is a low-level C API which is very unsafe to use - try to interpret 720p as 1080p and you will end up a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. `node-ffmpeg` should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+`ffmpeg` is a low-level C API which is very unsafe to use - try to interpret 720p as 1080p and you will end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. `node-ffmpeg` should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
 
-Producing a completely safe wrapper that never segfaults no matter what the user does is a gargantuan task that is currently not planned.
+Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
 
 The current goal is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
 
@@ -37,22 +37,26 @@ A quick example for generalized video transcoding using the streams API.
 ```ts
 import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from 'node-ffmpeg/Stream';
 
-// Create a Demuxer - a Demuxer is an object which has multiple ReadableStream,
+// Create a Demuxer - a Demuxer is an object that has multiple ReadableStream,
 // it decodes the input container format and emits compressed data
 const input = new Demuxer({ inputFile:'launch.mp4' });
 
 // Wait for the Demuxer to read the file headers and to identify the various streams
 input.on('ready', () => {
+    // Once the input Demuxer is ready, it will contain two arrays of ReadableStream:
+    // input.video[]
+    // input.audio[]
+
     // We will be discarding the audio stream
     const audioDiscard = new Discarder();
     // A VideoDecoder is a TransformStream that reads compressed video data
     // and sends raw video frames (this is the decoding codec)
     const videoInput = new VideoDecoder(input.video[0]);
     // A VideoDefinition is an object with all the properties of the stream
-    const videoInputDefintion = videoInput.definition();
+    const videoInputDefinition = videoInput.definition();
 
     // Such as codec, bitrate, framerate, frame size, pixel format
-    const videoOutputDefintion = {
+    const videoOutputDefinition = {
       type: 'Video',
       codec: ffmpeg.AV_CODEC_H264,
       bitRate: 2.5e6,
@@ -64,13 +68,13 @@ input.on('ready', () => {
 
     // A video encoder is a TransformStream that reads raw video frames
     // and sends compressed video data (this is the encoding codec)
-    const videoOutput = new VideoEncoder(videoOutputDefintion);
+    const videoOutput = new VideoEncoder(videoOutputDefinition);
 
     // A VideoTransform is a TransformStream that reads raw video frames
     // and sends raw video frames - with different frame size or pixel format
     const videoRescaler = new VideoTransform({
-      input: videoInputDefintion,
-      output: videoOutputDefintion,
+      input: videoInputDefinition,
+      output: videoOutputDefinition,
       interpolation: ffmpeg.SWS_BILINEAR
     });
 
@@ -85,7 +89,7 @@ input.on('ready', () => {
       console.log('we are done!');
     });
 
-    // These are the error handlers
+    // These are the error handlers (w/o them the process will stop on error)
     input.video[0].on('error', (err) => console.error(err));
     input.audio[0].on('error', (err) => console.error(err));
     output.video[0].on('error', (err) => console.error(err));

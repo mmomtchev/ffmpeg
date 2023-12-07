@@ -29,26 +29,26 @@ describe('transcode', () => {
         const audioInput = new AudioDecoder(input.audio[0]);
         const videoInput = new VideoDecoder(input.video[0]);
 
-        const videoDefintion = videoInput.definition();
-        const audioDefintion = audioInput.definition();
+        const videoDefinition = videoInput.definition();
+        const audioDefinition = audioInput.definition();
 
         const videoOutput = new VideoEncoder({
           type: 'Video',
           codec: ffmpeg.AV_CODEC_H264,
           bitRate: 2.5e6,
-          width: videoDefintion.width,
-          height: videoDefintion.height,
+          width: videoDefinition.width,
+          height: videoDefinition.height,
           frameRate: new ffmpeg.Rational(25, 1),
-          pixelFormat: videoDefintion.pixelFormat
+          pixelFormat: videoDefinition.pixelFormat
         });
 
         const audioOutput = new AudioEncoder({
           type: 'Audio',
           codec: ffmpeg.AV_CODEC_AAC,
           bitRate: 128e3,
-          sampleRate: audioDefintion.sampleRate,
-          sampleFormat: audioDefintion.sampleFormat,
-          channelLayout: audioDefintion.channelLayout
+          sampleRate: audioDefinition.sampleRate,
+          sampleFormat: audioDefinition.sampleFormat,
+          channelLayout: audioDefinition.channelLayout
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
@@ -88,16 +88,16 @@ describe('transcode', () => {
         const audioDiscard = new Discarder();
         const videoInput = new VideoDecoder(input.video[0]);
 
-        const videoDefintion = videoInput.definition();
+        const videoDefinition = videoInput.definition();
 
         const videoOutput = new VideoEncoder({
           type: 'Video',
           codec: ffmpeg.AV_CODEC_H264,
           bitRate: 2.5e6,
-          width: videoDefintion.width,
-          height: videoDefintion.height,
+          width: videoDefinition.width,
+          height: videoDefinition.height,
           frameRate: new ffmpeg.Rational(25, 1),
-          pixelFormat: videoDefintion.pixelFormat
+          pixelFormat: videoDefinition.pixelFormat
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
@@ -128,15 +128,15 @@ describe('transcode', () => {
         const audioInput = new AudioDecoder(input.audio[0]);
         const videoDiscard = new Discarder();
 
-        const audioDefintion = audioInput.definition();
+        const audioDefinition = audioInput.definition();
 
         const audioOutput = new AudioEncoder({
           type: 'Audio',
           codec: ffmpeg.AV_CODEC_AAC,
           bitRate: 128e3,
-          sampleRate: audioDefintion.sampleRate,
-          sampleFormat: audioDefintion.sampleFormat,
-          channelLayout: audioDefintion.channelLayout
+          sampleRate: audioDefinition.sampleRate,
+          sampleFormat: audioDefinition.sampleFormat,
+          channelLayout: audioDefinition.channelLayout
         });
 
         const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });
