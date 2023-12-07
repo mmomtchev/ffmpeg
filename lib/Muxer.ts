@@ -29,7 +29,7 @@ export class Muxer extends EventEmitter {
   protected rawStreams: any;
   protected writing: boolean;
   protected primed: boolean;
-  protected destroyed: number;
+  protected ended: number;
   protected writingQueue: { idx: number, packet: any, callback: (error?: Error | null | undefined) => void; }[];
   streams: Writable[];
   video: Writable[];
@@ -45,7 +45,7 @@ export class Muxer extends EventEmitter {
     this.video = [];
     this.writing = false;
     this.primed = false;
-    this.destroyed = 0;
+    this.ended = 0;
     this.writingQueue = [];
 
     for (const idx in this.rawStreams) {
@@ -55,17 +55,32 @@ export class Muxer extends EventEmitter {
           this.write(+idx, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
-          verbose(`Muxer: end stream #${idx}`, error);
-          if (error) return void callback(error);
-          this.destroyed++;
-          if (this.destroyed === this.streams.length) {
+          if (error) {
+            verbose(`Muxer: error on stream #${idx}, destroy all streams`, error);
+            for (const s of this.streams) {
+              s.destroy(error);
+            }
+            this.formatContext.closeAsync()
+              .then(() => callback(error))
+              .catch(callback);
+          } else {
+            verbose(`Muxer: destroy stream #${idx}`);
+            callback(null);
+          }
+        },
+        final: (callback: (error: Error | null) => void): void => {
+          verbose(`Muxer: end stream #${idx}`);
+          this.ended++;
+          if (this.ended === this.streams.length) {
             verbose('Muxer: All streams ended, writing trailer');
             this.formatContext.writeTrailerAsync()
               .then(() => this.formatContext.closeAsync())
               .then(() => void callback(null))
               .catch(callback);
+          } else {
+            callback(null);
           }
-        }
+        },
       });
       this.streams[+idx] = writable;
       const def = this.rawStreams[idx].definition();

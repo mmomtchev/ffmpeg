@@ -53,6 +53,10 @@ it('produce a video from stills', (done) => {
 
   const output = new Muxer({ outputFile: tmpFile, streams: [videoOutput] });
 
+  output.video[0].on('finish', () => {
+    fs.rm(tmpFile, done);
+  });
+
   const state = { height: 720 / 2, speed: 0 };
   let totalFrames = 250;
   let pts = 0;
@@ -62,9 +66,7 @@ it('produce a video from stills', (done) => {
     do {
       if (--totalFrames === 0) {
         callback = () => {
-          videoOutput.end(() => {
-            fs.rm(tmpFile, done);
-          });
+          videoOutput.end();
         };
       }
       const image = genFrame(state);
@@ -76,8 +78,9 @@ it('produce a video from stills', (done) => {
       frame.setPts(new ffmpeg.Timestamp(pts++, timeBase));
 
       // This is the Node.js Writable protocol
-    } while (videoOutput.write(frame, 'binary', callback) && !callback);
-    videoOutput.once('drain', write);
+    } while (videoOutput.write(frame, 'binary', callback) && totalFrames > 0);
+    if (totalFrames > 0)
+      videoOutput.once('drain', write);
   };
   write();
 
