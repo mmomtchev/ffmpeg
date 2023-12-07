@@ -10,17 +10,11 @@
     "declaration": true,
     "paths": {
       "node-ffmpeg": [
-        "./lib"
+        "../lib"
       ],
       "node-ffmpeg/Stream": [
-        "./lib/Stream"
+        "../lib/Stream"
       ]
     }
-  },
-  "include": [
-    "src/lib"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  }
 }

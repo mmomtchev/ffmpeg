@@ -1,5 +1,8 @@
 node_modules
 build
+lib/*
+!lib/index.js
+!lib/index.d.ts
 
 *.mp4
 *.mkv

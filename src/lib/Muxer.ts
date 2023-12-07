@@ -1,5 +1,5 @@
 import { EventEmitter, Writable, WritableOptions } from 'node:stream';
-import ffmpeg from '.';
+import ffmpeg from 'node-ffmpeg';
 
 const { FormatContext, OutputFormat } = ffmpeg;
 

@@ -26,26 +26,13 @@
           ],
           'destination': '<(module_path)'
         }
-      ]
-    },
-    {
-      'target_name': 'action_after_build',
-      'type': 'none',
-      'dependencies': [ '<(module_name)' ],
-      'copies': [
-        {
-          'files': [
-            '<(PRODUCT_DIR)/node-ffmpeg.node'
-          ],
-          'destination': '<(module_path)'
-        }
       ],
-      "actions": [
+      'actions': [
         {
-          "action_name": "tsc",
-          "inputs":  [ "src/lib/index.ts" ],
-          "outputs": [ "lib/index.js" ],
-          "action": [ "npx", "tsc" ]
+          'action_name': 'tsc',
+          'inputs':  [ 'src/lib/Stream.ts' ],
+          'outputs': [ 'lib/Stream.js' ],
+          'action': [ 'npx', 'tsc' ]
         }
       ]
     }
