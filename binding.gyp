@@ -32,7 +32,14 @@
           'action_name': 'tsc',
           'inputs':  [ 'src/lib/Stream.ts' ],
           'outputs': [ 'lib/Stream.js' ],
-          'action': [ 'npx', 'tsc' ]
+          'conditions': [
+            ['OS != "win"', {
+              'action': [ 'npx', 'tsc' ]
+            }],
+            ['OS == "win"', {
+              'action': [ 'npx tsc' ]
+            }]
+          ]
         }
       ]
     }
