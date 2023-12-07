@@ -46,7 +46,7 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<OptionalErrorCode>("ErrorCode")
           .cons<std::error_code &>()
           .def<&OptionalErrorCode::null, Nobind::ReturnShared>("null")
-          .def < &OptionalErrorCode::operator bool>("notEmpty").def < &OptionalErrorCode::operator*>("code");
+          .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
 // Some important constants
 #include "constants"
@@ -66,6 +66,8 @@ NOBIND_MODULE(ffmpeg, m) {
           "openOutput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
            Nobind::ReturnAsync>("openOutputAsync")
+      .def<&FormatContext::close>("close")
+      .def<&FormatContext::close, Nobind::ReturnAsync>("closeAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo),

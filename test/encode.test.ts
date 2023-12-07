@@ -62,8 +62,9 @@ it('produce a video from stills', (done) => {
     do {
       if (--totalFrames === 0) {
         callback = () => {
-          videoOutput.end();
-          fs.rm(tmpFile, done);
+          videoOutput.end(() => {
+            fs.rm(tmpFile, done);
+          });
         };
       }
       const image = genFrame(state);
