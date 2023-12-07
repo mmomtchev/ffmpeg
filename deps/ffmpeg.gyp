@@ -50,7 +50,7 @@
           'variables': {
             'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && python3 -m conans.conan install .. -of build --build=nolibx265 --build=missing'
+              ' && python3 -m conans.conan install .. -of build --build=libx265 --build=missing'
               ' 1>&2 )'
           },
           'direct_dependent_settings': {
