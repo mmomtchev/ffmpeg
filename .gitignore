@@ -1,6 +1,5 @@
 node_modules
 build
-lib/binding
 
 *.mp4
 *.mkv
