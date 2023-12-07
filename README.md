@@ -30,6 +30,75 @@ This will pull and build `ffmpeg` using `conan` which will leave a very large di
 
 The easiest way to use `node-ffmpeg` is the high-level streams API.
 
+### Quickstart
+
+A quick example for generalized video transcoding using the streams API.
+
+```ts
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from 'node-ffmpeg/Stream';
+
+// Create a Demuxer - a Demuxer is an object which has multiple ReadableStream,
+// it decodes the input container format and emits compressed data
+const input = new Demuxer({ inputFile:'launch.mp4' });
+
+// Wait for the Demuxer to read the file headers and to identify the various streams
+input.on('ready', () => {
+    // We will be discarding the audio stream
+    const audioDiscard = new Discarder();
+    // A VideoDecoder is a TransformStream that reads compressed video data
+    // and sends raw video frames (this is the decoding codec)
+    const videoInput = new VideoDecoder(input.video[0]);
+    // A VideoDefinition is an object with all the properties of the stream
+    const videoInputDefintion = videoInput.definition();
+
+    // Such as codec, bitrate, framerate, frame size, pixel format
+    const videoOutputDefintion = {
+      type: 'Video',
+      codec: ffmpeg.AV_CODEC_H264,
+      bitRate: 2.5e6,
+      width: 320,
+      height: 200,
+      frameRate: new ffmpeg.Rational(25, 1),
+      pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
+    } as VideoStreamDefinition;
+
+    // A video encoder is a TransformStream that reads raw video frames
+    // and sends compressed video data (this is the encoding codec)
+    const videoOutput = new VideoEncoder(videoOutputDefintion);
+
+    // A VideoTransform is a TransformStream that reads raw video frames
+    // and sends raw video frames - with different frame size or pixel format
+    const videoRescaler = new VideoTransform({
+      input: videoInputDefintion,
+      output: videoOutputDefintion,
+      interpolation: ffmpeg.SWS_BILINEAR
+    });
+
+    // A Muxer is an object that contains multiple WritableStream
+    // It multiplexes those streams, handling interleaving by buffering,
+    // and writes the to the output format
+    const output = new Muxer({ outputFile: 'video.mkv', outputFormat: 'mkv', streams: [videoOutput] });
+
+    // The transcoding operation is completely asynchronous, it is finished
+    // when all output streams are finished
+    output.video[0].on('finish', () => {
+      console.log('we are done!');
+    });
+
+    // These are the error handlers
+    input.video[0].on('error', (err) => console.error(err));
+    input.audio[0].on('error', (err) => console.error(err));
+    output.video[0].on('error', (err) => console.error(err));
+
+    // This launches the transcoding
+    // Demuxer -> Decoder -> Rescaler -> Encoder -> Muxer
+    input.video[0].pipe(videoInput).pipe(videoRescaler).pipe(videoOutput).pipe(output.video[0]);
+    input.audio[0].pipe(audioDiscard);
+});
+```
+
+### More examples
+
 You should start by looking at the unit tests:
   * [`transcode.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/transcode.test.ts) contains simple examples for transcoding audio and video
   * [`extract.test.ts`](https://github.com/mmomtchev/node-ffmpeg/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
