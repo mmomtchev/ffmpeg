@@ -5,12 +5,16 @@
     "strictNullChecks": true,
     "target": "es2015",
     "esModuleInterop": true,
+    "outDir": "lib",
     "paths": {
       "node-ffmpeg": [
         "."
       ]
     }
   },
+  "include": [
+    "src/lib"
+  ],
   "exclude": [
     "node_modules"
   ]

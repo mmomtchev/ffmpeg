@@ -6,8 +6,8 @@
     {
       'target_name': '<(module_name)',
       'sources': [
-        'src/avcpp-nobind.cc',
-        'src/avcpp-frame.cc'
+        'src/binding/avcpp-nobind.cc',
+        'src/binding/avcpp-frame.cc'
       ],
       'include_dirs': [
         '<!@(node -p "require(\'node-addon-api\').include")',
@@ -25,6 +25,27 @@
             '<(PRODUCT_DIR)/node-ffmpeg.node'
           ],
           'destination': '<(module_path)'
+        }
+      ]
+    },
+    {
+      'target_name': 'action_after_build',
+      'type': 'none',
+      'dependencies': [ '<(module_name)' ],
+      'copies': [
+        {
+          'files': [
+            '<(PRODUCT_DIR)/node-ffmpeg.node'
+          ],
+          'destination': '<(module_path)'
+        }
+      ],
+      "actions": [
+        {
+          "action_name": "tsc",
+          "inputs":  [ "src/lib/index.ts" ],
+          "outputs": [ "lib/index.js" ],
+          "action": [ "npx", "tsc" ]
         }
       ]
     }

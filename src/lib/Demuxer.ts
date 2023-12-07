@@ -1,5 +1,5 @@
 import { EventEmitter, Readable, ReadableOptions } from 'node:stream';
-import ffmpeg from '..';
+import ffmpeg from '.';
 
 const { FormatContext } = ffmpeg;
 
