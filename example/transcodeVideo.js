@@ -1,6 +1,7 @@
 // JavaScript reimplementation of
 // https://github.com/h4tr3d/avcpp/blob/master/example/api2-samples/api2-decode-encode-video.cpp
-const ffmpeg = require('../build/Debug/node-ffmpeg-avcpp.node');
+// (video transcoding using the low-level C++ API from JavaScript)
+const ffmpeg = require('../lib');
 const {
   FormatContext,
   findEncodingCodecFormat,
@@ -11,7 +12,7 @@ const {
 } = ffmpeg;
 
 if (!process.argv[3]) {
-  console.log('Usage: node transcode.js <input> <ouput>');
+  console.log('Usage: node transcodeVideo.js <input> <ouput>');
   process.exit(1);
 }
 
