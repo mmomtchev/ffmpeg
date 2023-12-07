@@ -36,6 +36,7 @@ jobs:
         path: ~/.conan
         key: ${{ matrix.platform }}
     - run: npm install --ignore-scripts --production
+    - run: npm install typescript
     - run: npx node-pre-gyp configure
       env:
         PKG_CONFIG_PATH:
