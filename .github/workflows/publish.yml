@@ -28,12 +28,9 @@ jobs:
         echo CC=gcc-10 >> $GITHUB_ENV
         echo CXX=g++-10 >> $GITHUB_ENV
       if: matrix.platform == 'ubuntu-20.04'
-    - run: npm install --ignore-scripts --production
-    - run: npx node-pre-gyp configure
+    - run: npm install
       env:
         PKG_CONFIG_PATH:
-    - run: npx node-pre-gyp build
-    - run: npm install
     - run: npm test
     - run: npx @mapbox/node-pre-gyp package
     - run: npx @mmomtchev/node-pre-gyp-github publish
