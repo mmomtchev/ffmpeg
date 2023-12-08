@@ -1,4 +1,5 @@
-import { EventEmitter, Writable, WritableOptions } from 'node:stream';
+import { EventEmitter, WritableOptions } from 'node:stream';
+import { EncodedMediaWritable, MediaEncoder, MediaStream, isAudioDefinition, isVideoDefinition } from './MediaStream';
 import ffmpeg from 'node-ffmpeg';
 
 const { FormatContext, OutputFormat } = ffmpeg;
@@ -8,7 +9,7 @@ export const verbose = (process.env.DEBUG_MUXER || process.env.DEBUG_ALL) ? cons
 export interface MuxerOptions extends WritableOptions {
   outputFile: string;
   outputFormat?: string;
-  streams: any[];
+  streams: MediaEncoder[];
   objectMode?: never;
 }
 
@@ -26,14 +27,14 @@ export class Muxer extends EventEmitter {
   protected outputFormatName: string;
   protected outputFormat: any;
   protected formatContext: any;
-  protected rawStreams: any;
+  protected rawStreams: MediaEncoder[];
   protected writing: boolean;
   protected primed: boolean;
   protected ended: number;
   protected writingQueue: { idx: number, packet: any, callback: (error?: Error | null | undefined) => void; }[];
-  streams: Writable[];
-  video: Writable[];
-  audio: Writable[];
+  streams: EncodedMediaWritable[];
+  video: EncodedMediaWritable[];
+  audio: EncodedMediaWritable[];
 
   constructor(options: MuxerOptions) {
     super();
@@ -49,7 +50,7 @@ export class Muxer extends EventEmitter {
     this.writingQueue = [];
 
     for (const idx in this.rawStreams) {
-      const writable = new Writable({
+      const writable = new EncodedMediaWritable({
         objectMode: true,
         write: (chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
           this.write(+idx, chunk, callback);
@@ -107,10 +108,10 @@ export class Muxer extends EventEmitter {
       const def = this.rawStreams[idx].definition();
 
       let stream;
-      if (def.type === 'Video') {
+      if (isVideoDefinition(def)) {
         stream = this.formatContext.addVideoStream(coder);
         stream.setFrameRate(def.frameRate);
-      } else if (def.type === 'Audio') {
+      } else if (isAudioDefinition(def)) {
         stream = this.formatContext.addAudioStream(coder);
       } else {
         throw new Error('Unsupported stream type');

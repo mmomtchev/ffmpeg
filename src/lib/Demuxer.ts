@@ -1,5 +1,6 @@
-import { EventEmitter, Readable, ReadableOptions } from 'node:stream';
+import { EventEmitter, ReadableOptions } from 'node:stream';
 import ffmpeg from 'node-ffmpeg';
+import { EncodedMediaReadable } from './MediaStream';
 
 const { FormatContext } = ffmpeg;
 
@@ -10,21 +11,9 @@ export interface DemuxerOptions extends ReadableOptions {
   objectMode?: never;
 }
 
-interface DemuxedStreamOptions extends ReadableOptions {
-  _stream?: any;
-}
-
-class DemuxedStream extends Readable {
-  _stream: any;
-
-  constructor(options: DemuxedStreamOptions) {
-    super(options);
-    this._stream = options._stream;
-  }
-}
-
 /**
- * A Demuxer is an object that exposes a number of Readables
+ * A Demuxer is an object that exposes a number of Readables.
+ * It emits 'ready' when its outputs have been created.
  * 
  * @example
  * const input = new Demuxer({ inputFile: 'input.mp4') });
@@ -37,9 +26,9 @@ export class Demuxer extends EventEmitter {
   protected inputFile: string;
   protected formatContext: any;
   protected rawStreams: any[];
-  streams: DemuxedStream[];
-  video: DemuxedStream[];
-  audio: DemuxedStream[];
+  streams: EncodedMediaReadable[];
+  video: EncodedMediaReadable[];
+  audio: EncodedMediaReadable[];
   reading: boolean;
 
   constructor(options: DemuxerOptions) {
@@ -64,7 +53,7 @@ export class Demuxer extends EventEmitter {
       verbose(`Demuxer: identified stream ${i}: ${stream.mediaType()}, ` +
         `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''} ` +
         `duration ${stream.duration().toString()}`);
-      this.streams[i] = new DemuxedStream({
+      this.streams[i] = new EncodedMediaReadable({
         objectMode: true,
         read: (size: number) => {
           this.read(i, size);
