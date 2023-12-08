@@ -16,15 +16,15 @@ The current goal is to simply be able to guarantee that a ***correct*** JavaScri
 
 All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools. Background processing is provided via the `libuv` thread pool of Node.js - which means that, at least in theory - you can be decoding and encoding on two different cores while V8/JavaScript runs on a third core. In practice, you need huge buffers for this to actually be the case.
 
-If you need to access the actual video data, then, depending on the applied processing, performance may be an order of magnitude lower.
+If you need to access the actual pixel data or audio samples, then, depending on the processing, performance may be an order of magnitude lower.
 
 # Usage
 
 ## Install
 
-Currently the only way to get `node-ffmpeg` is to build it from source using `node-pre-gyp` which will be automatically called by `npm install`.
+`node-ffmpeg` comes with prebuilt binaries for Windows, Linux and macOS on x64 platforms.
 
-This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${USER}/.conan` which can be safely deleted.
+You can rebuild it from source using `node-pre-gyp` which will be automatically called by `npm install`. This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${HOME}/.conan` which can be safely deleted.
 
 ## Streams API
 
