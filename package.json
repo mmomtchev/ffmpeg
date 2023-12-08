@@ -42,7 +42,7 @@
   },
   "exports": {
     ".": "./lib/index.js",
-    "./Stream": "./lib/Stream.js"
+    "./stream": "./lib/Stream.js"
   },
   "homepage": "https://github.com/mmomtchev/node-ffmpeg#readme",
   "dependencies": {

@@ -35,7 +35,7 @@ The easiest way to use `node-ffmpeg` is the high-level streams API.
 A quick example for generalized video transcoding using the streams API.
 
 ```ts
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from 'node-ffmpeg/Stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from 'node-ffmpeg/stream';
 
 // Create a Demuxer - a Demuxer is an object that has multiple ReadableStream,
 // it decodes the input container format and emits compressed data

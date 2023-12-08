@@ -12,7 +12,7 @@
       "node-ffmpeg": [
         "./lib"
       ],
-      "node-ffmpeg/Stream": [
+      "node-ffmpeg/stream": [
         "./lib/Stream"
       ]
     }
