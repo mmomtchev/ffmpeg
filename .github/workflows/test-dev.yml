@@ -29,7 +29,7 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: "3.11"
-    - name: Switch to g++ 10
+    - name: (if on Ubuntu 20.04) switch to g++ 10
       run: |
         echo CC=gcc-10 >> $GITHUB_ENV
         echo CXX=g++-10 >> $GITHUB_ENV
