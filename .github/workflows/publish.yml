@@ -34,3 +34,5 @@ jobs:
     - run: npm test
     - run: npx @mapbox/node-pre-gyp package
     - run: npx @mmomtchev/node-pre-gyp-github publish
+      env:
+        NODE_PRE_GYP_GITHUB_TOKEN: ${{ secrets.NODE_PRE_GYP_GITHUB_TOKEN }}
