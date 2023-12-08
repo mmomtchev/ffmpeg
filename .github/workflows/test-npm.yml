@@ -36,6 +36,6 @@ jobs:
     - name: Run the unit tests
       run: |
         cd test
-        npx mocha --reporter=tap -r ts-node/register -r tsconfig-paths/register --timeout 120000 --v8-expose-gc *.test.?s
+        npx mocha --reporter=tap -r ts-node/register -r tsconfig-paths/register --timeout 120000 --v8-expose-gc *.test.ts
       env:
         TS_NODE_PROJECT: tsconfig.test.json
