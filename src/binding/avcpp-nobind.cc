@@ -46,7 +46,7 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<OptionalErrorCode>("ErrorCode")
           .cons<std::error_code &>()
           .def<&OptionalErrorCode::null, Nobind::ReturnShared>("null")
-          .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
+          .def < &OptionalErrorCode::operator bool>("notEmpty").def < &OptionalErrorCode::operator*>("code");
 
 // Some important constants
 #include "constants"
@@ -339,14 +339,14 @@ NOBIND_MODULE(ffmpeg, m) {
       .ext<static_cast<ToString_t<AudioSamples>>(&ToString<AudioSamples>)>("toString");
 
   m.def<Timestamp>("Timestamp")
-      .cons<int64_t, const Rational &>()
-      .def<&Timestamp::seconds>("seconds")
-      .def<&Timestamp::isNoPts>("isNoPts")
-      .def<&Timestamp::isValid>("isValid")
-      .def<&Timestamp::operator+= >("addTo")
-      .def<&Timestamp::operator-= >("subFrom")
-      .def<&Timestamp::timebase>("timebase")
-      .ext<static_cast<ToString_t<Timestamp>>(&ToString<Timestamp>)>("toString");
+          .cons<int64_t, const Rational &>()
+          .def<&Timestamp::seconds>("seconds")
+          .def<&Timestamp::isNoPts>("isNoPts")
+          .def<&Timestamp::isValid>("isValid")
+          .def < &Timestamp::operator+=>("addTo").def <
+      &Timestamp::operator-=>("subFrom")
+           .def<&Timestamp::timebase>("timebase")
+           .ext<static_cast<ToString_t<Timestamp>>(&ToString<Timestamp>)>("toString");
 
   m.def<Rational>("Rational").cons<int, int>().ext<static_cast<ToString_t<Rational>>(&ToString<Rational>)>("toString");
 

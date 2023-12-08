@@ -7,7 +7,7 @@
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
     "test": "npx mocha",
-    "lint": "clang-format -i src/*.cc && eslint --fix lib/*.[jt]s test/*.[jt]s",
+    "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
     "clean": "node-pre-gyp clean && tsc --build --clean",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags && node ./scripts/publish-packages.js",
@@ -55,7 +55,9 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.9.4",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
     "chai": "^4.3.10",
+    "eslint-plugin-mocha": "^10.2.0",
     "magickwand.js": "^1.0.0-beta.6",
     "mocha": "^10.2.0",
     "ts-node": "^10.9.1",

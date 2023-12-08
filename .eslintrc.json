@@ -29,7 +29,7 @@
     {
       "files": [
         "test/*.ts",
-        "lib/*.ts"
+        "src/lib/*.ts"
       ],
       "parser": "@typescript-eslint/parser",
       "plugins": [

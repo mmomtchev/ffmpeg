@@ -1,4 +1,4 @@
-import { Readable, ReadableOptions, Writable, WritableOptions } from "node:stream";
+import { Readable, ReadableOptions, Writable } from 'node:stream';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -74,4 +74,4 @@ export class EncodedMediaReadable extends Readable {
 /**
  * A generic compressed media stream to a Muxer.
  */
-export class EncodedMediaWritable extends Writable { };
+export class EncodedMediaWritable extends Writable { }
