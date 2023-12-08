@@ -1,4 +1,4 @@
-# `ffmpeg.js` Changelog
+# `@mmomtchev/ffmpeg` Changelog
 
 All notable changes to this project will be documented in this file.
 

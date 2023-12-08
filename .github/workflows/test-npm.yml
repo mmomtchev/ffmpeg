@@ -31,12 +31,12 @@ jobs:
         python-version: "3.11"
     - name: Set up the unit tests
       run: |
-        curl https://codeload.github.com/mmomtchev/ffmpeg.js/zip/refs/tags/v${{ github.event.inputs.version }} --output repo.zip
+        curl https://codeload.github.com/mmomtchev/ffmpeg/zip/refs/tags/v${{ github.event.inputs.version }} --output repo.zip
         unzip repo.zip
-        mv ffmpeg.js-${{ github.event.inputs.version }}/test .
+        mv ffmpeg-${{ github.event.inputs.version }}/test .
         npm install @types/chai @types/mocha @types/node chai magickwand.js mocha ts-node tsconfig-paths
     - name: Install from npm
-      run: npm i ffmpeg.js@${{ github.event.inputs.version }}
+      run: npm i @mmomtchev/ffmpeg@${{ github.event.inputs.version }}
     - name: Run the unit tests
       run: |
         cd test

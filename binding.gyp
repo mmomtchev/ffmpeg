@@ -22,7 +22,7 @@
       'copies': [
         {
           'files': [
-            '<(PRODUCT_DIR)/ffmpeg.js.node'
+            '<(PRODUCT_DIR)/ffmpeg.node'
           ],
           'destination': '<(module_path)'
         }

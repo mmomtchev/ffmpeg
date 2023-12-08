@@ -9,10 +9,10 @@
     "outDir": "lib",
     "declaration": true,
     "paths": {
-      "ffmpeg.js": [
+      "@mmomtchev/ffmpeg": [
         "./lib"
       ],
-      "ffmpeg.js/stream": [
+      "@mmomtchev/ffmpeg/stream": [
         "./lib/Stream"
       ]
     }

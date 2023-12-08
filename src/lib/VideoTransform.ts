@@ -1,5 +1,5 @@
 import { Transform, TransformOptions, TransformCallback } from 'node:stream';
-import ffmpeg from 'ffmpeg.js';
+import ffmpeg from '@mmomtchev/ffmpeg';
 import { VideoStreamDefinition } from './MediaStream';
 
 export interface VideoTransformOptions extends TransformOptions {

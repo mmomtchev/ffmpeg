@@ -3,8 +3,8 @@ import * as fs from 'node:fs';
 
 import { assert } from 'chai';
 
-import ffmpeg from 'ffmpeg.js';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, Discarder } from 'ffmpeg.js/stream';
+import ffmpeg from '@mmomtchev/ffmpeg';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, Discarder } from '@mmomtchev/ffmpeg/stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 

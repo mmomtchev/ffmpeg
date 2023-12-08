@@ -1,5 +1,5 @@
 import { Transform } from 'node:stream';
-import ffmpeg from 'ffmpeg.js';
+import ffmpeg from '@mmomtchev/ffmpeg';
 import { AudioStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 

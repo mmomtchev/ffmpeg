@@ -1,5 +1,5 @@
 import { EventEmitter, ReadableOptions } from 'node:stream';
-import ffmpeg from 'ffmpeg.js';
+import ffmpeg from '@mmomtchev/ffmpeg';
 import { EncodedMediaReadable } from './MediaStream';
 
 const { FormatContext } = ffmpeg;

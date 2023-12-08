@@ -1,12 +1,12 @@
 # ffmpeg (w/avcpp) bindings for Node.js
 
-`ffmpeg.js` is a JavaScript wrapper around [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper around the low-level C API of [`ffmpeg`](https://ffmpeg.org/).
+`ffmpeg` is a JavaScript wrapper around [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper around the low-level C API of [`ffmpeg`](https://ffmpeg.org/).
 
 # Current status
 
 The project has an alpha version published to `npm` and basic video and audio demultiplexing, transcoding and multiplexing are functional.
 
-You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use - trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. `ffmpeg.js` should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use - trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. `ffmpeg` should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
 
 Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
 
@@ -22,20 +22,20 @@ If you need to access the actual pixel data or audio samples, then, depending on
 
 ## Install
 
-`ffmpeg.js` comes with prebuilt binaries for Windows, Linux and macOS on x64 platforms.
+`ffmpeg` comes with prebuilt binaries for Windows, Linux and macOS on x64 platforms.
 
 You can rebuild it from source using `node-pre-gyp` which will be automatically called by `npm install`. This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${HOME}/.conan` which can be safely deleted.
 
 ## Streams API
 
-The easiest way to use `ffmpeg.js` is the high-level streams API.
+The easiest way to use `ffmpeg` is the high-level streams API.
 
 ### Quickstart
 
 A quick example for generalized video transcoding using the streams API.
 
 ```ts
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from 'ffmpeg.js/stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from '@mmomtchev/ffmpeg/stream';
 
 // Create a Demuxer - a Demuxer is an object that has multiple ReadableStream,
 // it decodes the input container format and emits compressed data
@@ -104,11 +104,11 @@ input.on('ready', () => {
 ### More examples
 
 You should start by looking at the unit tests:
-  * [`transcode.test.ts`](https://github.com/mmomtchev/ffmpeg.js/blob/main/test/transcode.test.ts) contains simple examples for transcoding audio and video
-  * [`extract.test.ts`](https://github.com/mmomtchev/ffmpeg.js/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
-  * [`encode.test.ts`](https://github.com/mmomtchev/ffmpeg.js/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
-  * [`rescale.test.ts`](https://github.com/mmomtchev/ffmpeg.js/blob/main/test/rescale.test.ts) contains a simple example for rescaling/resampling a video using ffmpeg's built-in `libswscale`
-  * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg.js/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
+  * [`transcode.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/transcode.test.ts) contains simple examples for transcoding audio and video
+  * [`extract.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
+  * [`encode.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
+  * [`rescale.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/rescale.test.ts) contains a simple example for rescaling/resampling a video using ffmpeg's built-in `libswscale`
+  * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
 
 ## Supported pixel and audio formats
 

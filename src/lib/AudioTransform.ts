@@ -1,5 +1,5 @@
 import { Transform, TransformOptions, TransformCallback } from 'node:stream';
-import ffmpeg from 'ffmpeg.js';
+import ffmpeg from '@mmomtchev/ffmpeg';
 import { AudioStreamDefinition } from './MediaStream';
 
 export const verbose = (process.env.DEBUG_AUDIO_TRANSFORM || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
