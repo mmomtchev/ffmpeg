@@ -1,4 +1,4 @@
-name: Test published package
+name: Test npm package
 
 on:
   workflow_dispatch:

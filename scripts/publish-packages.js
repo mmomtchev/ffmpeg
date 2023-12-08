@@ -13,7 +13,7 @@ const pkg = {
 };
 const version = package_json.version;
 let workflowPublishId;
-const workflowPublishMatch = /publish/;
+const workflowPublishMatch = /[pP]ublish/;
 
 (async () => {
   const branch = (await exec('git branch --show-current')).stdout.trim();
