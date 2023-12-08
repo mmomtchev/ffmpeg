@@ -1,0 +1,13 @@
+.github
+.vscode
+.git
+
+node_modules
+build
+lib/binding
+
+*.mp4
+*.mkv
+
+test
+deps
