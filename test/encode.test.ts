@@ -2,8 +2,8 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { Magick } from 'magickwand.js';
 
-import ffmpeg from 'node-ffmpeg';
-import { VideoEncoder, Muxer } from 'node-ffmpeg/stream';
+import ffmpeg from 'ffmpeg.js';
+import { VideoEncoder, Muxer } from 'ffmpeg.js/stream';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 

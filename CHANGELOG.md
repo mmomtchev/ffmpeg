@@ -1,4 +1,4 @@
-# `node-ffmpeg` Changelog
+# `ffmpeg.js` Changelog
 
 All notable changes to this project will be documented in this file.
 

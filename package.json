@@ -1,5 +1,5 @@
 {
-  "name": "node-ffmpeg",
+  "name": "ffmpeg.js",
   "version": "0.9.0",
   "description": "avcpp (ffmpeg) bindings for Node.js",
   "main": "lib/index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mmomtchev/node-ffmpeg.git"
+    "url": "git+https://github.com/mmomtchev/ffmpeg.js.git"
   },
   "keywords": [
     "node.js",
@@ -25,26 +25,26 @@
     "codec"
   ],
   "binary": {
-    "module_name": "node-ffmpeg",
+    "module_name": "ffmpeg.js",
     "module_path": "./lib/binding/{platform}-{arch}",
     "remote_path": "v{version}",
-    "host": "https://github.com/mmomtchev/node-ffmpeg/releases/download/",
+    "host": "https://github.com/mmomtchev/ffmpeg.js/releases/download/",
     "package_name": "{platform}-{arch}.tar.gz",
     "hosting": {
       "provider": "github",
-      "repo": "mmomtchev/node-ffmpeg"
+      "repo": "mmomtchev/ffmpeg.js"
     }
   },
   "author": "Momtchil Momtchev <momtchil@momtchev.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mmomtchev/node-ffmpeg/issues"
+    "url": "https://github.com/mmomtchev/ffmpeg.js/issues"
   },
   "exports": {
     ".": "./lib/index.js",
     "./stream": "./lib/Stream.js"
   },
-  "homepage": "https://github.com/mmomtchev/node-ffmpeg#readme",
+  "homepage": "https://github.com/mmomtchev/ffmpeg.js#readme",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",
     "nobind17": "^1.1.1",

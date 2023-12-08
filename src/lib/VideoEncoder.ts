@@ -1,5 +1,5 @@
 import { Transform } from 'node:stream';
-import ffmpeg from 'node-ffmpeg';
+import ffmpeg from 'ffmpeg.js';
 import { VideoStreamDefinition, MediaStream } from './MediaStream';
 import { TransformCallback } from 'stream';
 
