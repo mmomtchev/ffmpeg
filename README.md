@@ -24,6 +24,10 @@ If you need to access the actual pixel data or audio samples, then, depending on
 
 `ffmpeg` comes with prebuilt binaries for Windows, Linux and macOS on x64 platforms.
 
+```shell
+npm i @mmomtchev/ffmpeg
+```
+
 You can rebuild it from source using `node-pre-gyp` which will be automatically called by `npm install`. This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${HOME}/.conan` which can be safely deleted.
 
 ## Streams API
