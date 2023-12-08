@@ -34,8 +34,7 @@ jobs:
         curl https://codeload.github.com/mmomtchev/node-ffmpeg/zip/refs/tags/v${{ github.event.inputs.version }} --output repo.zip
         unzip repo.zip
         mv node-ffmpeg-${{ github.event.inputs.version }}/test .
-        npm install @mapbox/node-pre-gyp nobind17 node-addon-api
-        npm @types/chai @types/mocha @types/node chai magickwand.js mocha ts-node tsconfig-paths
+        npm install @types/chai @types/mocha @types/node chai magickwand.js mocha ts-node tsconfig-paths
     - name: Install from npm
       run: npm i node-ffmpeg@${{ github.event.inputs.version }}
     - name: Run the unit tests
