@@ -49,9 +49,7 @@ describe('transcode', () => {
 
         const output = new Muxer({ outputFile: tempFile, outputFormat: 'mkv', streams: [audioOutput] });
 
-        output.audio[0].on('finish', () => {
-          done();
-        });
+        output.on('finish', done);
 
         input.video[0].on('error', done);
         input.audio[0].on('error', done);

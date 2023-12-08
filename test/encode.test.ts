@@ -53,7 +53,7 @@ it('produce a video from stills', (done) => {
 
   const output = new Muxer({ outputFile: tmpFile, streams: [videoOutput] });
 
-  output.video[0].on('finish', () => {
+  output.on('finish', () => {
     fs.rm(tmpFile, done);
   });
 

@@ -18,6 +18,7 @@ export interface MuxerOptions extends WritableOptions {
  * that can accept data from encoders.
  * The encoders must be created before creating the Muxer as
  * their parameters must be known beforehand.
+ * Emits 'finish' on close.
  * 
  * @example
  * const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
@@ -58,8 +59,9 @@ export class Muxer extends EventEmitter {
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
           if (error) {
             verbose(`Muxer: error on stream #${idx}, destroy all streams`, error);
-            for (const s of this.streams) {
-              s.destroy(error);
+            for (const s in this.streams) {
+              if (s !== idx)
+                this.streams[s].destroy(error);
             }
             this.formatContext.closeAsync()
               .then(() => callback(error))
@@ -76,7 +78,8 @@ export class Muxer extends EventEmitter {
             verbose('Muxer: All streams ended, writing trailer');
             this.formatContext.writeTrailerAsync()
               .then(() => this.formatContext.closeAsync())
-              .then(() => void callback(null))
+              .then(() => this.emit('finish'))
+              .then(() => callback(null))
               .catch(callback);
           } else {
             callback(null);

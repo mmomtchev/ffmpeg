@@ -85,7 +85,7 @@ input.on('ready', () => {
 
     // The transcoding operation is completely asynchronous, it is finished
     // when all output streams are finished
-    output.video[0].on('finish', () => {
+    output.on('finish', () => {
       console.log('we are done!');
     });
 

@@ -53,15 +53,7 @@ describe('transcode', () => {
 
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
 
-        let audioDone = false, videoDone = false;
-        output.video[0].on('finish', () => {
-          videoDone = true;
-          if (audioDone) done();
-        });
-        output.audio[0].on('finish', () => {
-          audioDone = true;
-          if (videoDone) done();
-        });
+        output.on('finish', done);
 
         input.video[0].on('error', done);
         input.audio[0].on('error', done);
@@ -102,7 +94,7 @@ describe('transcode', () => {
 
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
 
-        output.video[0].on('finish', () => void done());
+        output.on('finish', done);
 
         input.video[0].on('error', done);
         input.audio[0].on('error', done);
@@ -141,7 +133,7 @@ describe('transcode', () => {
 
         const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });
 
-        output.audio[0].on('finish', () => void done());
+        output.on('finish', done);
 
         input.video[0].on('error', done);
         input.audio[0].on('error', done);
