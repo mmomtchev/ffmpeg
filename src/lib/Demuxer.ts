@@ -1,4 +1,4 @@
-import { EventEmitter, ReadableOptions } from 'node:stream';
+import { EventEmitter, ReadableOptions, Writable } from 'node:stream';
 import ffmpeg from '@mmomtchev/ffmpeg';
 import { EncodedMediaReadable } from './MediaStream';
 
@@ -7,13 +7,16 @@ const { FormatContext } = ffmpeg;
 export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export interface DemuxerOptions extends ReadableOptions {
-  inputFile: string;
+  inputFile?: string;
   objectMode?: never;
 }
 
 /**
  * A Demuxer is an object that exposes a number of Readables.
  * It emits 'ready' when its outputs have been created.
+ * It can use either ffmpeg's built-in I/O (which is generally faster)
+ * when `inputFile` is specified or it can expose a Writable into
+ * which a ReadStream can be piped.
  * 
  * @example
  * const input = new Demuxer({ inputFile: 'input.mp4') });
@@ -21,19 +24,34 @@ export interface DemuxerOptions extends ReadableOptions {
  *  const audioInput = new AudioDecoder(input.audio[0]);
  *  const videoInput = new VideoDecoder(input.video[0]);
  * });
+ *
+ * @example
+ * const demuxer = new Demuxer();
+ * const instream = fs.createReadStream('input.mp4');
+ * input.on('ready', () => {
+ *  const audioInput = new AudioDecoder(input.audio[0]);
+ *  const videoInput = new VideoDecoder(input.video[0]);
+ * });
+ * instream.pipe(demuxer.input);
  */
 export class Demuxer extends EventEmitter {
-  protected inputFile: string;
+  protected inputFile: string | undefined;
   protected formatContext: any;
   protected rawStreams: any[];
   streams: EncodedMediaReadable[];
   video: EncodedMediaReadable[];
   audio: EncodedMediaReadable[];
+  input?: Writable;
   reading: boolean;
 
-  constructor(options: DemuxerOptions) {
+  constructor(options?: DemuxerOptions) {
     super();
-    this.inputFile = options.inputFile;
+    // Built-in ffmpeg I/O (generally faster)
+    this.inputFile = options?.inputFile;
+    // Reading from a ReadStream
+    if (!this.inputFile) {
+      this.input = new ffmpeg.WritableCustomIO;
+    }
     this.rawStreams = [];
     this.streams = [];
     this.video = [];
@@ -43,9 +61,15 @@ export class Demuxer extends EventEmitter {
   }
 
   protected async prime(): Promise<void> {
-    verbose(`Demuxer: opening ${this.inputFile}`);
     this.formatContext = new FormatContext;
-    await this.formatContext.openInputAsync(this.inputFile);
+    if (this.inputFile) {
+      verbose(`Demuxer: opening ${this.inputFile}`);
+      await this.formatContext.openInputAsync(this.inputFile);
+    } else {
+      verbose('Demuxer: reading from ReadStream');
+      const format = new ffmpeg.InputFormat;
+      await this.formatContext.openReadableAsync(this.input, format, 64 * 1024);
+    }
     await this.formatContext.findStreamInfoAsync();
 
     for (let i = 0; i < this.formatContext.streamsCount(); i++) {

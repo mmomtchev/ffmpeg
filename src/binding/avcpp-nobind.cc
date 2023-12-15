@@ -14,6 +14,7 @@
 
 #include <nobind.h>
 
+#include "avcpp-customio.h"
 #include "avcpp-frame.h"
 #include "avcpp-types.h"
 
@@ -62,6 +63,9 @@ NOBIND_MODULE(ffmpeg, m) {
           "openInput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput),
            Nobind::ReturnAsync>("openInputAsync")
+      .def<static_cast<void (FormatContext::*)(CustomIO *, InputFormat, OptionalErrorCode, size_t)>(
+               &FormatContext::openInput),
+           Nobind::ReturnAsync>("openReadableAsync")
       .def<&FormatContext::close>("close")
       .def<&FormatContext::close, Nobind::ReturnAsync>("closeAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
@@ -220,6 +224,9 @@ NOBIND_MODULE(ffmpeg, m) {
       .cons<>()
       .def<static_cast<bool (OutputFormat::*)(const std::string &, const std::string &, const std::string &)>(
           &OutputFormat::setFormat)>("setFormat");
+  m.def<InputFormat>("InputFormat")
+      .cons<>()
+      .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat");
 
   m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
 
@@ -365,6 +372,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioResampler::srcSampleRate>("srcSampleRate")
       .def<&AudioResampler::push>("push")
       .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop");
+
+  m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
 
   m.def<&SetLogLevel>("setLogLevel");
   av::init();
