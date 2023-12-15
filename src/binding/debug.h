@@ -1,5 +1,5 @@
 #ifdef DEBUG
-#define verbose(ARGS...) printf(ARGS)
+#define verbose(...) printf(__VA_ARGS__)
 #else
-#define verbose(ARGS...)
+#define verbose(...)
 #endif
