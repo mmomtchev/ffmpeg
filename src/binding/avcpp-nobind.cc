@@ -62,13 +62,8 @@ NOBIND_MODULE(ffmpeg, m) {
           "openInput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput),
            Nobind::ReturnAsync>("openInputAsync")
-      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput)>(
-          "openOutput")
-      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
-           Nobind::ReturnAsync>("openOutputAsync")
       .def<&FormatContext::close>("close")
       .def<&FormatContext::close, Nobind::ReturnAsync>("closeAsync")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo),
            Nobind::ReturnAsync>("findStreamInfoAsync")
@@ -199,7 +194,6 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioEncoderContext::setSampleRate>("setSampleRate")
       .def<&AudioEncoderContext::timeBase>("timeBase")
       .def<&AudioEncoderContext::setTimeBase>("setTimeBase")
-      .def<&AudioEncoderContext::setBitRate>("setBitRate")
       .def<&AudioEncoderContext::bitRate>("bitRate")
       .def<&AudioEncoderContext::setBitRate>("setBitRate")
       .def<&AudioEncoderContext::sampleFormat>("sampleFormat")
@@ -307,7 +301,6 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoFrame::refCount>("refCount")
       .def<&VideoFrame::pictureType>("pictureType")
       .def<&VideoFrame::setPictureType>("setPictureType")
-      .def<&VideoFrame::setKeyFrame>("setKeyFrame")
       .def<&VideoFrame::setQuality>("setQuality")
       .def<&VideoFrame::streamIndex>("streamIndex")
       .def<&VideoFrame::setStreamIndex>("setStreamIndex")
@@ -370,7 +363,6 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioResampler::srcChannelLayout>("srcChannelLayout")
       .def<&AudioResampler::srcChannels>("srcChannels")
       .def<&AudioResampler::srcSampleRate>("srcSampleRate")
-      .def<&AudioResampler::srcSampleFormat>("srcSampleFormat")
       .def<&AudioResampler::push>("push")
       .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop");
 
