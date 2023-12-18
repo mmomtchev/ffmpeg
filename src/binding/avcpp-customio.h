@@ -6,11 +6,19 @@
 #include <queue>
 #include <thread>
 
+// This is the Buffer that is passed to the background thread
+// This structure must be freed in the main thread!
 struct BufferItem {
+  // The beginning of the Buffer
   uint8_t *data;
+  // The current read position
   uint8_t *current;
+  // The length of the Buffer
   size_t length;
-  Napi::ObjectReference persistent;
+  // A persistent reference to the JS object, needed to protect it from the GC
+  Napi::ObjectReference buffer;
+  // The write callback to be called once the Buffer is consumed
+  Napi::ThreadSafeFunction callback;
 };
 
 // This class is very touchy and it is implemented manually.
@@ -29,10 +37,10 @@ struct BufferItem {
 class WritableCustomIO : public av::CustomIO, public Napi::ObjectWrap<WritableCustomIO> {
   static Napi::FunctionReference *js_Writable_ctor;
   static std::thread::id v8_main_thread;
-  std::queue<BufferItem> queue;
+  std::queue<BufferItem *> queue;
   std::mutex lock;
   std::condition_variable cv;
-  int64_t position;
+  bool eof;
 
 public:
   // A JS-convention constructor
