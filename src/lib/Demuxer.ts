@@ -16,9 +16,12 @@ export interface DemuxerOptions extends ReadableOptions {
  * It emits 'ready' when its outputs have been created.
  * It can use either ffmpeg's built-in I/O (which is generally faster)
  * when `inputFile` is specified or it can expose a Writable into
- * which a ReadStream can be piped.
+ * which a ReadStream can be piped. Not all files can streamed - they
+ * must have a special streaming structure with all the necessary
+ * data written in the header.
  * 
  * @example
+ * // Reading directly from the filesystem
  * const input = new Demuxer({ inputFile: 'input.mp4') });
  * input.on('ready', () => {
  *  const audioInput = new AudioDecoder(input.audio[0]);
@@ -26,6 +29,7 @@ export interface DemuxerOptions extends ReadableOptions {
  * });
  *
  * @example
+ * // Reading from a ReadStream
  * const demuxer = new Demuxer();
  * const instream = fs.createReadStream('input.mp4');
  * input.on('ready', () => {
