@@ -7,7 +7,8 @@
       'target_name': '<(module_name)',
       'sources': [
         'src/binding/avcpp-nobind.cc',
-        'src/binding/avcpp-frame.cc'
+        'src/binding/avcpp-frame.cc',
+        'src/binding/avcpp-customio.cc'
       ],
       'include_dirs': [
         '<!@(node -p "require(\'node-addon-api\').include")',
