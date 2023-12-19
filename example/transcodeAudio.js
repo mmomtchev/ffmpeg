@@ -86,7 +86,7 @@ if (adec.sampleFormat().get() > -1) {
 
 encoder.setTimeBase(ast.timeBase());
 encoder.setBitRate(adec.bitRate());
-encoder.setChannelLayout(new ChannelLayout(2));
+encoder.setChannelLayout(new ChannelLayout(ffmpeg.AV_CH_LAYOUT_STEREO));
 
 const encodec = new Codec;
 encoder.openCodec(encodec);
