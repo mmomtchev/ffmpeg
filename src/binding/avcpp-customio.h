@@ -81,7 +81,7 @@ class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCu
   std::mutex lock;
   std::condition_variable cv;
 
-  void PushPendingData(long);
+  void PushPendingData(int64_t);
 
 public:
   // A JS-convention constructor
