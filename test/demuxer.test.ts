@@ -46,12 +46,8 @@ describe('Demuxer', () => {
           audioClosed = true;
           if (videoClosed) done();
         });
-        videoStream.on('error', (err) => {
-          done(err);
-        });
-        audioStream.on('error', (err) => {
-          done(err);
-        });
+        videoStream.on('error', done);
+        audioStream.on('error', done);
       } catch (err) {
         done(err);
       }
@@ -97,12 +93,8 @@ describe('Demuxer', () => {
           audioClosed = true;
           if (videoClosed) done();
         });
-        videoStream.on('error', (err) => {
-          done(err);
-        });
-        audioStream.on('error', (err) => {
-          done(err);
-        });
+        videoStream.on('error', done);
+        audioStream.on('error', done);
       } catch (err) {
         done(err);
       }

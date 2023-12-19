@@ -41,7 +41,8 @@ export class VideoDecoder extends Transform implements MediaStream {
       this.busy = false;
       this.emit('ready');
       callback();
-    })().catch(callback);
+    })()
+      .catch(callback);
   }
 
   _transform(packet: any, encoding: BufferEncoding, callback: TransformCallback): void {
@@ -58,7 +59,8 @@ export class VideoDecoder extends Transform implements MediaStream {
       }
       this.busy = false;
       callback();
-    })().catch(callback);
+    })()
+      .catch(callback);
   }
 
   coder() {

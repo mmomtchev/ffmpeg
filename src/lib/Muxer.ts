@@ -1,4 +1,4 @@
-import { EventEmitter, WritableOptions } from 'node:stream';
+import { EventEmitter, Readable, WritableOptions } from 'node:stream';
 import { EncodedMediaWritable, MediaEncoder, isAudioDefinition, isVideoDefinition } from './MediaStream';
 import ffmpeg from '@mmomtchev/ffmpeg';
 
@@ -7,7 +7,14 @@ const { FormatContext, OutputFormat } = ffmpeg;
 export const verbose = (process.env.DEBUG_MUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export interface MuxerOptions extends WritableOptions {
-  outputFile: string;
+  /**
+   * The name of the output file, null for exposing a ReadStream
+   */
+  outputFile?: string;
+  /**
+   * Amount of data to buffer, only when writing to a WriteStream, @default 64Kb
+   */
+  highWaterMark?: number;
   outputFormat?: string;
   streams: MediaEncoder[];
   objectMode?: never;
@@ -18,13 +25,23 @@ export interface MuxerOptions extends WritableOptions {
  * that can accept data from encoders.
  * The encoders must be created before creating the Muxer as
  * their parameters must be known beforehand.
+ * Can write either to a file using the built-in ffmpeg I/O
+ * (which is generally faster as it allows seeking) or in can
+ * expose a Readable that can be piped into a WriteStream when
+ * `outputFile` is undefined.
+ * 
  * Emits 'finish' on close.
  * 
  * @example
- * const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
+ * const muxer = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
+ * 
+ * @example
+ * const muxer = new Muxer({ highWaterMark: 16 * 1024, outputFormat: 'mp4', streams: [videoOutput, audioOutput] });
+ * output.output.pipe(writable);
  */
 export class Muxer extends EventEmitter {
   protected outputFile: string;
+  protected highWaterMark: number;
   protected outputFormatName: string;
   protected outputFormat: any;
   protected formatContext: any;
@@ -33,13 +50,21 @@ export class Muxer extends EventEmitter {
   protected primed: boolean;
   protected ended: number;
   protected writingQueue: { idx: number, packet: any, callback: (error?: Error | null | undefined) => void; }[];
+  protected ready: Promise<void>[];
   streams: EncodedMediaWritable[];
   video: EncodedMediaWritable[];
   audio: EncodedMediaWritable[];
+  output?: Readable;
 
   constructor(options: MuxerOptions) {
     super();
-    this.outputFile = options.outputFile;
+    if (options.outputFile) {
+      this.outputFile = options.outputFile;
+    } else {
+      this.output = new ffmpeg.ReadableCustomIO;
+      this.outputFile = 'WriteStream';
+    }
+    this.highWaterMark = options.highWaterMark ?? (64 * 1024);
     this.outputFormatName = options.outputFormat ?? '';
     this.rawStreams = options.streams;
     this.streams = [];
@@ -49,8 +74,22 @@ export class Muxer extends EventEmitter {
     this.primed = false;
     this.ended = 0;
     this.writingQueue = [];
+    this.ready = [];
+
+    this.outputFormat = new OutputFormat;
+    this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
+    this.formatContext = new FormatContext;
+    this.formatContext.setOutputFormat(this.outputFormat);
 
     for (const idx in this.rawStreams) {
+      this.ready[idx] = new Promise((resolve, reject) => {
+        this.rawStreams[idx].on('ready', resolve);
+        this.rawStreams[idx].on('error', reject);
+      });
+      if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
+        this.rawStreams[idx].coder().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
+      }
+
       const writable = new EncodedMediaWritable({
         objectMode: true,
         write: (chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
@@ -81,6 +120,10 @@ export class Muxer extends EventEmitter {
               .then(() => this.emit('finish'))
               .then(() => callback(null))
               .catch(callback);
+            if (this.output) {
+              verbose('Muxer: closing ReadableStream');
+              (this.output as any)._final();
+            }
           } else {
             callback(null);
           }
@@ -100,36 +143,45 @@ export class Muxer extends EventEmitter {
   }
 
   protected async prime(): Promise<void> {
-    verbose(`Muxer: opening ${this.outputFile}`);
-    this.outputFormat = new OutputFormat;
-    this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
-    this.formatContext = new FormatContext;
-    this.formatContext.setOutputFormat(this.outputFormat);
+    try {
+      verbose(`Muxer: opening ${this.outputFile}, waiting for all inputs to be primed`);
+      // If all inputs are not properly primed before opening the muxer, this can lead
+      // to some very subtle problems such as the codec flags not being properly carried over
+      await Promise.all(this.ready);
+      verbose(`Muxer: opening ${this.outputFile}, all inputs are primed`);
 
-    for (const idx in this.rawStreams) {
-      const coder = this.rawStreams[idx].coder();
-      const def = this.rawStreams[idx].definition();
+      for (const idx in this.rawStreams) {
+        const coder = this.rawStreams[idx].coder();
+        const def = this.rawStreams[idx].definition();
 
-      let stream;
-      if (isVideoDefinition(def)) {
-        stream = this.formatContext.addVideoStream(coder);
-        stream.setFrameRate(def.frameRate);
-      } else if (isAudioDefinition(def)) {
-        stream = this.formatContext.addAudioStream(coder);
-      } else {
-        throw new Error('Unsupported stream type');
+        let stream;
+        if (isVideoDefinition(def)) {
+          stream = this.formatContext.addVideoStream(coder);
+          stream.setFrameRate(def.frameRate);
+        } else if (isAudioDefinition(def)) {
+          stream = this.formatContext.addAudioStream(coder);
+        } else {
+          throw new Error('Unsupported stream type');
+        }
+        verbose(`Muxer: created stream #${idx}: type ${stream.mediaType()}, ` +
+          `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''}`);
       }
-      verbose(`Muxer: created stream #${idx}: type ${stream.mediaType()}, ` +
-        `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''}`);
-    }
 
-    await this.formatContext.openOutputAsync(this.outputFile);
-    await this.formatContext.dumpAsync();
-    await this.formatContext.writeHeaderAsync();
-    await this.formatContext.flushAsync();
-    this.primed = true;
-    this.emit('ready');
-    verbose('Muxer: ready');
+      if (!this.output) {
+        await this.formatContext.openOutputAsync(this.outputFile);
+      } else {
+        await this.formatContext.openReadableAsync(this.output, this.highWaterMark);
+      }
+      await this.formatContext.dumpAsync();
+      await this.formatContext.writeHeaderAsync();
+      await this.formatContext.flushAsync();
+      this.primed = true;
+      this.emit('ready');
+      verbose('Muxer: ready');
+    } catch (e) {
+      this.emit('error', e);
+      throw e;
+    }
   }
 
   protected write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
@@ -160,6 +212,8 @@ export class Muxer extends EventEmitter {
         } catch (err) {
           verbose(`Muxer: ${err}`);
           job.callback(err as Error);
+          for (const s of this.streams) s.destroy(err as Error);
+          this.emit('error', err);
         }
       }
       this.writing = false;

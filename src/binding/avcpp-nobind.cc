@@ -65,7 +65,7 @@ NOBIND_MODULE(ffmpeg, m) {
            Nobind::ReturnAsync>("openInputAsync")
       .def<static_cast<void (FormatContext::*)(CustomIO *, InputFormat, OptionalErrorCode, size_t)>(
                &FormatContext::openInput),
-           Nobind::ReturnAsync>("openReadableAsync")
+           Nobind::ReturnAsync>("openWritableAsync")
       .def<&FormatContext::close>("close")
       .def<&FormatContext::close, Nobind::ReturnAsync>("closeAsync")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
@@ -80,6 +80,8 @@ NOBIND_MODULE(ffmpeg, m) {
           "openOutput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
            Nobind::ReturnAsync>("openOutputAsync")
+      .def<static_cast<void (FormatContext::*)(CustomIO *, OptionalErrorCode, size_t)>(&FormatContext::openOutput),
+           Nobind::ReturnAsync>("openReadableAsync")
       .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
           &FormatContext::addStream)>("addVideoStream")
       .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
@@ -118,6 +120,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&VideoDecoderContext::setRefCountedFrames>("setRefCountedFrames")
       .def<&VideoDecoderContext::codec>("codec")
+      .def<&VideoDecoderContext::isFlags>("isFlags")
+      .def<&VideoDecoderContext::addFlags>("addFlags")
       // This an inherited overloaded method, it must be cast to its base class type
       // C++ does not allow to cast it to the inheriting class type
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>("open")
@@ -147,6 +151,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&VideoEncoderContext::bitRate>("bitRate")
       .def<&VideoEncoderContext::setBitRate>("setBitRate")
       .def<&VideoEncoderContext::codec>("codec")
+      .def<&VideoEncoderContext::isFlags>("isFlags")
+      .def<&VideoEncoderContext::addFlags>("addFlags")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
           "openCodec")
@@ -178,6 +184,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&AudioDecoderContext::setRefCountedFrames>("setRefCountedFrames")
       .def<&AudioDecoderContext::codec>("codec")
+      .def<&AudioDecoderContext::isFlags>("isFlags")
+      .def<&AudioDecoderContext::addFlags>("addFlags")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
           "openCodec")
@@ -206,6 +214,8 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
           &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
       .def<&AudioEncoderContext::codec>("codec")
+      .def<&AudioEncoderContext::isFlags>("isFlags")
+      .def<&AudioEncoderContext::addFlags>("addFlags")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
           "openCodec")
@@ -223,10 +233,12 @@ NOBIND_MODULE(ffmpeg, m) {
   m.def<OutputFormat>("OutputFormat")
       .cons<>()
       .def<static_cast<bool (OutputFormat::*)(const std::string &, const std::string &, const std::string &)>(
-          &OutputFormat::setFormat)>("setFormat");
+          &OutputFormat::setFormat)>("setFormat")
+      .def<&OutputFormat::isFlags>("isFlags");
   m.def<InputFormat>("InputFormat")
       .cons<>()
-      .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat");
+      .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat")
+      .def<&InputFormat::isFlags>("isFlags");
 
   m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
 
@@ -374,6 +386,7 @@ NOBIND_MODULE(ffmpeg, m) {
       .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop");
 
   m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
+  m.Exports().Set("ReadableCustomIO", ReadableCustomIO::GetClass(m.Env()));
 
   m.def<&SetLogLevel>("setLogLevel");
   av::init();

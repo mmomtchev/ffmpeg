@@ -54,11 +54,8 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput, audioOutput] });
 
         output.on('finish', done);
-
-        input.video[0].on('error', done);
-        input.audio[0].on('error', done);
-        output.video[0].on('error', done);
-        output.audio[0].on('error', done);
+        input.on('error', done);
+        output.on('error', done);
 
         input.video[0].pipe(videoInput).pipe(videoOutput).pipe(output.video[0]);
         input.audio[0].pipe(audioInput).pipe(audioOutput).pipe(output.audio[0]);
@@ -95,10 +92,8 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
 
         output.on('finish', done);
-
-        input.video[0].on('error', done);
-        input.audio[0].on('error', done);
-        output.video[0].on('error', done);
+        input.on('error', done);
+        output.on('error', done);
 
         input.video[0].pipe(videoInput).pipe(videoOutput).pipe(output.video[0]);
         input.audio[0].pipe(audioDiscard);
@@ -134,10 +129,8 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, streams: [audioOutput] });
 
         output.on('finish', done);
-
-        input.video[0].on('error', done);
-        input.audio[0].on('error', done);
-        output.audio[0].on('error', done);
+        input.on('error', done);
+        output.on('error', done);
 
         input.audio[0].pipe(audioInput).pipe(audioOutput).pipe(output.audio[0]);
         input.video[0].pipe(videoDiscard);

@@ -45,7 +45,10 @@ export class AudioEncoder extends Transform implements MediaStream {
         `timeBase: ${this.encoder.timeBase()}`
       );
       this.busy = false;
-    })().then(() => void callback()).then(() => this.emit('ready')).catch(callback);
+    })()
+      .then(() => void callback())
+      .then(() => this.emit('ready'))
+      .catch(callback);
   }
 
   _transform(samples: any, encoding: BufferEncoding, callback: TransformCallback): void {
@@ -67,7 +70,9 @@ export class AudioEncoder extends Transform implements MediaStream {
       verbose(`AudioEncoder: Encoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
       this.push(packet);
       this.busy = false;
-    })().then(() => void callback()).catch(callback);
+    })()
+      .then(() => void callback())
+      .catch(callback);
   }
 
   _flush(callback: TransformCallback): void {
@@ -80,7 +85,8 @@ export class AudioEncoder extends Transform implements MediaStream {
         this.push(packet);
       } while (packet && packet.isComplete());
       callback();
-    })().catch(callback);
+    })()
+      .catch(callback);
   }
 
   coder(): any {

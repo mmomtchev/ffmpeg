@@ -50,10 +50,8 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, outputFormat: 'mkv', streams: [audioOutput] });
 
         output.on('finish', done);
-
-        input.video[0].on('error', done);
-        input.audio[0].on('error', done);
-        output.audio[0].on('error', done);
+        input.on('error', done);
+        output.on('error', done);
 
         input.video[0].pipe(videoDiscard);
         input.audio[0].pipe(audioInput).pipe(audioResampler).pipe(audioOutput).pipe(output.audio[0]);

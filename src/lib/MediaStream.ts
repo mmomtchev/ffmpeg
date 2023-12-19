@@ -1,4 +1,4 @@
-import { Readable, ReadableOptions, Writable } from 'node:stream';
+import { EventEmitter, Readable, ReadableOptions, Writable } from 'node:stream';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -22,6 +22,7 @@ export interface VideoStreamDefinition extends MediaStreamDefinition {
   height: number;
   frameRate: number;
   pixelFormat: any;
+  flags?: number;
 }
 
 export interface AudioStreamDefinition extends MediaStreamDefinition {
@@ -41,9 +42,9 @@ export function isAudioDefinition(def: MediaStreamDefinition): def is AudioStrea
 
 
 /**
- * A generic raw MediaStream, has a definition.
+ * A generic raw MediaStream, has a definition and it is an EventEmitter.
  */
-export interface MediaStream {
+export interface MediaStream extends EventEmitter {
   definition(): MediaStreamDefinition;
 }
 

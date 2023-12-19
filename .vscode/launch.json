@@ -6,7 +6,7 @@
       "request": "launch",
       "program": "/usr/bin/node",
       "args": [
-        "transcode.js",
+        "../example/transcodeAudio.js",
         "data/launch.mp4",
         "out.mp4"
       ],
@@ -34,12 +34,7 @@
       "request": "launch",
       "program": "/usr/bin/node",
       "args": [
-        "--expose-gc",
-        "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js",
-        "-R",
-        "tap",
-        "--timeout",
-        "0",
+        "node_modules/mocha/lib/cli/cli.js",
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -72,9 +67,9 @@
           "--v8-expose-gc",
           "--require", "ts-node/register",
           "--require", "tsconfig-paths/register",
-          "test/*.test.*"
+          "test/*.test.ts"
       ],
-      "program": "${workspaceFolder}/node_modules/.bin/mocha"
+      "program": "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
     }
   ]
 }

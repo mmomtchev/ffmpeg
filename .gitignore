@@ -4,6 +4,7 @@ lib/*
 !lib/index.js
 !lib/index.d.ts
 
-*.mp4
-*.mkv
-!test/data/*.mp4
+/test/*.mp4
+/test/*.mkv
+/test/*.jpg
+!test/data/*
