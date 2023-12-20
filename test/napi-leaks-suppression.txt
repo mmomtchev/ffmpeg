@@ -14,8 +14,6 @@ leak:ProcessWrap::OnExit
 leak:StringBytes::Encode
 leak:Realm::ExecuteBootstrapper
 
-# Known leak
-
 # Known leaks in V8
 leak:Heap_GenerationalBarrierSlow
 leak:Scavenger::ScavengePage
