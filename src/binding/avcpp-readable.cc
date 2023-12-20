@@ -7,7 +7,7 @@ Napi::FunctionReference *ReadableCustomIO::js_ctor = nullptr;
 std::thread::id ReadableCustomIO::v8_main_thread;
 
 ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
-    : av::CustomIO(), Napi::ObjectWrap<ReadableCustomIO>(info), queue_size(0) {
+    : av::CustomIO(), Napi::ObjectWrap<ReadableCustomIO>(info), queue_size(0), eof(false) {
   Napi::Env env{info.Env()};
 
   if (js_Readable_ctor == nullptr || js_ctor == nullptr)
@@ -16,7 +16,7 @@ ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
   js_Readable_ctor->Call(this->Value(), {});
 }
 
-ReadableCustomIO::~ReadableCustomIO() { verbose("ReadableCustomIO: destroy"); }
+ReadableCustomIO::~ReadableCustomIO() { verbose("ReadableCustomIO: destroy\n"); }
 
 void ReadableCustomIO::Init(const Napi::CallbackInfo &info) {
   Napi::Env env{info.Env()};
@@ -51,7 +51,7 @@ int ReadableCustomIO::write(const uint8_t *data, size_t size) {
   std::unique_lock lk{lock};
   cv.wait(lk, [this, size] { return queue_size < size; });
 
-  verbose("ReadableCustomIO: will receive data from ffmpeg\n");
+  verbose("ReadableCustomIO: write will unblock for ffmpeg\n");
   queue.push(buffer);
   queue_size += size;
   lk.unlock();
@@ -84,11 +84,19 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
       // This is EOF
       verbose("ReadableCustomIO: pushing null to signal EOF\n");
       push.MakeCallback(Value(), {env.Null()});
+      delete buf;
+      eof = true;
       return;
     }
     to_read -= buf->length;
     // Some alternative Node-API implementations (Electron for example) disallow external buffers
-    napi_value js_buffer = Napi::Buffer<uint8_t>::NewOrCopy(env, buf->data, buf->length);
+#ifdef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
+    napi_value js_buffer = Napi::Buffer<uint8_t>::Copy(env, buf->data, buf->length);
+    delete[] buf->data;
+#else
+    napi_value js_buffer =
+        Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
+#endif
     verbose("ReadableCustomIO: pushed Buffer length %lu, request remaining %ld\n", buf->length, to_read);
     push.MakeCallback(Value(), 1, &js_buffer);
     queue_size -= buf->length;
@@ -132,6 +140,8 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
   verbose("ReadableCustomIO: reading %lu bytes, queue_size is %lu\n", to_read, queue_size);
 
   std::unique_lock lk{lock};
+  if (eof)
+    throw Napi::Error::New(env, "_read past EOF");
   if (queue.empty()) {
     // No pending data, wait in a background thread
     (new AsyncReader(env, *this, to_read))->Queue();
@@ -144,7 +154,7 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
 }
 
 void ReadableCustomIO::_Final(const Napi::CallbackInfo &info) {
-  verbose("ReadableCustomIO: received EOF");
+  verbose("ReadableCustomIO: received EOF\n");
 
   auto *buffer = new BufferReadableItem{nullptr, 0};
 

@@ -16,7 +16,7 @@ WritableCustomIO::WritableCustomIO(const Napi::CallbackInfo &info)
   js_Writable_ctor->Call(this->Value(), {});
 }
 
-WritableCustomIO::~WritableCustomIO() { verbose("WritableCustomIO: destroy"); }
+WritableCustomIO::~WritableCustomIO() { verbose("WritableCustomIO: destroy\n"); }
 
 void WritableCustomIO::Init(const Napi::CallbackInfo &info) {
   Napi::Env env{info.Env()};

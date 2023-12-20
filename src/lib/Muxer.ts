@@ -119,13 +119,13 @@ export class Muxer extends EventEmitter {
               .then(() => this.formatContext.closeAsync())
               .then(() => {
                 callback(null);
+                if (this.output) {
+                  verbose('Muxer: closing ReadableStream');
+                  (this.output as any)._final();
+                }
                 this.emit('finish');
               })
               .catch(callback);
-            if (this.output) {
-              verbose('Muxer: closing ReadableStream');
-              (this.output as any)._final();
-            }
           } else {
             callback(null);
           }
