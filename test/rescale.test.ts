@@ -52,10 +52,8 @@ describe('transcode', () => {
         const output = new Muxer({ outputFile: tempFile, streams: [videoOutput] });
 
         output.video[0].on('finish', done);
-
-        input.video[0].on('error', done);
-        input.audio[0].on('error', done);
-        output.video[0].on('error', done);
+        input.on('error', done);
+        output.on('error', done);
 
         input.video[0].pipe(videoInput).pipe(videoRescaler).pipe(videoOutput).pipe(output.video[0]);
         input.audio[0].pipe(audioDiscard);

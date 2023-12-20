@@ -7,7 +7,14 @@ const { FormatContext } = ffmpeg;
 export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
 export interface DemuxerOptions extends ReadableOptions {
+  /**
+   * The name of the input file, null for reading from a ReadStream
+   */
   inputFile?: string;
+  /**
+   * Amount of data to buffer, only when reading from a ReadStream, @default 64Kb
+   */
+  highWaterMark?: number;
   objectMode?: never;
 }
 
@@ -40,6 +47,7 @@ export interface DemuxerOptions extends ReadableOptions {
  */
 export class Demuxer extends EventEmitter {
   protected inputFile: string | undefined;
+  protected highWaterMark: number;
   protected formatContext: any;
   protected rawStreams: any[];
   streams: EncodedMediaReadable[];
@@ -56,6 +64,7 @@ export class Demuxer extends EventEmitter {
     if (!this.inputFile) {
       this.input = new ffmpeg.WritableCustomIO;
     }
+    this.highWaterMark = options?.highWaterMark ?? (64 * 1024);
     this.rawStreams = [];
     this.streams = [];
     this.video = [];
@@ -65,34 +74,38 @@ export class Demuxer extends EventEmitter {
   }
 
   protected async prime(): Promise<void> {
-    this.formatContext = new FormatContext;
-    if (this.inputFile) {
-      verbose(`Demuxer: opening ${this.inputFile}`);
-      await this.formatContext.openInputAsync(this.inputFile);
-    } else {
-      verbose('Demuxer: reading from ReadStream');
-      const format = new ffmpeg.InputFormat;
-      await this.formatContext.openReadableAsync(this.input, format, 64 * 1024);
-    }
-    await this.formatContext.findStreamInfoAsync();
+    try {
+      this.formatContext = new FormatContext;
+      if (this.inputFile) {
+        verbose(`Demuxer: opening ${this.inputFile}`);
+        await this.formatContext.openInputAsync(this.inputFile);
+      } else {
+        verbose('Demuxer: reading from ReadStream');
+        const format = new ffmpeg.InputFormat;
+        await this.formatContext.openWritableAsync(this.input, format, this.highWaterMark);
+      }
+      await this.formatContext.findStreamInfoAsync();
 
-    for (let i = 0; i < this.formatContext.streamsCount(); i++) {
-      const stream = this.formatContext.stream(i);
-      verbose(`Demuxer: identified stream ${i}: ${stream.mediaType()}, ` +
-        `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''} ` +
-        `duration ${stream.duration().toString()}`);
-      this.streams[i] = new EncodedMediaReadable({
-        objectMode: true,
-        read: (size: number) => {
-          this.read(i, size);
-        },
-        _stream: stream
-      });
-      this.rawStreams[i] = stream;
-      if (stream.isVideo()) this.video.push(this.streams[i]);
-      if (stream.isAudio()) this.audio.push(this.streams[i]);
+      for (let i = 0; i < this.formatContext.streamsCount(); i++) {
+        const stream = this.formatContext.stream(i);
+        verbose(`Demuxer: identified stream ${i}: ${stream.mediaType()}, ` +
+          `${stream.isVideo() ? 'video' : ''}${stream.isAudio() ? 'audio' : ''} ` +
+          `duration ${stream.duration().toString()}`);
+        this.streams[i] = new EncodedMediaReadable({
+          objectMode: true,
+          read: (size: number) => {
+            this.read(i, size);
+          },
+          _stream: stream
+        });
+        this.rawStreams[i] = stream;
+        if (stream.isVideo()) this.video.push(this.streams[i]);
+        if (stream.isAudio()) this.audio.push(this.streams[i]);
+      }
+      this.emit('ready');
+    } catch (e) {
+      this.emit('error', e);
     }
-    this.emit('ready');
   }
 
   /**
@@ -129,6 +142,7 @@ export class Demuxer extends EventEmitter {
     })()
       .catch((err) => {
         for (const s of this.streams) s.destroy(err);
+        this.emit('error', err);
       })
       .then(() => {
         this.reading = false;

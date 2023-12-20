@@ -16,6 +16,8 @@ WritableCustomIO::WritableCustomIO(const Napi::CallbackInfo &info)
   js_Writable_ctor->Call(this->Value(), {});
 }
 
+WritableCustomIO::~WritableCustomIO() { verbose("WritableCustomIO: destroy"); }
+
 void WritableCustomIO::Init(const Napi::CallbackInfo &info) {
   Napi::Env env{info.Env()};
 
@@ -39,25 +41,25 @@ Napi::Function WritableCustomIO::GetClass(Napi::Env env) {
 }
 
 int WritableCustomIO::read(uint8_t *data, size_t size) {
-  verbose("ffmpeg asked for data %lu\n", (long unsigned)size);
+  verbose("WritableCustomIO: ffmpeg asked for data %lu\n", (long unsigned)size);
   if (std::this_thread::get_id() == v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
   if (eof) {
-    verbose("sending an EOF to ffmpeg\n");
+    verbose("WritableCustomIO: sending an EOF to ffmpeg\n");
     return AVERROR_EOF;
   }
 
   std::unique_lock lk{lock};
   cv.wait(lk, [this] { return !queue.empty(); });
 
-  verbose("will send data to ffmpeg\n");
+  verbose("WritableCustomIO: will send data to ffmpeg\n");
   size_t remaining = size;
   uint8_t *dst = data;
   while (remaining > 0) {
     auto *buf = queue.front();
     if (buf->data == nullptr) {
       // EOF
-      verbose("reached EOF, sending last %lu bytes to ffmpeg\n", size - remaining);
+      verbose("WritableCustomIO: reached EOF, sending last %lu bytes to ffmpeg\n", size - remaining);
       buf->callback.NonBlockingCall();
       buf->callback.Release();
       eof = true;
@@ -65,15 +67,17 @@ int WritableCustomIO::read(uint8_t *data, size_t size) {
     }
     size_t buf_remaining = buf->length - (buf->current - buf->data);
     if (buf_remaining > remaining) {
-      verbose("will partially copy BufferItem %p, %lu of %lu\n", buf->current, remaining, buf_remaining);
-      // The current BufferItem has more data than we need
+      verbose("WritableCustomIO: will partially copy BufferWritableItem %p, %lu of %lu\n", buf->current, remaining,
+              buf_remaining);
+      // The current BufferWritableItem has more data than we need
       memcpy(dst, buf->current, remaining);
       buf->current += remaining;
       dst += remaining;
       remaining = 0;
     } else {
-      // The current BufferItem has less or exactly as much data as we need
-      verbose("will consume BufferItem %p %lu, need %lu\n", buf->current, buf_remaining, remaining);
+      // The current BufferWritableItem has less or exactly as much data as we need
+      verbose("WritableCustomIO: will consume BufferWritableItem %p %lu, need %lu\n", buf->current, buf_remaining,
+              remaining);
       memcpy(dst, buf->current, buf_remaining);
       dst += buf_remaining;
       remaining -= buf_remaining;
@@ -82,12 +86,12 @@ int WritableCustomIO::read(uint8_t *data, size_t size) {
 
       queue.pop();
       if (queue.empty() && remaining > 0) {
-        verbose("ate everything, still need more, will go back to sleep\n");
+        verbose("WritableCustomIO: ate everything, still need more, will go back to sleep\n");
         cv.wait(lk, [this] { return !queue.empty(); });
       }
     }
   }
-  verbose("returning data to ffmpeg\n");
+  verbose("WritableCustomIO: returning data to ffmpeg\n");
   return size;
 }
 
@@ -101,7 +105,7 @@ int64_t WritableCustomIO::seek(int64_t offset, int whence) {
 int WritableCustomIO::seekable() const { return 0; }
 
 void WritableCustomIO::_Write(const Napi::CallbackInfo &info) {
-  verbose("JS is writing\n");
+  verbose("WritableCustomIO: JS is writing\n");
   Napi::Env env{info.Env()};
 
   if (!info[0].IsBuffer())
@@ -111,12 +115,13 @@ void WritableCustomIO::_Write(const Napi::CallbackInfo &info) {
   auto callback = info[2].As<Napi::Function>();
 
   auto buffer = info[0].As<Napi::Buffer<uint8_t>>();
-  verbose("buffer %p length %lu\n", buffer.Data(), (unsigned long)buffer.Length());
+  verbose("WritableCustomIO: buffer %p length %lu\n", buffer.Data(), (unsigned long)buffer.Length());
 
   std::unique_lock lk(lock);
-  auto item = new BufferItem{buffer.Data(), buffer.Data(), buffer.Length(), Napi::Persistent<Napi::Object>(buffer), {}};
+  auto item =
+      new BufferWritableItem{buffer.Data(), buffer.Data(), buffer.Length(), Napi::Persistent<Napi::Object>(buffer), {}};
   item->callback = Napi::ThreadSafeFunction::New(env, callback, "ffmpeg_Writable_IO", 0, 1, [item](Napi::Env) {
-    // The BufferItem has been consumed
+    // The BufferWritableItem has been consumed
     delete item;
   });
   queue.push(item);
@@ -126,7 +131,7 @@ void WritableCustomIO::_Write(const Napi::CallbackInfo &info) {
 }
 
 void WritableCustomIO::_Final(const Napi::CallbackInfo &info) {
-  verbose("JS is finalizing\n");
+  verbose("WritableCustomIO: JS is finalizing\n");
   Napi::Env env{info.Env()};
 
   if (!info[0].IsFunction())
@@ -134,9 +139,9 @@ void WritableCustomIO::_Final(const Napi::CallbackInfo &info) {
   Napi::Function callback = info[0].As<Napi::Function>();
 
   std::unique_lock lk(lock);
-  auto item = new BufferItem{nullptr, nullptr, 0, {}, {}};
+  auto item = new BufferWritableItem{nullptr, nullptr, 0, {}, {}};
   item->callback = Napi::ThreadSafeFunction::New(env, callback, "ffmpeg_Writable_IO", 0, 1, [item](Napi::Env) {
-    // The BufferItem has been consumed
+    // The BufferWritableItem has been consumed
     delete item;
   });
   queue.push(item);

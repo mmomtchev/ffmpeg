@@ -32,6 +32,8 @@ export class VideoEncoder extends Transform implements MediaStream {
       this.encoder.setTimeBase(new ffmpeg.Rational(1, 1000));
     this.encoder.setBitRate(this.def.bitRate);
     this.encoder.setPixelFormat(this.def.pixelFormat);
+    if (def.flags)
+      this.encoder.addFlags(def.flags);
     this.busy = false;
   }
 
@@ -45,7 +47,10 @@ export class VideoEncoder extends Transform implements MediaStream {
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
       this.busy = false;
-    })().then(() => void callback()).then(() => this.emit('ready')).catch(callback);
+      callback();
+      this.emit('ready');
+    })()
+      .catch(callback);
   }
 
   _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
@@ -68,7 +73,9 @@ export class VideoEncoder extends Transform implements MediaStream {
       verbose(`VideoEncoder: frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
       this.busy = false;
-    })().then(() => void callback()).catch(callback);
+      callback();
+    })()
+      .catch(callback);
   }
 
   _flush(callback: TransformCallback): void {
@@ -81,10 +88,11 @@ export class VideoEncoder extends Transform implements MediaStream {
         this.push(packet);
       } while (packet && packet.isComplete());
       callback();
-    })().catch(callback);
+    })()
+      .catch(callback);
   }
 
-  coder(): any {
+  coder(): Promise<any> {
     return this.encoder;
   }
 
