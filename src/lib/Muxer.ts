@@ -117,8 +117,10 @@ export class Muxer extends EventEmitter {
             verbose('Muxer: All streams ended, writing trailer');
             this.formatContext.writeTrailerAsync()
               .then(() => this.formatContext.closeAsync())
-              .then(() => this.emit('finish'))
-              .then(() => callback(null))
+              .then(() => {
+                callback(null);
+                this.emit('finish');
+              })
               .catch(callback);
             if (this.output) {
               verbose('Muxer: closing ReadableStream');
@@ -180,7 +182,6 @@ export class Muxer extends EventEmitter {
       verbose('Muxer: ready');
     } catch (e) {
       this.emit('error', e);
-      throw e;
     }
   }
 
@@ -201,6 +202,7 @@ export class Muxer extends EventEmitter {
       this.writing = true;
       if (!this.primed) {
         await this.prime();
+        if (!this.primed) return;
       }
       while (this.writingQueue.length > 0) {
         const job = this.writingQueue.shift()!;

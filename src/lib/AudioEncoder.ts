@@ -45,9 +45,9 @@ export class AudioEncoder extends Transform implements MediaStream {
         `timeBase: ${this.encoder.timeBase()}`
       );
       this.busy = false;
+      callback();
+      this.emit('ready');
     })()
-      .then(() => void callback())
-      .then(() => this.emit('ready'))
       .catch(callback);
   }
 
@@ -70,8 +70,8 @@ export class AudioEncoder extends Transform implements MediaStream {
       verbose(`AudioEncoder: Encoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
       this.push(packet);
       this.busy = false;
+      callback();
     })()
-      .then(() => void callback())
       .catch(callback);
   }
 

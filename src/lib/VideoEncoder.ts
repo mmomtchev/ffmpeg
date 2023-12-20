@@ -47,9 +47,9 @@ export class VideoEncoder extends Transform implements MediaStream {
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
       this.busy = false;
+      callback();
+      this.emit('ready');
     })()
-      .then(() => void callback())
-      .then(() => this.emit('ready'))
       .catch(callback);
   }
 
@@ -73,8 +73,8 @@ export class VideoEncoder extends Transform implements MediaStream {
       verbose(`VideoEncoder: frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
       this.busy = false;
+      callback();
     })()
-      .then(() => void callback())
       .catch(callback);
   }
 

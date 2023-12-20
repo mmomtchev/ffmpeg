@@ -39,8 +39,8 @@ export class VideoDecoder extends Transform implements MediaStream {
       await this.decoder.openCodecAsync(new Codec);
       verbose('VideoDecoder: decoder primed');
       this.busy = false;
-      this.emit('ready');
       callback();
+      this.emit('ready');
     })()
       .catch(callback);
   }

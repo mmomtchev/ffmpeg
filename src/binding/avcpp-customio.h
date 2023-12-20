@@ -100,7 +100,7 @@ public:
   // This is the JS stream _read to be called from JS
   void _Read(const Napi::CallbackInfo &info);
 
-  // This a ffmpeg extension - ffmpeg does signal EOF to CustomIO
+  // This a ffmpeg extension - ffmpeg does not signal EOF to CustomIO
   // It is done manually in the Demuxer
   void _Final(const Napi::CallbackInfo &info);
 
