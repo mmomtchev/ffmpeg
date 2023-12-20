@@ -2,7 +2,8 @@
   "spec": "test/*.test.[tj]s",
   "require": [
     "ts-node/register",
-    "tsconfig-paths/register"
+    "tsconfig-paths/register",
+    "./test/force-gc"
   ],
   "reporter": "tap",
   "timeout": 120000,

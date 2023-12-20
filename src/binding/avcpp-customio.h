@@ -80,6 +80,7 @@ class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCu
   size_t queue_size;
   std::mutex lock;
   std::condition_variable cv;
+  bool eof;
 
   void PushPendingData(int64_t);
 

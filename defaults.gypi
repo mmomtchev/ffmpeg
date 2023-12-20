@@ -1,10 +1,25 @@
 {
+  'variables': {
+    'enable_asan%': 'false'
+  },
   'includes': [
     'except.gypi'
   ],
   'cflags_cc': [
     '-fvisibility=hidden',
     '-std=c++17'
+  ],
+  'conditions': [
+    ['enable_asan == "true"', {
+      'cflags_cc': [
+        '-fsanitize=address'
+      ],
+      'xcode_settings': {
+        'OTHER_CPLUSPLUSFLAGS': [
+          '-fsanitize=address'
+        ]
+      }
+    }]
   ],
   'msvs_settings': {
     'VCCLCompilerTool': { 
@@ -35,7 +50,7 @@
     'Release': {
       'msvs_settings': {
         'VCCLCompilerTool': {
-          'RuntimeLibrary': 0  # shared release
+          'RuntimeLibrary': 0
         }
       }
     }

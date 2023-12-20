@@ -1,10 +1,47 @@
 #pragma once
 #include <frame.h>
+#include <functional>
+#include <nooverrides.h>
+
+// This is a typemap for the special case of CopyFrameToBuffer
+// The buffer can only be obtained by calling a special function that copies it for us
+//
+// Instead of `using` we create a new class to create a new distinct type
+// that will have its own distinct typemap
+//
+// A VideoFrameBuffer is a function that fills it and a size
+class VideoFrameBuffer : public std::pair<std::function<void(uint8_t *)>, size_t> {};
+
+namespace Nobind {
+
+namespace Typemap {
+
+template <const ReturnAttribute &RETATTR> class ToJS<VideoFrameBuffer, RETATTR> {
+  Napi::Env env_;
+  VideoFrameBuffer val_;
+
+public:
+  inline explicit ToJS(Napi::Env env, VideoFrameBuffer val) : env_(env), val_(val) {}
+  inline Napi::Value Get() {
+    // Create a new empty Napi::Buffer
+    auto buffer = Napi::Buffer<uint8_t>::New(env_, val_.second);
+    // Call the callback to fill it
+    val_.first(buffer.Data());
+    return buffer;
+  }
+
+  ToJS(const ToJS &) = delete;
+  ToJS(ToJS &&) = delete;
+};
+
+} // namespace Typemap
+} // namespace Nobind
+
 #include <nobind.h>
 
 using namespace av;
 
-Nobind::Typemap::Buffer CopyFrameToBuffer(av::VideoFrame &frame);
+VideoFrameBuffer CopyFrameToBuffer(VideoFrame &frame);
 
 // An universal wrapper for Frame-derived types that returns a Buffer
 // by copying the underlying data

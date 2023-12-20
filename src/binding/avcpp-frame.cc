@@ -9,10 +9,7 @@ VideoFrame CreateVideoFrame(Nobind::Typemap::Buffer buffer, PixelFormat pixelFor
   return VideoFrame{buffer.first, buffer.second, pixelFormat, width, height};
 }
 
-// This copies twice (FIXME)
-Nobind::Typemap::Buffer CopyFrameToBuffer(av::VideoFrame &frame) {
+VideoFrameBuffer CopyFrameToBuffer(av::VideoFrame &frame) {
   auto size = frame.bufferSize();
-  auto buffer = new uint8_t[size];
-  frame.copyToBuffer(buffer, size);
-  return Nobind::Typemap::Buffer{buffer, size};
+  return VideoFrameBuffer{{[&frame, size](uint8_t *data) { frame.copyToBuffer(data, size); }, size}};
 }
