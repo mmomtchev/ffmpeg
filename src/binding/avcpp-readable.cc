@@ -54,7 +54,7 @@ int ReadableCustomIO::write(const uint8_t *data, size_t size) {
   verbose("ReadableCustomIO: will receive data from ffmpeg\n");
   queue.push(buffer);
   queue_size += size;
-  lock.unlock();
+  lk.unlock();
   cv.notify_one();
 
   return size;
@@ -94,8 +94,6 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
     queue_size -= buf->length;
     delete buf;
   } while (!queue.empty() && to_read > 0);
-  lock.unlock();
-  cv.notify_one();
 }
 
 void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
@@ -116,8 +114,11 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
       verbose("ReadableCustomIO: data is available\n");
     }
     void OnOK() override {
+      verbose("ReadableCustomIO: will push pending data\n");
       std::unique_lock lk{self.lock};
       self.PushPendingData(to_read);
+      lk.unlock();
+      self.cv.notify_one();
     }
   };
 
@@ -137,6 +138,8 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
   } else {
     // Pending data, send immediately
     PushPendingData(to_read);
+    lk.unlock();
+    cv.notify_one();
   }
 }
 
@@ -147,6 +150,6 @@ void ReadableCustomIO::_Final(const Napi::CallbackInfo &info) {
 
   std::unique_lock lk{lock};
   queue.push(buffer);
-  lock.unlock();
+  lk.unlock();
   cv.notify_one();
 }
