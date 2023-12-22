@@ -47,7 +47,7 @@
   "homepage": "https://github.com/mmomtchev/ffmpeg#readme",
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0.11",
-    "nobind17": "^1.1.1",
+    "nobind17": "github:mmomtchev/nobind",
     "node-addon-api": "^7.0.0"
   },
   "devDependencies": {
