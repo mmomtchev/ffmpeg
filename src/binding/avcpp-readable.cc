@@ -2,18 +2,15 @@
 #include "debug.h"
 #include <exception>
 
-Napi::FunctionReference *ReadableCustomIO::js_Readable_ctor = nullptr;
-Napi::FunctionReference *ReadableCustomIO::js_ctor = nullptr;
-std::thread::id ReadableCustomIO::v8_main_thread;
-
 ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
     : av::CustomIO(), Napi::ObjectWrap<ReadableCustomIO>(info), queue_size(0), eof(false) {
   Napi::Env env{info.Env()};
 
-  if (js_Readable_ctor == nullptr || js_ctor == nullptr)
+  instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  if (instance_data->js_Readable_ctor.IsEmpty() || instance_data->js_ReadableCustomIO_ctor.IsEmpty())
     throw Napi::Error::New(env, "ReadableCustomIO is not initalized");
 
-  js_Readable_ctor->Call(this->Value(), {});
+  instance_data->js_Readable_ctor.Call(this->Value(), {});
 }
 
 ReadableCustomIO::~ReadableCustomIO() { verbose("ReadableCustomIO: destroy\n"); }
@@ -24,8 +21,8 @@ void ReadableCustomIO::Init(const Napi::CallbackInfo &info) {
   if (info.Length() != 1 || !info[0].IsFunction())
     throw Napi::Error::New(env, "Argument is not a function");
 
-  js_Readable_ctor = new Napi::FunctionReference;
-  *js_Readable_ctor = Napi::Persistent(info[0].As<Napi::Function>());
+  auto instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  instance_data->js_Readable_ctor = Napi::Persistent(info[0].As<Napi::Function>());
 }
 
 Napi::Function ReadableCustomIO::GetClass(Napi::Env env) {
@@ -34,15 +31,14 @@ Napi::Function ReadableCustomIO::GetClass(Napi::Env env) {
                   {StaticMethod("init", &ReadableCustomIO::Init), InstanceMethod("_read", &ReadableCustomIO::_Read),
                    InstanceMethod("_final", &ReadableCustomIO::_Final)});
 
-  js_ctor = new Napi::FunctionReference;
-  *js_ctor = Napi::Persistent(self);
-  v8_main_thread = std::this_thread::get_id();
+  auto instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  instance_data->js_ReadableCustomIO_ctor = Napi::Persistent(self);
   return self;
 }
 
 int ReadableCustomIO::write(const uint8_t *data, size_t size) {
   verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu\n", size, queue_size);
-  if (std::this_thread::get_id() == v8_main_thread)
+  if (std::this_thread::get_id() == instance_data->v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
 
   auto *buffer = new BufferReadableItem{new uint8_t[size], size};

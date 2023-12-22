@@ -1,4 +1,5 @@
 #pragma once
+#include "instance-data.h"
 #include <condition_variable>
 #include <formatcontext.h>
 #include <mutex>
@@ -38,11 +39,8 @@ struct BufferWritableItem {
 //
 // This uses my technique for extending JS classes in C++ by using node-addon-api:
 // https://mmomtchev.medium.com/c-class-inheritance-with-node-api-and-node-addon-api-c180334d9902
-
-// FIXME: This does not support multiple isolates
 class WritableCustomIO : public av::CustomIO, public Napi::ObjectWrap<WritableCustomIO> {
-  static Napi::FunctionReference *js_Writable_ctor;
-  static std::thread::id v8_main_thread;
+  Nobind::EnvInstanceData<ffmpegInstanceData> *instance_data;
   std::queue<BufferWritableItem *> queue;
   std::mutex lock;
   std::condition_variable cv;
@@ -50,7 +48,6 @@ class WritableCustomIO : public av::CustomIO, public Napi::ObjectWrap<WritableCu
 
 public:
   // A JS-convention constructor
-  static Napi::FunctionReference *js_ctor;
   WritableCustomIO(const Napi::CallbackInfo &info);
 
   virtual ~WritableCustomIO() override;
@@ -74,8 +71,7 @@ public:
 };
 
 class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCustomIO> {
-  static Napi::FunctionReference *js_Readable_ctor;
-  static std::thread::id v8_main_thread;
+  Nobind::EnvInstanceData<ffmpegInstanceData> *instance_data;
   std::queue<BufferReadableItem *> queue;
   size_t queue_size;
   std::mutex lock;
@@ -86,7 +82,6 @@ class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCu
 
 public:
   // A JS-convention constructor
-  static Napi::FunctionReference *js_ctor;
   ReadableCustomIO(const Napi::CallbackInfo &info);
 
   virtual ~ReadableCustomIO() override;
@@ -123,10 +118,12 @@ public:
   inline explicit FromJS(const Napi::Value &js_val) : object(nullptr) {
     if (!js_val.IsObject())
       throw Napi::Error::New(js_val.Env(), "Expected an object");
+    auto instance_data = js_val.Env().GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+
     Napi::Object js_obj = js_val.ToObject();
-    if (js_obj.InstanceOf(WritableCustomIO::js_ctor->Value()))
+    if (js_obj.InstanceOf(instance_data->js_WritableCustomIO_ctor.Value()))
       object = Napi::ObjectWrap<WritableCustomIO>::Unwrap(js_obj);
-    else if (js_obj.InstanceOf(ReadableCustomIO::js_ctor->Value()))
+    else if (js_obj.InstanceOf(instance_data->js_ReadableCustomIO_ctor.Value()))
       object = Napi::ObjectWrap<ReadableCustomIO>::Unwrap(js_obj);
     else
       throw Napi::Error::New(js_val.Env(), "Expected a CustomIO");
