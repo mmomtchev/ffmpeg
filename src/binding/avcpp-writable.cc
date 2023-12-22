@@ -2,18 +2,15 @@
 #include "debug.h"
 #include <exception>
 
-Napi::FunctionReference *WritableCustomIO::js_Writable_ctor = nullptr;
-Napi::FunctionReference *WritableCustomIO::js_ctor = nullptr;
-std::thread::id WritableCustomIO::v8_main_thread;
-
 WritableCustomIO::WritableCustomIO(const Napi::CallbackInfo &info)
     : av::CustomIO(), Napi::ObjectWrap<WritableCustomIO>(info), eof(false) {
   Napi::Env env{info.Env()};
 
-  if (js_Writable_ctor == nullptr || js_ctor == nullptr)
-    throw Napi::Error::New(env, "WritableCustomIO is not initalized");
+  instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  if (instance_data->js_Writable_ctor.IsEmpty() || instance_data->js_WritableCustomIO_ctor.IsEmpty())
+    throw Napi::Error::New(env, "ReadableCustomIO is not initalized");
 
-  js_Writable_ctor->Call(this->Value(), {});
+  instance_data->js_Writable_ctor.Call(this->Value(), {});
 }
 
 WritableCustomIO::~WritableCustomIO() { verbose("WritableCustomIO: destroy\n"); }
@@ -24,8 +21,8 @@ void WritableCustomIO::Init(const Napi::CallbackInfo &info) {
   if (info.Length() != 1 || !info[0].IsFunction())
     throw Napi::Error::New(env, "Argument is not a function");
 
-  js_Writable_ctor = new Napi::FunctionReference;
-  *js_Writable_ctor = Napi::Persistent(info[0].As<Napi::Function>());
+  auto instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  instance_data->js_Writable_ctor = Napi::Persistent(info[0].As<Napi::Function>());
 }
 
 Napi::Function WritableCustomIO::GetClass(Napi::Env env) {
@@ -34,15 +31,14 @@ Napi::Function WritableCustomIO::GetClass(Napi::Env env) {
                   {StaticMethod("init", &WritableCustomIO::Init), InstanceMethod("_write", &WritableCustomIO::_Write),
                    InstanceMethod("_final", &WritableCustomIO::_Final)});
 
-  js_ctor = new Napi::FunctionReference;
-  *js_ctor = Napi::Persistent(self);
-  v8_main_thread = std::this_thread::get_id();
+  auto instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
+  instance_data->js_WritableCustomIO_ctor = Napi::Persistent(self);
   return self;
 }
 
 int WritableCustomIO::read(uint8_t *data, size_t size) {
   verbose("WritableCustomIO: ffmpeg asked for data %lu\n", (long unsigned)size);
-  if (std::this_thread::get_id() == v8_main_thread)
+  if (std::this_thread::get_id() == instance_data->v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
   if (eof) {
     verbose("WritableCustomIO: sending an EOF to ffmpeg\n");

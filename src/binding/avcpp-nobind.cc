@@ -17,6 +17,7 @@
 #include "avcpp-customio.h"
 #include "avcpp-frame.h"
 #include "avcpp-types.h"
+#include "instance-data.h"
 
 using namespace av;
 
@@ -37,7 +38,7 @@ template <typename T> using ToString_t = std::string (*)(T &v);
 
 void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
-NOBIND_MODULE(ffmpeg, m) {
+NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
   m.def<std::error_code>("error_code").cons<>().def <
@@ -387,6 +388,8 @@ NOBIND_MODULE(ffmpeg, m) {
 
   m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
   m.Exports().Set("ReadableCustomIO", ReadableCustomIO::GetClass(m.Env()));
+
+  m.Env().GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>()->v8_main_thread = std::this_thread::get_id();
 
   m.def<&SetLogLevel>("setLogLevel");
   av::init();
