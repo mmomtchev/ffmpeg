@@ -1,9 +1,8 @@
-import { Transform, TransformOptions, TransformCallback } from 'node:stream';
+import { TransformCallback } from 'node:stream';
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { VideoStreamDefinition } from './MediaStream';
+import { MediaTransform, MediaTransformOptions, VideoStreamDefinition } from './MediaStream';
 
-export interface VideoTransformOptions extends TransformOptions {
-  objectMode?: never;
+export interface VideoTransformOptions extends MediaTransformOptions {
   input: VideoStreamDefinition;
   output: VideoStreamDefinition;
   interpolation: number;
@@ -13,11 +12,11 @@ export interface VideoTransformOptions extends TransformOptions {
  * A stream Transform that uses VideoRescaler to rescale/resample the raw video.
  * Must receive input from a VideoDecoder and must output to a VideoEncoder
  */
-export class VideoTransform extends Transform {
+export class VideoTransform extends MediaTransform {
   protected rescaler: any;
 
   constructor(options: VideoTransformOptions) {
-    super({ ...options, objectMode: true });
+    super(options);
     this.rescaler = new ffmpeg.VideoRescaler(
       options.output.width, options.output.height, options.output.pixelFormat,
       options.input.width, options.input.height, options.input.pixelFormat,

@@ -1,4 +1,4 @@
-import { EventEmitter, Readable, ReadableOptions, Writable } from 'node:stream';
+import { EventEmitter, Readable, ReadableOptions, Transform, TransformOptions, Writable } from 'node:stream';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -40,6 +40,18 @@ export function isAudioDefinition(def: MediaStreamDefinition): def is AudioStrea
   return def.type === 'Audio';
 }
 
+export interface MediaTransformOptions extends TransformOptions {
+  objectMode?: never;
+}
+
+/**
+ * A generic MediaTransform, uses object mode
+ */
+export class MediaTransform extends Transform {
+  constructor(options?: MediaTransformOptions) {
+    super({ ...(options || {}), objectMode: true });
+  }
+}
 
 /**
  * A generic raw MediaStream, has a definition and it is an EventEmitter.

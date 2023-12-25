@@ -15,7 +15,6 @@ export interface DemuxerOptions extends ReadableOptions {
    * Amount of data to buffer, only when reading from a ReadStream, @default 64Kb
    */
   highWaterMark?: number;
-  objectMode?: never;
 }
 
 /**

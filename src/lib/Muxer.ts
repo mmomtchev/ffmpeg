@@ -17,7 +17,6 @@ export interface MuxerOptions extends WritableOptions {
   highWaterMark?: number;
   outputFormat?: string;
   streams: MediaEncoder[];
-  objectMode?: never;
 }
 
 /**
@@ -55,6 +54,7 @@ export class Muxer extends EventEmitter {
   video: EncodedMediaWritable[];
   audio: EncodedMediaWritable[];
   output?: Readable;
+  destroyed: boolean;
 
   constructor(options: MuxerOptions) {
     super();
@@ -75,6 +75,7 @@ export class Muxer extends EventEmitter {
     this.ended = 0;
     this.writingQueue = [];
     this.ready = [];
+    this.destroyed = false;
 
     this.outputFormat = new OutputFormat;
     this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
@@ -82,10 +83,10 @@ export class Muxer extends EventEmitter {
     this.formatContext.setOutputFormat(this.outputFormat);
 
     for (const idx in this.rawStreams) {
-      this.ready[idx] = new Promise((resolve, reject) => {
+      this.ready[idx] = new Promise((resolve) => {
         this.rawStreams[idx].on('ready', resolve);
-        this.rawStreams[idx].on('error', reject);
       });
+      this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
         this.rawStreams[idx].coder().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
@@ -98,11 +99,7 @@ export class Muxer extends EventEmitter {
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
           if (error) {
             verbose(`Muxer: error on stream #${idx}, destroy all streams`, error);
-            for (const s in this.streams) {
-              if (s !== idx)
-                this.streams[s].destroy(error);
-            }
-            this.formatContext.closeAsync()
+            this.destroy(error)
               .then(() => callback(error))
               .catch(callback);
           } else {
@@ -131,6 +128,7 @@ export class Muxer extends EventEmitter {
           }
         },
       });
+      writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
       const def = this.rawStreams[idx].definition();
 
@@ -142,6 +140,20 @@ export class Muxer extends EventEmitter {
         throw new Error('Unsupported stream type');
       }
     }
+  }
+
+  protected async destroy(e: Error) {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    verbose(`Muxer: destroy: ${e}`);
+    if (this.output) {
+      (this.output as any)._final();
+    }
+    for (const s in this.streams) {
+      this.streams[s].destroy(e);
+    }
+    await this.formatContext.closeAsync();
+    this.emit('error', e);
   }
 
   protected async prime(): Promise<void> {
@@ -181,7 +193,7 @@ export class Muxer extends EventEmitter {
       this.emit('ready');
       verbose('Muxer: ready');
     } catch (e) {
-      this.emit('error', e);
+      this.destroy(e as Error);
     }
   }
 
@@ -215,7 +227,7 @@ export class Muxer extends EventEmitter {
           verbose(`Muxer: ${err}`);
           job.callback(err as Error);
           for (const s of this.streams) s.destroy(err as Error);
-          this.emit('error', err);
+          this.destroy(err as Error);
         }
       }
       this.writing = false;
