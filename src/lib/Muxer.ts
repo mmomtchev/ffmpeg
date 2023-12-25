@@ -55,6 +55,7 @@ export class Muxer extends EventEmitter {
   video: EncodedMediaWritable[];
   audio: EncodedMediaWritable[];
   output?: Readable;
+  destroyed: boolean;
 
   constructor(options: MuxerOptions) {
     super();
@@ -75,6 +76,7 @@ export class Muxer extends EventEmitter {
     this.ended = 0;
     this.writingQueue = [];
     this.ready = [];
+    this.destroyed = false;
 
     this.outputFormat = new OutputFormat;
     this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
@@ -98,11 +100,7 @@ export class Muxer extends EventEmitter {
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
           if (error) {
             verbose(`Muxer: error on stream #${idx}, destroy all streams`, error);
-            for (const s in this.streams) {
-              if (s !== idx)
-                this.streams[s].destroy(error);
-            }
-            this.formatContext.closeAsync()
+            this.destroy(error)
               .then(() => callback(error))
               .catch(callback);
           } else {
@@ -144,6 +142,20 @@ export class Muxer extends EventEmitter {
     }
   }
 
+  protected async destroy(e: Error) {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    verbose(`Muxer: destroy: ${e}`);
+    this.emit('error', e);
+    if (this.output)
+      (this.output as any)._final();
+    for (const s in this.streams) {
+      if (!this.streams[s].destroyed)
+        this.streams[s].destroy(e);
+    }
+    await this.formatContext.closeAsync();
+  }
+
   protected async prime(): Promise<void> {
     try {
       verbose(`Muxer: opening ${this.outputFile}, waiting for all inputs to be primed`);
@@ -181,7 +193,7 @@ export class Muxer extends EventEmitter {
       this.emit('ready');
       verbose('Muxer: ready');
     } catch (e) {
-      this.emit('error', e);
+      this.destroy(e as Error);
     }
   }
 
@@ -215,7 +227,7 @@ export class Muxer extends EventEmitter {
           verbose(`Muxer: ${err}`);
           job.callback(err as Error);
           for (const s of this.streams) s.destroy(err as Error);
-          this.emit('error', err);
+          this.destroy(err as Error);
         }
       }
       this.writing = false;
