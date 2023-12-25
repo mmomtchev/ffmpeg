@@ -17,7 +17,6 @@ export interface MuxerOptions extends WritableOptions {
   highWaterMark?: number;
   outputFormat?: string;
   streams: MediaEncoder[];
-  objectMode?: never;
 }
 
 /**
@@ -147,13 +146,14 @@ export class Muxer extends EventEmitter {
     if (this.destroyed) return;
     this.destroyed = true;
     verbose(`Muxer: destroy: ${e}`);
-    this.emit('error', e);
-    if (this.output)
+    if (this.output) {
       (this.output as any)._final();
+    }
     for (const s in this.streams) {
       this.streams[s].destroy(e);
     }
     await this.formatContext.closeAsync();
+    this.emit('error', e);
   }
 
   protected async prime(): Promise<void> {

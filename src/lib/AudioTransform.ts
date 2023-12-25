@@ -1,11 +1,10 @@
-import { Transform, TransformOptions, TransformCallback } from 'node:stream';
+import { TransformCallback } from 'node:stream';
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition } from './MediaStream';
+import { AudioStreamDefinition, MediaTransform, MediaTransformOptions } from './MediaStream';
 
 export const verbose = (process.env.DEBUG_AUDIO_TRANSFORM || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
-export interface AudioTransformOptions extends TransformOptions {
-  objectMode?: never;
+export interface AudioTransformOptions extends MediaTransformOptions {
   input: AudioStreamDefinition;
   output: AudioStreamDefinition;
 }
@@ -14,12 +13,12 @@ export interface AudioTransformOptions extends TransformOptions {
  * A stream Transform that uses AudioResampler to rescale/resample the raw Audio.
  * Must receive input from a AudioDecoder and must output to a AudioEncoder
  */
-export class AudioTransform extends Transform {
+export class AudioTransform extends MediaTransform {
   protected resampler: any;
   protected frameSize: number | undefined;
 
   constructor(options: AudioTransformOptions) {
-    super({ ...options, objectMode: true });
+    super(options);
     this.resampler = new ffmpeg.AudioResampler(
       options.output.channelLayout.layout(), options.output.sampleRate, options.output.sampleFormat,
       options.input.channelLayout.layout(), options.input.sampleRate, options.input.sampleFormat

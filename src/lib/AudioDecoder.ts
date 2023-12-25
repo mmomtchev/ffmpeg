@@ -1,6 +1,5 @@
-import { Transform } from 'node:stream';
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, MediaStream } from './MediaStream';
+import { AudioStreamDefinition, MediaStream, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { AudioDecoderContext, Codec } = ffmpeg;
@@ -12,12 +11,12 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded audio samples
  * Its parameters are inherited from the Demuxer.
  */
-export class AudioDecoder extends Transform implements MediaStream {
+export class AudioDecoder extends MediaTransform implements MediaStream {
   protected decoder: any;
   protected busy: boolean;
 
   constructor(options: { _stream: any; }) {
-    super({ objectMode: true });
+    super();
     this.decoder = null;
     if (!options._stream) {
       throw new Error('Input is not a demuxed stream');
