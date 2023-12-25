@@ -110,7 +110,14 @@ describe('streaming', () => {
         const muxer = new Muxer({ outputFormat: 'mp4', streams: [videoOutput, audioOutput] });
 
         muxer.on('finish', () => done('Expected an error'));
-        muxer.on('error', () => done());
+        muxer.on('error', (e) => {
+          try {
+            assert.match(e.message, /Invalid argument/);
+            done();
+          } catch (e) {
+            done(e);
+          }
+        });
 
         assert.instanceOf(muxer.output, Readable);
         const output = fs.createWriteStream(tempFile);

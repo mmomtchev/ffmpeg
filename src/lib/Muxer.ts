@@ -84,10 +84,10 @@ export class Muxer extends EventEmitter {
     this.formatContext.setOutputFormat(this.outputFormat);
 
     for (const idx in this.rawStreams) {
-      this.ready[idx] = new Promise((resolve, reject) => {
+      this.ready[idx] = new Promise((resolve) => {
         this.rawStreams[idx].on('ready', resolve);
-        this.rawStreams[idx].on('error', reject);
       });
+      this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
         this.rawStreams[idx].coder().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
@@ -129,6 +129,7 @@ export class Muxer extends EventEmitter {
           }
         },
       });
+      writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
       const def = this.rawStreams[idx].definition();
 
@@ -150,8 +151,7 @@ export class Muxer extends EventEmitter {
     if (this.output)
       (this.output as any)._final();
     for (const s in this.streams) {
-      if (!this.streams[s].destroyed)
-        this.streams[s].destroy(e);
+      this.streams[s].destroy(e);
     }
     await this.formatContext.closeAsync();
   }

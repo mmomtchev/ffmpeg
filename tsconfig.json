@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "outDir": "lib",
     "declaration": true,
+    "sourceMap": true,
     "paths": {
       "@mmomtchev/ffmpeg": [
         "./lib"
