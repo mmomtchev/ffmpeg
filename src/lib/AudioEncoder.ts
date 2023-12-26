@@ -14,15 +14,15 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
 export class AudioEncoder extends MediaTransform implements MediaStream {
   protected def: AudioStreamDefinition;
   protected encoder: any;
-  protected codec: any;
+  protected codec_: any;
   protected busy: boolean;
 
   constructor(def: AudioStreamDefinition) {
     super();
     this.def = def;
-    this.codec = ffmpeg.findEncodingCodec(this.def.codec);
-    verbose(`AudioEncoder: using ${this.codec.name()}`);
-    this.encoder = new AudioEncoderContext(this.codec);
+    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    verbose(`AudioEncoder: using ${this.codec_.name()}`);
+    this.encoder = new AudioEncoderContext(this.codec_);
     if (this.def.timeBase)
       this.encoder.setTimeBase(this.def.timeBase);
     else
@@ -38,8 +38,8 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
     (async () => {
       this.busy = true;
       verbose('AudioEncoder: priming the encoder');
-      await this.encoder.openCodecAsync(this.codec);
-      verbose(`AudioEncoder: encoder primed, codec ${this.codec.name()}, ` +
+      await this.encoder.openCodecAsync(this.codec_);
+      verbose(`AudioEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, sampleFormat: ${this.encoder.sampleFormat()}@${this.encoder.sampleRate()}, ` +
         `timeBase: ${this.encoder.timeBase()}`
       );
@@ -88,7 +88,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  coder(): any {
+  codec(): any {
     return this.encoder;
   }
 

@@ -64,7 +64,7 @@ export interface MediaStream extends EventEmitter {
  * A generic encoding MediaStream, has a codec.
  */
 export interface MediaEncoder extends MediaStream {
-  coder(): any;
+  codec(): any;
 }
 
 export interface EncodedMediaReadableOptions extends ReadableOptions {

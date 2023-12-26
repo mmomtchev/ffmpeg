@@ -95,6 +95,10 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
       .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader), Nobind::ReturnAsync>(
           "writeHeaderAsync")
+      .def<static_cast<void (FormatContext::*)(av::Dictionary &, OptionalErrorCode)>(&FormatContext::writeHeader)>(
+          "writeHeaderOptions")
+      .def<static_cast<void (FormatContext::*)(av::Dictionary &, OptionalErrorCode)>(&FormatContext::writeHeader),
+           Nobind::ReturnAsync>("writeHeaderOptionsAsync")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>("readPacket")
       .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket), Nobind::ReturnAsync>(
           "readPacketAsync")
