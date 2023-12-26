@@ -16,6 +16,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
   protected encoder: any;
   protected codec_: any;
   protected busy: boolean;
+  ready: boolean;
 
   constructor(def: VideoStreamDefinition) {
     super();
@@ -34,6 +35,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
     if (def.flags)
       this.encoder.addFlags(def.flags);
     this.busy = false;
+    this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -47,6 +49,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
       );
       this.busy = false;
       callback();
+      this.ready = true;
       this.emit('ready');
     })()
       .catch(callback);

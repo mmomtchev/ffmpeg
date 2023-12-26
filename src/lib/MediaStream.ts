@@ -30,6 +30,7 @@ export interface AudioStreamDefinition extends MediaStreamDefinition {
   channelLayout: any;
   sampleFormat: any;
   sampleRate: any;
+  frameSize?: number;
 }
 
 export function isVideoDefinition(def: MediaStreamDefinition): def is VideoStreamDefinition {
@@ -57,6 +58,7 @@ export class MediaTransform extends Transform {
  * A generic raw MediaStream, has a definition and it is an EventEmitter.
  */
 export interface MediaStream extends EventEmitter {
+  ready: boolean;
   definition(): MediaStreamDefinition;
 }
 

@@ -14,6 +14,7 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
 export class AudioDecoder extends MediaTransform implements MediaStream {
   protected decoder: any;
   protected busy: boolean;
+  ready: boolean;
 
   constructor(options: { _stream: any; }) {
     super();
@@ -27,6 +28,7 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
     this.decoder = new AudioDecoderContext(options._stream);
     this.decoder.setRefCountedFrames(true);
     this.busy = false;
+    this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -37,6 +39,7 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       verbose('AudioDecoder: decoder primed');
       this.busy = false;
       callback();
+      this.ready = true;
       this.emit('ready');
     })()
       .catch(callback);
@@ -71,7 +74,8 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       codec: this.decoder.codec(),
       sampleFormat: this.decoder.sampleFormat(),
       sampleRate: this.decoder.sampleRate(),
-      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout())
+      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout()),
+      frameSize: this.decoder.frameSize()
     } as AudioStreamDefinition;
   }
 }

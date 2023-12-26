@@ -95,9 +95,13 @@ export class Muxer extends EventEmitter {
     this.formatContext.setOutputFormat(this.outputFormat);
 
     for (const idx in this.rawStreams) {
-      this.ready[idx] = new Promise((resolve) => {
-        this.rawStreams[idx].on('ready', resolve);
-      });
+      if (!this.rawStreams[idx].ready) {
+        this.ready[idx] = new Promise((resolve) => {
+          this.rawStreams[idx].on('ready', resolve);
+        });
+      } else {
+        this.ready[idx] = Promise.resolve();
+      }
       this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
         this.rawStreams[idx].codec().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);

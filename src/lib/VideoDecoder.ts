@@ -15,6 +15,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream {
   protected decoder: any;
   protected busy: boolean;
   protected stream: any;
+  ready: boolean;
 
   constructor(options: { _stream: any; }) {
     super();
@@ -29,6 +30,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream {
     this.decoder = new VideoDecoderContext(this.stream);
     this.decoder.setRefCountedFrames(true);
     this.busy = false;
+    this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -39,6 +41,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream {
       verbose('VideoDecoder: decoder primed');
       this.busy = false;
       callback();
+      this.ready = true;
       this.emit('ready');
     })()
       .catch(callback);

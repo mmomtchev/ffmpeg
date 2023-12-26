@@ -191,6 +191,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioDecoderContext::codec>("codec")
       .def<&AudioDecoderContext::isFlags>("isFlags")
       .def<&AudioDecoderContext::addFlags>("addFlags")
+      .def<&AudioDecoderContext::frameSize>("frameSize")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
           "openCodec")
@@ -221,6 +222,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioEncoderContext::codec>("codec")
       .def<&AudioEncoderContext::isFlags>("isFlags")
       .def<&AudioEncoderContext::addFlags>("addFlags")
+      .def<&AudioEncoderContext::frameSize>("frameSize")
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
           "openCodec")
