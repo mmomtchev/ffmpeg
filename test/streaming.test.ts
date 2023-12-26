@@ -163,7 +163,7 @@ describe('streaming', () => {
           bitRate: 128e3,
           sampleRate: audioDefinition.sampleRate,
           sampleFormat: audioDefinition.sampleFormat,
-          channelLayout: audioDefinition.channelLayout,
+          channelLayout: audioDefinition.channelLayout
         });
 
         audioOutput.on('ready', () => {
