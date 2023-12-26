@@ -125,6 +125,8 @@ You should start by looking at the unit tests:
   * [`encode.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
   * [`rescale.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/rescale.test.ts) contains a simple example for rescaling/resampling a video using ffmpeg's built-in `libswscale`
   * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
+  * [`streaming.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/streaming.test.ts) contains examples for transcoding to various formats and sending the resulting data to a Node.js `WriteStream`
+
   * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/node-ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
 
 ## Supported pixel and audio formats
