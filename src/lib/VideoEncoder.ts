@@ -14,15 +14,15 @@ export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL
 export class VideoEncoder extends MediaTransform implements MediaStream {
   protected def: VideoStreamDefinition;
   protected encoder: any;
-  protected codec: any;
+  protected codec_: any;
   protected busy: boolean;
 
   constructor(def: VideoStreamDefinition) {
     super();
     this.def = def;
-    this.codec = ffmpeg.findEncodingCodec(this.def.codec);
-    verbose(`VideoEncoder: using ${this.codec.name()}`);
-    this.encoder = new VideoEncoderContext(this.codec);
+    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    verbose(`VideoEncoder: using ${this.codec_.name()}`);
+    this.encoder = new VideoEncoderContext(this.codec_);
     this.encoder.setWidth(this.def.width);
     this.encoder.setHeight(this.def.height);
     if (this.def.timeBase)
@@ -40,8 +40,8 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
     (async () => {
       this.busy = true;
       verbose('VideoEncoder: priming the encoder');
-      await this.encoder.openCodecAsync(this.codec);
-      verbose(`VideoEncoder: encoder primed, codec ${this.codec.name()}, ` +
+      await this.encoder.openCodecAsync(this.codec_);
+      verbose(`VideoEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, pixelFormat: ${this.encoder.pixelFormat()}, ` +
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
@@ -91,7 +91,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  coder(): Promise<any> {
+  codec(): any {
     return this.encoder;
   }
 

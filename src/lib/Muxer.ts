@@ -15,8 +15,18 @@ export interface MuxerOptions extends WritableOptions {
    * Amount of data to buffer, only when writing to a WriteStream, @default 64Kb
    */
   highWaterMark?: number;
+  /**
+   * Output format to use, may be deduced from the filename
+   */
   outputFormat?: string;
+  /**
+   * An array of MediaEncoder streams to be multiplexed
+   */
   streams: MediaEncoder[];
+  /**
+   * Output format options
+   */
+  outputFormatOptions?: Record<string, string>;
 }
 
 /**
@@ -42,6 +52,7 @@ export class Muxer extends EventEmitter {
   protected outputFile: string;
   protected highWaterMark: number;
   protected outputFormatName: string;
+  protected outputFormatOptions: Record<string, string>;
   protected outputFormat: any;
   protected formatContext: any;
   protected rawStreams: MediaEncoder[];
@@ -66,6 +77,7 @@ export class Muxer extends EventEmitter {
     }
     this.highWaterMark = options.highWaterMark ?? (64 * 1024);
     this.outputFormatName = options.outputFormat ?? '';
+    this.outputFormatOptions = options.outputFormatOptions ?? {};
     this.rawStreams = options.streams;
     this.streams = [];
     this.audio = [];
@@ -88,7 +100,7 @@ export class Muxer extends EventEmitter {
       });
       this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
-        this.rawStreams[idx].coder().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
+        this.rawStreams[idx].codec().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
 
       const writable = new EncodedMediaWritable({
@@ -165,15 +177,15 @@ export class Muxer extends EventEmitter {
       verbose(`Muxer: opening ${this.outputFile}, all inputs are primed`);
 
       for (const idx in this.rawStreams) {
-        const coder = this.rawStreams[idx].coder();
+        const codec = this.rawStreams[idx].codec();
         const def = this.rawStreams[idx].definition();
 
         let stream;
         if (isVideoDefinition(def)) {
-          stream = this.formatContext.addVideoStream(coder);
+          stream = this.formatContext.addVideoStream(codec);
           stream.setFrameRate(def.frameRate);
         } else if (isAudioDefinition(def)) {
-          stream = this.formatContext.addAudioStream(coder);
+          stream = this.formatContext.addAudioStream(codec);
         } else {
           throw new Error('Unsupported stream type');
         }
@@ -187,7 +199,7 @@ export class Muxer extends EventEmitter {
         await this.formatContext.openReadableAsync(this.output, this.highWaterMark);
       }
       await this.formatContext.dumpAsync();
-      await this.formatContext.writeHeaderAsync();
+      await this.formatContext.writeHeaderOptionsAsync(this.outputFormatOptions);
       await this.formatContext.flushAsync();
       this.primed = true;
       this.emit('ready');

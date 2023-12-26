@@ -62,7 +62,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  coder() {
+  codec() {
     return this.decoder;
   }
 
