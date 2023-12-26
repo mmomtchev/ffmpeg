@@ -30,6 +30,7 @@ export interface AudioStreamDefinition extends MediaStreamDefinition {
   channelLayout: any;
   sampleFormat: any;
   sampleRate: any;
+  frameSize?: number;
 }
 
 export function isVideoDefinition(def: MediaStreamDefinition): def is VideoStreamDefinition {

@@ -19,7 +19,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
 
   constructor(def: AudioStreamDefinition) {
     super();
-    this.def = def;
+    this.def = { ...def };
     this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
     verbose(`AudioEncoder: using ${this.codec_.name()}`);
     this.encoder = new AudioEncoderContext(this.codec_);
@@ -41,8 +41,9 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
       await this.encoder.openCodecAsync(this.codec_);
       verbose(`AudioEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, sampleFormat: ${this.encoder.sampleFormat()}@${this.encoder.sampleRate()}, ` +
-        `timeBase: ${this.encoder.timeBase()}`
+        `timeBase: ${this.encoder.timeBase()}, frameSize: ${this.encoder.frameSize()}`
       );
+      this.def.frameSize = this.encoder.frameSize();
       this.busy = false;
       callback();
       this.emit('ready');

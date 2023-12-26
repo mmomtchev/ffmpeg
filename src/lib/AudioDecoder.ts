@@ -71,7 +71,8 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       codec: this.decoder.codec(),
       sampleFormat: this.decoder.sampleFormat(),
       sampleRate: this.decoder.sampleRate(),
-      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout())
+      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout()),
+      frameSize: this.decoder.frameSize()
     } as AudioStreamDefinition;
   }
 }

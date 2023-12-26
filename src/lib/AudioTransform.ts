@@ -23,13 +23,14 @@ export class AudioTransform extends MediaTransform {
       options.output.channelLayout.layout(), options.output.sampleRate, options.output.sampleFormat,
       options.input.channelLayout.layout(), options.input.sampleRate, options.input.sampleFormat
     );
+    this.frameSize = options.output.frameSize ?? undefined;
   }
 
   _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
     try {
-      if (!this.frameSize) {
+      if (this.frameSize === undefined) {
         this.frameSize = chunk.samplesCount();
-        verbose(`AudioTransform: configured frame size to ${this.frameSize}`);
+        verbose(`AudioTransform: auto-configured frame size to ${this.frameSize}`);
       }
       this.resampler.push(chunk);
       let samples;
