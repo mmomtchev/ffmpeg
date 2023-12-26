@@ -58,6 +58,7 @@ export class MediaTransform extends Transform {
  * A generic raw MediaStream, has a definition and it is an EventEmitter.
  */
 export interface MediaStream extends EventEmitter {
+  ready: boolean;
   definition(): MediaStreamDefinition;
 }
 

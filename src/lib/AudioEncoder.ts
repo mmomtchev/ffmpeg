@@ -16,6 +16,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
   protected encoder: any;
   protected codec_: any;
   protected busy: boolean;
+  ready: boolean;
 
   constructor(def: AudioStreamDefinition) {
     super();
@@ -32,6 +33,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
     this.encoder.setSampleFormat(this.def.sampleFormat);
     this.encoder.setSampleRate(this.def.sampleRate);
     this.busy = false;
+    this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -46,6 +48,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
       this.def.frameSize = this.encoder.frameSize();
       this.busy = false;
       callback();
+      this.ready = true;
       this.emit('ready');
     })()
       .catch(callback);

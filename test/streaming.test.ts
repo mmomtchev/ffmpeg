@@ -166,11 +166,6 @@ describe('streaming', () => {
           channelLayout: audioDefinition.channelLayout,
         });
 
-        const muxer = new Muxer({ outputFormat: 'webm', streams: [videoOutput, audioOutput] });
-
-        muxer.on('finish', done);
-        muxer.on('error', done);
-
         audioOutput.on('ready', () => {
           try {
             // Vorbis requires a specific audio frame size (64) that is not known
@@ -183,6 +178,11 @@ describe('streaming', () => {
               output: audioOutput.definition(),
               input: audioInput.definition()
             });
+
+            const muxer = new Muxer({ outputFormat: 'webm', streams: [videoOutput, audioOutput] });
+
+            muxer.on('finish', done);
+            muxer.on('error', done);
 
             assert.instanceOf(muxer.output, Readable);
             const output = fs.createWriteStream(tempFile);
