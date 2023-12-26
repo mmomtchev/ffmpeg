@@ -39,7 +39,15 @@ The easiest way to use `ffmpeg` is the high-level streams API.
 A quick example for generalized video transcoding using the streams API.
 
 ```ts
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, Discarder, VideoTransform, VideoStreamDefinition } from '@mmomtchev/ffmpeg/stream';
+import {
+  Muxer,
+  Demuxer,
+  VideoDecoder, 
+  VideoEncoder,
+  Discarder,
+  VideoTransform,
+  VideoStreamDefinition
+} from '@mmomtchev/ffmpeg/stream';
 
 // Create a Demuxer - a Demuxer is an object that has multiple ReadableStream,
 // it decodes the input container format and emits compressed data
@@ -85,7 +93,11 @@ input.on('ready', () => {
     // A Muxer is an object that contains multiple WritableStream
     // It multiplexes those streams, handling interleaving by buffering,
     // and writes the to the output format
-    const output = new Muxer({ outputFile: 'video.mkv', outputFormat: 'mkv', streams: [videoOutput] });
+    const output = new Muxer({
+      outputFile: 'video.mkv',
+      outputFormat: 'mkv',
+      streams: [videoOutput]
+    });
 
     // The transcoding operation is completely asynchronous, it is finished
     // when all output streams are finished
