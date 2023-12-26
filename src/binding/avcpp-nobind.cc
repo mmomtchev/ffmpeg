@@ -302,7 +302,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setPts)>("setPts")
       .def<&Packet::dts>("dts")
       .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setDts)>("setDts")
-      .def<&Packet::timeBase, Nobind::ReturnShared>("timeBase");
+      .def<&Packet::timeBase, Nobind::ReturnNested>("timeBase");
 
   m.def<VideoFrame>("VideoFrame")
       // Every global function can also be registered as a static class method
