@@ -92,8 +92,8 @@ describe('streaming', () => {
           channelLayout: audioDefinition.channelLayout
         });
 
-        // We will be overlaying a subtitle over the text
-        // Drawing text is a very expensive operation, we won't be drawing on each frame
+        // We will be overlaying a subtitle over the image
+        // Drawing text is a very expensive operation, so we won't be drawing on each frame
         // We will draw it once and then overlay it on each frame
         const textImage = new Magick.Image('500x20', 'transparent');
         textImage.draw([
