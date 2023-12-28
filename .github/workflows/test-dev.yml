@@ -34,6 +34,9 @@ jobs:
         echo CC=gcc-10 >> $GITHUB_ENV
         echo CXX=g++-10 >> $GITHUB_ENV
       if: matrix.platform == 'ubuntu-20.04'
+    - name: (if on Ubuntu) install fonts
+      run: sudo apt-get install -y fonts-ubuntu || true
+      if: ${{ contains(matrix.platform, 'ubuntu') }}
     - name: Cache conan artifacts
       id: conan-artifacts
       uses: actions/cache@v3

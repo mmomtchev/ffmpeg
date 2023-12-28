@@ -20,9 +20,10 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
 
   constructor(def: VideoStreamDefinition) {
     super();
-    this.def = def;
+    this.def = { ...def };
     this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
-    verbose(`VideoEncoder: using ${this.codec_.name()}`);
+    verbose(`VideoEncoder: using ${this.codec_.name()}, ${this.def.width}x${this.def.height}, ` +
+      `bitrate ${this.def.bitRate}, format ${this.def.pixelFormat}`);
     this.encoder = new VideoEncoderContext(this.codec_);
     this.encoder.setWidth(this.def.width);
     this.encoder.setHeight(this.def.height);
@@ -41,8 +42,8 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
       this.busy = true;
-      verbose('VideoEncoder: priming the encoder');
-      await this.encoder.openCodecAsync(this.codec_);
+      verbose('VideoEncoder: priming the encoder', this.def.codecOptions);
+      await this.encoder.openCodecOptionsAsync(this.def.codecOptions ?? {}, this.codec_);
       verbose(`VideoEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, pixelFormat: ${this.encoder.pixelFormat()}, ` +
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
@@ -56,7 +57,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
   }
 
   _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('VideoEncoder: encoding frame');
+    verbose('VideoEncoder: received frame');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     (async () => {
       this.busy = true;
@@ -72,7 +73,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       frame.setTimeBase(this.encoder.timeBase());
       const packet = await this.encoder.encodeAsync(frame);
-      verbose(`VideoEncoder: frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
+      verbose(`VideoEncoder: encoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
       this.busy = false;
       callback();
