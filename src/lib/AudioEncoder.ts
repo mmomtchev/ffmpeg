@@ -39,8 +39,8 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
       this.busy = true;
-      verbose('AudioEncoder: priming the encoder');
-      await this.encoder.openCodecAsync(this.codec_);
+      verbose('AudioEncoder: priming the encoder', this.def.codecOptions);
+      await this.encoder.openCodecOptionsAsync(this.def.codecOptions ?? {}, this.codec_);
       verbose(`AudioEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, sampleFormat: ${this.encoder.sampleFormat()}@${this.encoder.sampleRate()}, ` +
         `timeBase: ${this.encoder.timeBase()}, frameSize: ${this.encoder.frameSize()}`
@@ -55,7 +55,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
   }
 
   _transform(samples: any, encoding: BufferEncoding, callback: TransformCallback): void {
-    verbose('AudioEncoder: encoding samples');
+    verbose('AudioEncoder: received samples');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     (async () => {
       this.busy = true;

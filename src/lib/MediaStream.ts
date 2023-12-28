@@ -14,6 +14,7 @@ export interface MediaStreamDefinition {
   bitRate: number;
   codec: number;
   timeBase?: any;
+  codecOptions?: Record<string, string>;
 }
 
 export interface VideoStreamDefinition extends MediaStreamDefinition {
@@ -46,7 +47,7 @@ export interface MediaTransformOptions extends TransformOptions {
 }
 
 /**
- * A generic MediaTransform, uses object mode
+ * A generic user-definable MediaTransform, uses object mode.
  */
 export class MediaTransform extends Transform {
   constructor(options?: MediaTransformOptions) {
