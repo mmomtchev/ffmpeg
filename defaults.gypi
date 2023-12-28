@@ -12,7 +12,8 @@
   'conditions': [
     ['enable_asan == "true"', {
       'cflags_cc': [
-        '-fsanitize=address'
+        '-fsanitize=address',
+        '-fsanitize-recover=address'
       ],
       'xcode_settings': {
         'OTHER_CPLUSPLUSFLAGS': [
