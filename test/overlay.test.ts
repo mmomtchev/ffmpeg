@@ -21,7 +21,9 @@ describe('streaming', () => {
       done();
   });
 
-  it('w/ dynamic overlay', (done) => {
+  it('w/ dynamic overlay (generic ImageMagick overlay version)', (done) => {
+    // Overlaying using ImageMagick is very versatile and allows for maximum quality,
+    // however it is far too slow to be done in realtime
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
     demuxer.on('error', done);
@@ -43,8 +45,8 @@ describe('streaming', () => {
         // Thus, we will add additional pipeline elements to convert the incoming
         // frames to RGBA8888 and then back to YUV420
         //
-        // Hopefully, at some point, there will be a way to directly manipulate
-        // an YUV420 video frame
+        // See below for an example that is much faster but involves manually
+        // overlaying YUV420 pixels over the video frame
         //
         // This is the intermediate format used
         const videoRGB = {
@@ -76,11 +78,7 @@ describe('streaming', () => {
           width: videoDefinition.width,
           height: videoDefinition.height,
           frameRate: new ffmpeg.Rational(25, 1),
-          pixelFormat: videoDefinition.pixelFormat,
-          // We will try to go as fast as possible
-          // H.264 encoding in ffmpeg can be very fast, but the
-          // individual image manipulation in node-ffmpeg is still quite slow
-          codecOptions: { preset: 'veryfast' }
+          pixelFormat: videoDefinition.pixelFormat
         });
 
         const audioOutput = new AudioEncoder({
