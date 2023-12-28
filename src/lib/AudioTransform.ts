@@ -27,23 +27,22 @@ export class AudioTransform extends MediaTransform {
   }
 
   _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
-    try {
-      if (this.frameSize === undefined) {
-        this.frameSize = chunk.samplesCount();
-        verbose(`AudioTransform: auto-configured frame size to ${this.frameSize}`);
-      }
-      this.resampler.push(chunk);
+    if (this.frameSize === undefined) {
+      this.frameSize = chunk.samplesCount();
+      verbose(`AudioTransform: auto-configured frame size to ${this.frameSize}`);
+    }
+    (async () => {
+      await this.resampler.pushAsync(chunk);
       let samples;
       // At each tick we are sending X samples and we are getting X*dstSampleRate/srcSampleRate samples
       // However the frame size must remain constant as it is a property of the codec
       // audioResampler has an internal buffer that does the necessary queuing automatically
-      while (!(samples = this.resampler.pop(this.frameSize)).isNull()) {
+      while (!(samples = await this.resampler.popAsync(this.frameSize)).isNull()) {
         this.push(samples);
       }
       callback();
-    } catch (err) {
-      callback(err as Error);
-    }
+    })()
+      .catch(callback);
   }
 
   _flush(callback: TransformCallback) {

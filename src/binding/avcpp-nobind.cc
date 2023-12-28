@@ -134,6 +134,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           "openCodec")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
            Nobind::ReturnAsync>("openCodecAsync")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+          &VideoDecoderContext::open)>("openCodecOptions")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+               &VideoDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecOptionsAsync")
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
           &VideoDecoderContext::decode)>("decode")
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
@@ -161,8 +166,13 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
           "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open),
            Nobind::ReturnAsync>("openCodecAsync")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+          &VideoEncoderContext::open)>("openCodecOptions")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+               &VideoEncoderContext::open),
+           Nobind::ReturnAsync>("openCodecOptionsAsync")
       .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
           &VideoEncoderContext::encode)>("encode")
       .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
@@ -197,6 +207,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           "openCodec")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
            Nobind::ReturnAsync>("openCodecAsync")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+          &AudioDecoderContext::open)>("openCodecOptions")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+               &AudioDecoderContext::open),
+           Nobind::ReturnAsync>("openCodecOptionsAsync")
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
           &AudioDecoderContext::decode)>("decode")
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
@@ -226,8 +241,13 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
           "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
+      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open),
            Nobind::ReturnAsync>("openCodecAsync")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+          &AudioEncoderContext::open)>("openCodecOptions")
+      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
+               &AudioEncoderContext::open),
+           Nobind::ReturnAsync>("openCodecOptionsAsync")
       .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
           &AudioEncoderContext::encode)>("encode")
       .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
@@ -378,7 +398,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&VideoRescaler::dstHeight>("dstHeight")
       .def<&VideoRescaler::dstPixelFormat>("dstPixelFormat")
       .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale)>(
-          "rescale");
+          "rescale")
+      .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale),
+           Nobind::ReturnAsync>("rescaleAsync");
 
   m.def<AudioResampler>("AudioResampler")
       .cons<uint64_t, int, SampleFormat, uint64_t, int, SampleFormat>()
@@ -390,7 +412,10 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioResampler::srcChannels>("srcChannels")
       .def<&AudioResampler::srcSampleRate>("srcSampleRate")
       .def<&AudioResampler::push>("push")
-      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop");
+      .def<&AudioResampler::push, Nobind::ReturnAsync>("pushAsync")
+      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop")
+      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop),
+           Nobind::ReturnAsync>("popAsync");
 
   m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
   m.Exports().Set("ReadableCustomIO", ReadableCustomIO::GetClass(m.Env()));
