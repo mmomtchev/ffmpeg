@@ -21,7 +21,7 @@ describe('streaming', () => {
       done();
   });
 
-  it.only('w/ dynamic overlay', (done) => {
+  it('w/ dynamic overlay', (done) => {
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
     demuxer.on('error', done);

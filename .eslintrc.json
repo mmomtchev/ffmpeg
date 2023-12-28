@@ -17,7 +17,10 @@
       "error",
       "single"
     ],
-    "no-constant-condition": "off"
+    "no-constant-condition": "off",
+    "mocha/no-exclusive-tests": "error",
+    "mocha/no-identical-title": "error",
+    "mocha/no-nested-tests": "error"
   },
   "plugins": [
     "mocha"
