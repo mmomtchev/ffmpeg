@@ -8,6 +8,7 @@
       'dependencies': [ 'ffmpeg.gyp:ffmpeg' ],
       'type': 'static_library',
       'cflags': [
+        '-Wno-deprecated-declarations',
         # TODO: These should definitely be fixed in avcpp
         '-Wno-sign-compare'
       ],
