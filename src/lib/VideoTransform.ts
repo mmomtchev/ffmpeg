@@ -26,9 +26,11 @@ export class VideoTransform extends MediaTransform {
 
   _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
     try {
-      const frame = this.rescaler.rescale(chunk);
-      this.push(frame);
-      callback();
+      this.rescaler.rescaleAsync(chunk)
+        .then((frame: any) => {
+          this.push(frame);
+          callback();
+        }).catch(callback);
     } catch (err) {
       callback(err as Error);
     }
