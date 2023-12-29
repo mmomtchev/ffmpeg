@@ -139,7 +139,7 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
   if (eof)
     throw Napi::Error::New(env, "_read past EOF");
   if (queue.empty()) {
-    // No pending data, wait in a background thread
+    // No pending data, return immediately and launch a read in a background thread
     (new AsyncReader(env, *this, to_read))->Queue();
   } else {
     // Pending data, send immediately
