@@ -1,4 +1,5 @@
 #pragma once
+#include <filters/buffersink.h>
 #include <frame.h>
 #include <functional>
 #include <nooverrides.h>

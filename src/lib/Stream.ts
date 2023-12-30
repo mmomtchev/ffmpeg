@@ -7,4 +7,5 @@ export { VideoTransform } from './VideoTransform';
 export { AudioDecoder } from './AudioDecoder';
 export { AudioEncoder } from './AudioEncoder';
 export { AudioTransform } from './AudioTransform';
+export { Filter } from './Filter';
 export { Discarder } from './Discarder';

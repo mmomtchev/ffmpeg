@@ -73,7 +73,9 @@ export class VideoEncoder extends MediaTransform implements MediaStream {
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       frame.setTimeBase(this.encoder.timeBase());
       const packet = await this.encoder.encodeAsync(frame);
-      verbose(`VideoEncoder: encoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
+      verbose(`VideoEncoder: encoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ` +
+        `${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ` +
+        `ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
       this.busy = false;
       callback();

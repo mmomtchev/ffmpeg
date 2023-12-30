@@ -1,11 +1,12 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import ReadableStreamClone from 'readable-stream-clone';
 
 import { assert } from 'chai';
 
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, VideoTransform } from '@mmomtchev/ffmpeg/stream';
-import { Readable } from 'node:stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, VideoTransform, Filter, Discarder } from '@mmomtchev/ffmpeg/stream';
+import { Readable, Writable } from 'node:stream';
 import { MediaTransform, VideoStreamDefinition } from '../lib/MediaStream';
 import { Magick, MagickCore } from 'magickwand.js';
 
@@ -145,4 +146,89 @@ describe('streaming', () => {
       }
     });
   });
+
+  it('w/ ffmpeg filtering (PiP example)', (done) => {
+    // This uses ffmpeg's filter subsystem to overlay a copy of the video
+    // in a small thumbnail (Picture-in-Picture).
+    // It reads from a file, overlays and transcodes to a realtime stream.
+    // This pipeline is easily fast enough to be usable in real-time even on an older CPU.
+    //
+    const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
+
+    demuxer.on('error', done);
+    demuxer.on('ready', () => {
+      try {
+
+        const audioInput = new Discarder;
+        const videoInput = new VideoDecoder(demuxer.video[0]);
+
+        const videoDefinition = videoInput.definition();
+
+        const videoOutput = new VideoEncoder({
+          type: 'Video',
+          codec: ffmpeg.AV_CODEC_H264,
+          bitRate: 2.5e6,
+          width: videoDefinition.width,
+          height: videoDefinition.height,
+          frameRate: new ffmpeg.Rational(25, 1),
+          pixelFormat: videoDefinition.pixelFormat,
+          // We will try to go as fast as possible
+          // H.264 encoding in ffmpeg can be very fast
+          codecOptions: { preset: 'veryfast' }
+        });
+
+        // A Filter is an ffmpeg filter chain
+        const filter = new Filter({
+          inputs: {
+            // Filter with two identical inputs (the same video)
+            'main_in': videoDefinition,
+            'pip_in': videoDefinition
+          },
+          outputs: {
+            // One output
+            'out': videoOutput.definition()
+          },
+          graph:
+            // Take 'pip_in' and rescale it to 1/8th to obtain 'pip_out'
+            `[pip_in] scale=${videoDefinition.width / 8}x${videoDefinition.height / 8} [pip_out];  ` +
+            // Overlay 'pip_out' over 'main_in' at the specified offset to obtain 'out'
+            `[main_in][pip_out] overlay=x=${videoDefinition.width * 13 / 16}:y=${videoDefinition.height / 16} [out];  `,
+          timeBase: videoDefinition.timeBase
+        });
+        assert.instanceOf(filter.src['main_in'], Writable);
+        assert.instanceOf(filter.src['pip_in'], Writable);
+        assert.instanceOf(filter.sink['out'], Readable);
+
+        const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput] });
+        assert.instanceOf(muxer.output, Readable);
+
+        muxer.on('finish', done);
+        muxer.on('error', done);
+
+        const output = fs.createWriteStream(tempFile);
+
+        // Create a T junction to copy the raw decoded video
+        const videoInput1 = new ReadableStreamClone(videoInput, { objectMode: true });
+        const videoInput2 = new ReadableStreamClone(videoInput, { objectMode: true });
+
+        // Demuxer -> Decoder -> T junction
+        demuxer.video[0].pipe(videoInput);
+
+        // T junction -> Filter source 'main_in'
+        videoInput1.pipe(filter.src['main_in']);
+
+        // T junction -> Filter source 'pip_in'
+        videoInput2.pipe(filter.src['pip_in']);
+
+        // Filter sink 'out' -> Encoder -> Muxer
+        filter.sink['out'].pipe(videoOutput).pipe(muxer.video[0]);
+
+        demuxer.audio[0].pipe(audioInput);
+        muxer.output!.pipe(output);
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
 });
