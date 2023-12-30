@@ -193,8 +193,10 @@ describe('streaming', () => {
             `[pip_in] scale=${videoDefinition.width / 8}x${videoDefinition.height / 8} [pip_out];  ` +
             // Overlay 'pip_out' over 'main_in' at the specified offset to obtain 'out'
             `[main_in][pip_out] overlay=x=${videoDefinition.width * 13 / 16}:y=${videoDefinition.height / 16} [out];  `,
+          // A filter must have a single time base
           timeBase: videoDefinition.timeBase
         });
+        // These should be available based on the above configuration
         assert.instanceOf(filter.src['main_in'], Writable);
         assert.instanceOf(filter.src['pip_in'], Writable);
         assert.instanceOf(filter.sink['out'], Readable);
