@@ -31,6 +31,7 @@ export class Filter extends EventEmitter {
   }>;
   protected timeBase: any;
   protected stillStreamingSources: number;
+  protected destroyed: boolean;
   src: Record<string, any>;
   sink: Record<string, any>;
 
@@ -63,6 +64,7 @@ export class Filter extends EventEmitter {
     this.filterGraph.config();
 
     this.stillStreamingSources = 0;
+    this.destroyed = false;
     this.src = {};
     this.bufferSrc = {};
     for (const inp of Object.keys(options.inputs)) {
@@ -79,6 +81,7 @@ export class Filter extends EventEmitter {
           if (error) {
             this.stillStreamingSources--;
             verbose(`Filter: error on source [${inp}], destroy all streams`, error);
+            this.destroy(error);
           } else {
             verbose(`Filter: destroy source [${inp}]`);
             callback(null);
@@ -90,9 +93,14 @@ export class Filter extends EventEmitter {
           this.write(inp, ffmpeg.VideoFrame.null(), callback);
           callback(null);
           this.stillStreamingSources--;
+          if (this.stillStreamingSources === 0)
+            this.emit('finish');
         }
       });
       this.stillStreamingSources++;
+      Promise.resolve().then(() => {
+        this.emit('ready');
+      });
     }
 
     this.sink = {};
@@ -109,6 +117,18 @@ export class Filter extends EventEmitter {
         }
       });
     }
+  }
+
+  destroy(error: Error) {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    for (const s of Object.keys(this.bufferSrc)) {
+      this.sink[s].destroy(error);
+    }
+    for (const s of Object.keys(this.bufferSink)) {
+      this.src[s].destroy(error);
+    }
+    this.emit('error');
   }
 
   write(id: string, frame: any, callback: (error?: Error | null | undefined) => void) {
