@@ -45,6 +45,8 @@ export class Filter extends EventEmitter {
     for (const inp of Object.keys(options.inputs)) {
       const def = options.inputs[inp];
       if (isVideoDefinition(def)) {
+        if (!def.pixelFormat || !def.timeBase)
+          throw new Error('timeBase and pixelFormat are mandatory for filter sources');
         filterDescriptor += `buffer@${inp}=video_size=${def.width}x${def.height}:` +
           `pix_fmt=${def.pixelFormat.toString()}:time_base=${def.timeBase.toString()} [${inp}];  `;
       }

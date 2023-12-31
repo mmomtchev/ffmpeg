@@ -22,7 +22,7 @@ describe('streaming', () => {
       done();
   });
 
-  it('w/ dynamic overlay (generic ImageMagick overlay version)', (done) => {
+  it('w/ overlay (ImageMagick overlay version)', (done) => {
     // Overlaying using ImageMagick is very versatile and allows for maximum quality,
     // however it is far too slow to be done in realtime
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
@@ -46,8 +46,8 @@ describe('streaming', () => {
         // Thus, we will add additional pipeline elements to convert the incoming
         // frames to RGBA8888 and then back to YUV420
         //
-        // See below for an example that is much faster but involves manually
-        // overlaying YUV420 pixels over the video frame
+        // See below for a much faster example that uses ffmpeg's filtering
+        // system to overlay the image
         //
         // This is the intermediate format used
         const videoRGB = {
@@ -147,11 +147,113 @@ describe('streaming', () => {
     });
   });
 
+  it('w/ overlay (ffmpeg filter overlay version)', (done) => {
+    // This uses ffmpeg's filter subsystem to overlay text drawn by ImageMagick
+    // It reads from a file, overlays and transcodes to a realtime stream.
+    // This pipeline is fast enough to be usable in real-time even on an older CPU.
+    //
+    const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
+
+    // Use ImageMagick to create an image with the text that
+    const textImage = new Magick.Image('500x20', 'transparent');
+    textImage.draw([
+      new Magick.DrawableFont('sans-serif', MagickCore.NormalStyle, 100, MagickCore.NormalStretch),
+      new Magick.DrawablePointSize(24),
+      new Magick.DrawableStrokeColor('black'),
+      new Magick.DrawableText(20, 18, 'The insurance is mandatory, the copyright is not')
+    ]);
+    // Convert the image to a single ffmpeg video frame
+    // We can't use YUV420 because it does not support transparency, RGBA8888 does
+    textImage.magick('rgba');
+    textImage.depth(8);
+    const textBlob = new Magick.Blob;
+    textImage.write(textBlob);
+    const textImagePixelFormat = new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_RGBA);
+    const textFrame = new ffmpeg.VideoFrame.create(Buffer.from(textBlob.data()), textImagePixelFormat, 500, 20);
+
+    demuxer.on('error', done);
+    demuxer.on('ready', () => {
+      try {
+
+        const audioInput = new Discarder;
+        const videoInput = new VideoDecoder(demuxer.video[0]);
+
+        const videoDefinition = videoInput.definition();
+
+        const videoOutput = new VideoEncoder({
+          type: 'Video',
+          codec: ffmpeg.AV_CODEC_H264,
+          bitRate: 2.5e6,
+          width: videoDefinition.width,
+          height: videoDefinition.height,
+          frameRate: new ffmpeg.Rational(25, 1),
+          pixelFormat: videoDefinition.pixelFormat,
+          // We will try to go as fast as possible
+          // H.264 encoding in ffmpeg can be very fast
+          codecOptions: { preset: 'veryfast' }
+        });
+
+        // A Filter is an ffmpeg filter chain
+        const filter = new Filter({
+          inputs: {
+            // Filter with two inputs
+            'video_in': videoDefinition,
+            'text_in': {
+              type: 'Video',
+              width: 500,
+              height: 20,
+              pixelFormat: textImagePixelFormat,
+              timeBase: videoDefinition.timeBase
+            } as VideoStreamDefinition
+          },
+          outputs: {
+            // One output
+            'out': videoOutput.definition()
+          },
+          graph:
+            // Overlay 'text_in' over 'video_in' at the specified offset to obtain 'out'
+            `[video_in][text_in] overlay=x=20:y=${videoDefinition.height - 40} [out];  `,
+          // A filter must have a single time base
+          timeBase: videoDefinition.timeBase
+        });
+        // These should be available based on the above configuration
+        assert.instanceOf(filter.src['video_in'], Writable);
+        assert.instanceOf(filter.src['text_in'], Writable);
+        assert.instanceOf(filter.sink['out'], Readable);
+
+        const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput] });
+        assert.instanceOf(muxer.output, Readable);
+
+        muxer.on('finish', done);
+        muxer.on('error', done);
+
+        const output = fs.createWriteStream(tempFile);
+
+
+        // Demuxer -> Decoder -> Filter source 'video_in'
+        demuxer.video[0].pipe(videoInput).pipe(filter.src['video_in']);
+
+        // Simply send the single frame to the other source, no need for a stream
+        // (if you want to change subtitles, you will have to push frames with a time base and a pts)
+        filter.src['text_in'].write(textFrame);
+        filter.src['text_in'].end();
+
+        // Filter sink 'out' -> Encoder -> Muxer
+        filter.sink['out'].pipe(videoOutput).pipe(muxer.video[0]);
+
+        demuxer.audio[0].pipe(audioInput);
+        muxer.output!.pipe(output);
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
   it('w/ ffmpeg filtering (PiP example)', (done) => {
     // This uses ffmpeg's filter subsystem to overlay a copy of the video
     // in a small thumbnail (Picture-in-Picture).
     // It reads from a file, overlays and transcodes to a realtime stream.
-    // This pipeline is easily fast enough to be usable in real-time even on an older CPU.
+    // This pipeline is fast enough to be usable in real-time even on an older CPU.
     //
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
