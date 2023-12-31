@@ -154,7 +154,7 @@ describe('streaming', () => {
     //
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
 
-    // Use ImageMagick to create an image with the text that
+    // Use ImageMagick to create an image with the text
     const textImage = new Magick.Image('500x20', 'transparent');
     textImage.draw([
       new Magick.DrawableFont('sans-serif', MagickCore.NormalStyle, 100, MagickCore.NormalStretch),
@@ -228,7 +228,6 @@ describe('streaming', () => {
         muxer.on('error', done);
 
         const output = fs.createWriteStream(tempFile);
-
 
         // Demuxer -> Decoder -> Filter source 'video_in'
         demuxer.video[0].pipe(videoInput).pipe(filter.src['video_in']);
