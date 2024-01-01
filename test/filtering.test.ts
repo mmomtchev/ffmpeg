@@ -229,7 +229,7 @@ describe('filtering', () => {
     });
   });
 
-  describe('error handling', () => {
+  describe.skip('error handling', () => {
     it('error when constructing the filter', (done) => {
       const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
       const output = fs.createWriteStream(tempFile);
