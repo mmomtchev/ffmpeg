@@ -15,13 +15,13 @@ ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LO
 const tempFile = path.resolve(__dirname, 'filter-temp.mkv');
 
 describe('filtering', () => {
-  /*afterEach('delete temporary', (done) => {
+  afterEach('delete temporary', (done) => {
     console.log('DONE, DELETE');
     if (!process.env.DEBUG_ALL && !process.env.DEBUG_MUXER)
       fs.rm(tempFile, done);
     else
       done();
-  });*/
+  });
 
   it('w/ overlay (ffmpeg filter overlay version)', (done) => {
     // This uses ffmpeg's filter subsystem to overlay text drawn by ImageMagick
@@ -364,9 +364,17 @@ describe('filtering', () => {
 
           muxer.on('finish', () => done(new Error('Expected an error')));
           filter.on('error', (error) => {
-            output.close();
-            assert.match((error as Error).message, /Filter source video input must be a stream of VideoFrames/);
-            done();
+            try {
+              assert.match((error as Error).message, /Filter source video input must be a stream of VideoFrames/);
+              // Simple .pipe() does not close the attached Writable streams (.pipeline() does it)
+              // and a Muxer that is not closed/destroyed never exits
+              // (this is a caveat of Node.js streams and it is expected)
+              muxer.video[0].destroy(error);
+              output.close();
+              done();
+            } catch (err) {
+              done(err);
+            }
           });
 
           demuxer.video[0].pipe(videoInput).pipe(injectError).pipe(filter.src['video_in']);
