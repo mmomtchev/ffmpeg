@@ -15,13 +15,12 @@ ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LO
 const tempFile = path.resolve(__dirname, 'filter-temp.mkv');
 
 describe('filtering', () => {
-  /*afterEach('delete temporary', (done) => {
-    console.log('DONE, DELETE');
+  afterEach('delete temporary', (done) => {
     if (!process.env.DEBUG_ALL && !process.env.DEBUG_MUXER)
       fs.rm(tempFile, done);
     else
       done();
-  });*/
+  });
 
   it('w/ overlay (ffmpeg filter overlay version)', (done) => {
     // This uses ffmpeg's filter subsystem to overlay text drawn by ImageMagick
