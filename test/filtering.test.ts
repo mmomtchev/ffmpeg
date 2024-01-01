@@ -16,7 +16,6 @@ const tempFile = path.resolve(__dirname, 'filter-temp.mkv');
 
 describe('filtering', () => {
   afterEach('delete temporary', (done) => {
-    console.log('DONE, DELETE');
     if (!process.env.DEBUG_ALL && !process.env.DEBUG_MUXER)
       fs.rm(tempFile, done);
     else
