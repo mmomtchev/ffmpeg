@@ -13,3 +13,23 @@ VideoFrameBuffer CopyFrameToBuffer(VideoFrame &frame) {
   auto size = frame.bufferSize();
   return VideoFrameBuffer{{[&frame, size](uint8_t *data) { frame.copyToBuffer(data, size); }, size}};
 }
+
+VideoFrame *GetVideoFrame(BufferSinkFilterContext &sink, OptionalErrorCode ec) {
+  VideoFrame *frame = new VideoFrame;
+  if (!sink.getVideoFrame(*frame, ec)) {
+    delete frame;
+    return nullptr;
+  }
+
+  return frame;
+}
+
+AudioSamples *GetAudioFrame(BufferSinkFilterContext &sink, OptionalErrorCode ec) {
+  AudioSamples *samples = new AudioSamples;
+  if (!sink.getAudioFrame(*samples, ec)) {
+    delete samples;
+    return nullptr;
+  }
+
+  return samples;
+}

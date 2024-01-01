@@ -64,3 +64,9 @@ AudioSamples CreateAudioSamples(Nobind::Typemap::Buffer buffer, SampleFormat sam
                                 uint64_t channelLayout, int sampleRate);
 
 VideoFrame CreateVideoFrame(Nobind::Typemap::Buffer buffer, PixelFormat pixelFormat, int width, int height);
+
+// These extension functions are needed to wrap their avcpp counterparts which return data in an argument
+// They return pointers to avoid unnecessary copying of the VideoFrame - as JavaScript makes no difference
+// In JavaScript all C++ objects are heap-allocated objects referenced by a pointer
+VideoFrame *GetVideoFrame(BufferSinkFilterContext &sink, OptionalErrorCode ec);
+AudioSamples *GetAudioFrame(BufferSinkFilterContext &sink, OptionalErrorCode ec);

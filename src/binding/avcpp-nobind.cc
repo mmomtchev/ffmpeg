@@ -299,7 +299,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .cons<const char *>()
       .cons<const ChannelLayoutView &>()
       .def<&ChannelLayout::channels>("channels")
-      .def<&ChannelLayout::layout>("layout");
+      .def<&ChannelLayout::layout>("layout")
+      .def<&ChannelLayout::isValid>("isValid")
+      .def<static_cast<std::string (ChannelLayoutView::*)() const>(&ChannelLayoutView::describe)>("toString");
 
   m.def<ChannelLayoutView>("ChannelLayoutView");
 
@@ -359,6 +361,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
+      .def<&AudioSamples::null>("null")
       .def<&CreateAudioSamples>("create")
       .def<&AudioSamples::isNull>("isNull")
       .def<&AudioSamples::isComplete>("isComplete")
@@ -451,28 +454,8 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
 
   m.def<BufferSinkFilterContext>("BufferSinkFilterContext")
       .cons<FilterContext &>()
-      // getVideoFrame & cie do not have good native-feel interface, but this avoids
-      // copying video frames
-      .def<static_cast<bool (BufferSinkFilterContext::*)(VideoFrame &, OptionalErrorCode)>(
-          &BufferSinkFilterContext::getVideoFrame)>("getVideoFrame")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(VideoFrame &, int, OptionalErrorCode)>(
-          &BufferSinkFilterContext::getVideoFrame)>("getVideoFrameFlags")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(AudioSamples &, OptionalErrorCode)>(
-          &BufferSinkFilterContext::getAudioFrame)>("getAudioFrame")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(AudioSamples &, int, OptionalErrorCode)>(
-          &BufferSinkFilterContext::getAudioFrame)>("getAudioFrameFlags")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(VideoFrame &, OptionalErrorCode)>(
-               &BufferSinkFilterContext::getVideoFrame),
-           Nobind::ReturnAsync>("getVideoFrameAsync")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(VideoFrame &, int, OptionalErrorCode)>(
-               &BufferSinkFilterContext::getVideoFrame),
-           Nobind::ReturnAsync>("getVideoFrameFlagsAsync")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(AudioSamples &, OptionalErrorCode)>(
-               &BufferSinkFilterContext::getAudioFrame),
-           Nobind::ReturnAsync>("getAudioFrameAsync")
-      .def<static_cast<bool (BufferSinkFilterContext::*)(AudioSamples &, int, OptionalErrorCode)>(
-               &BufferSinkFilterContext::getAudioFrame),
-           Nobind::ReturnAsync>("getAudioFrameFlagsAsync")
+      .ext<&GetVideoFrame, Nobind::ReturnNullAccept>("getVideoFrame")
+      .ext<&GetAudioFrame, Nobind::ReturnNullAccept>("getAudioFrame")
       .def<&BufferSinkFilterContext::setFrameSize>("setFrameSize")
       .def<&BufferSinkFilterContext::frameRate>("frameRate")
       .def<&BufferSinkFilterContext::checkFilter>("checkFilter");

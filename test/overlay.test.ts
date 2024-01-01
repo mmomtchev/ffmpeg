@@ -248,9 +248,10 @@ describe('streaming', () => {
     });
   });
 
-  it('w/ ffmpeg filtering (PiP example)', (done) => {
+  it('w/ video overlay (ffmpeg PiP filter)', (done) => {
     // This uses ffmpeg's filter subsystem to overlay a copy of the video
     // in a small thumbnail (Picture-in-Picture).
+    // It also processes the audio.
     // It reads from a file, overlays and transcodes to a realtime stream.
     // This pipeline is fast enough to be usable in real-time even on an older CPU.
     //
@@ -260,9 +261,10 @@ describe('streaming', () => {
     demuxer.on('ready', () => {
       try {
 
-        const audioInput = new Discarder;
+        const audioInput = new AudioDecoder(demuxer.audio[0]);
         const videoInput = new VideoDecoder(demuxer.video[0]);
 
+        const audioDefinition = audioInput.definition();
         const videoDefinition = videoInput.definition();
 
         const videoOutput = new VideoEncoder({
@@ -278,31 +280,46 @@ describe('streaming', () => {
           codecOptions: { preset: 'veryfast' }
         });
 
+        const audioOutput = new AudioEncoder({
+          type: 'Audio',
+          codec: ffmpeg.AV_CODEC_AAC,
+          bitRate: 128e3,
+          sampleRate: audioDefinition.sampleRate,
+          sampleFormat: audioDefinition.sampleFormat,
+          channelLayout: audioDefinition.channelLayout
+        });
+
         // A Filter is an ffmpeg filter chain
         const filter = new Filter({
           inputs: {
-            // Filter with two identical inputs (the same video)
+            // Filter with two identical video inputs (the same video)
             'main_in': videoDefinition,
-            'pip_in': videoDefinition
+            'pip_in': videoDefinition,
+            // and one audio input
+            'audio_in': audioDefinition
           },
           outputs: {
-            // One output
-            'out': videoOutput.definition()
+            // Outputs
+            'video_out': videoOutput.definition(),
+            'audio_out': audioOutput.definition()
           },
           graph:
             // Take 'pip_in' and rescale it to 1/8th to obtain 'pip_out'
             `[pip_in] scale=${videoDefinition.width / 8}x${videoDefinition.height / 8} [pip_out];  ` +
             // Overlay 'pip_out' over 'main_in' at the specified offset to obtain 'out'
-            `[main_in][pip_out] overlay=x=${videoDefinition.width * 13 / 16}:y=${videoDefinition.height / 16} [out];  `,
+            `[main_in][pip_out] overlay=x=${videoDefinition.width * 13 / 16}:y=${videoDefinition.height / 16} [video_out];  ` +
+            // Simply copy the audio through the filter
+            '[audio_in] acopy [audio_out];  ',
           // A filter must have a single time base
           timeBase: videoDefinition.timeBase
         });
         // These should be available based on the above configuration
         assert.instanceOf(filter.src['main_in'], Writable);
         assert.instanceOf(filter.src['pip_in'], Writable);
-        assert.instanceOf(filter.sink['out'], Readable);
+        assert.instanceOf(filter.sink['video_out'], Readable);
+        assert.instanceOf(filter.sink['audio_out'], Readable);
 
-        const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput] });
+        const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput, audioOutput] });
         assert.instanceOf(muxer.output, Readable);
 
         muxer.on('finish', done);
@@ -317,16 +334,19 @@ describe('streaming', () => {
         // Demuxer -> Decoder -> T junction
         demuxer.video[0].pipe(videoInput);
 
+        // Demuxer -> Decoder -> Filter source 'audio_in'
+        demuxer.audio[0].pipe(audioInput).pipe(filter.src['audio_in']);
+
         // T junction -> Filter source 'main_in'
         videoInput1.pipe(filter.src['main_in']);
 
         // T junction -> Filter source 'pip_in'
         videoInput2.pipe(filter.src['pip_in']);
 
-        // Filter sink 'out' -> Encoder -> Muxer
-        filter.sink['out'].pipe(videoOutput).pipe(muxer.video[0]);
+        // Filter sinks -> Encoder -> Muxer
+        filter.sink['video_out'].pipe(videoOutput).pipe(muxer.video[0]);
+        filter.sink['audio_out'].pipe(audioOutput).pipe(muxer.audio[0]);
 
-        demuxer.audio[0].pipe(audioInput);
         muxer.output!.pipe(output);
       } catch (err) {
         done(err);
