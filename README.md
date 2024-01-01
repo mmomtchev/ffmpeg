@@ -126,7 +126,7 @@ You should start by looking at the unit tests:
   * [`rescale.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/rescale.test.ts) contains a simple example for rescaling/resampling a video using ffmpeg's built-in `libswscale`
   * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
   * [`streaming.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/streaming.test.ts) contains examples for transcoding to various formats and sending the resulting data to a Node.js `WriteStream`
-  * [`overlay.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/overlay.test.ts) contains an example for streaming while overlaying an image (or text) over the encoded video
+  * [`filtering.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/filtering.test.ts) contains several examples for using ffmpeg's filters including overlaying text or Picture-in-Picture that are fast enough to be used in real-time
 
   * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/node-ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
 
