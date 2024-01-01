@@ -20,4 +20,5 @@ sed -nr 's/^.*\s+AVFMT_([_A-Z0-9]+)[, ].*/AVFMT_\1 AV_FMT_\1/p' ${FFMPEG}/src/li
 sed -nr 's/^.*\s+AV_LOG_([_A-Z0-9]+)[, ].*/AV_LOG_\1 AV_LOG_\1/p' ${FFMPEG}/src/libavutil/log.h | sort | uniq
 sed -nr 's/^.*\s+SWS_([_A-Z0-9]+)[, ].*/SWS_\1 SWS_\1/p' ${FFMPEG}/src/libswscale/swscale.h | sort | uniq
 sed -nr 's/^.*\s+SWS_([_A-Z0-9]+)[, ].*/SWS_\1 SWS_\1/p' ${FFMPEG}/src/libswresample/swresample.h | sort | uniq
+sed -nr 's/^.*\s+AV_BUFFERSINK_FLAG_([_A-Z0-9]+)[, ].*/AV_BUFFERSINK_FLAG_\1 AV_BUFFERSINK_FLAG_\1/p' ${FFMPEG}/src/libavfilter/buffersink.h | sort | uniq
 ) | sed -r 's/(.*)\s(.*)/REGISTER_CONSTANT(\1, "\2");/g'

@@ -77,7 +77,8 @@ export class VideoDecoder extends MediaTransform implements MediaStream {
       width: this.decoder.width(),
       height: this.decoder.height(),
       frameRate: this.stream.frameRate(),
-      pixelFormat: this.decoder.pixelFormat()
+      pixelFormat: this.decoder.pixelFormat(),
+      timeBase: this.decoder.timeBase()
     } as VideoStreamDefinition;
   }
 }

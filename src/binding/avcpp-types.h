@@ -54,6 +54,7 @@ TYPEMAPS_FOR_ENUM(AVCodecID);
 TYPEMAPS_FOR_ENUM(AVMediaType);
 TYPEMAPS_FOR_ENUM(AVPixelFormat);
 TYPEMAPS_FOR_ENUM(AVSampleFormat);
+TYPEMAPS_FOR_ENUM(FilterMediaType);
 // While this is not an enum, the typemap is still compatible
 TYPEMAPS_FOR_ENUM(std::bitset<64>);
 

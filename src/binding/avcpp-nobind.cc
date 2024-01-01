@@ -2,15 +2,15 @@
 #include <av.h>
 #include <avutils.h>
 #include <codec.h>
-#include <ffmpeg.h>
-#include <packet.h>
-#include <videorescaler.h>
-
-// API2
-#include <codec.h>
 #include <codeccontext.h>
+#include <ffmpeg.h>
+#include <filters/buffersink.h>
+#include <filters/buffersrc.h>
+#include <filters/filtergraph.h>
 #include <format.h>
 #include <formatcontext.h>
+#include <packet.h>
+#include <videorescaler.h>
 
 #include <nobind.h>
 
@@ -26,6 +26,9 @@ using namespace av;
 #define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
   constexpr static int64_t __const_##CONST{static_cast<int64_t>(CONST)};                                               \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
+#define REGISTER_ENUM(ENUM, ID)                                                                                        \
+  constexpr static int64_t __const_##ID{static_cast<int64_t>(ENUM::ID)};                                               \
+  m.def<&__const_##ID, Nobind::ReadOnly>(#ENUM "_" #ID);
 
 // An universal toString() wrapper, to be used as a class extension
 template <typename T> std::string ToString(T &v) {
@@ -296,7 +299,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .cons<const char *>()
       .cons<const ChannelLayoutView &>()
       .def<&ChannelLayout::channels>("channels")
-      .def<&ChannelLayout::layout>("layout");
+      .def<&ChannelLayout::layout>("layout")
+      .def<&ChannelLayout::isValid>("isValid")
+      .def<static_cast<std::string (ChannelLayoutView::*)() const>(&ChannelLayoutView::describe)>("toString");
 
   m.def<ChannelLayoutView>("ChannelLayoutView");
 
@@ -327,6 +332,8 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&Packet::timeBase, Nobind::ReturnNested>("timeBase");
 
   m.def<VideoFrame>("VideoFrame")
+      .cons()
+      .def<&VideoFrame::null>("null")
       // Every global function can also be registered as a static class method
       .def<&CreateVideoFrame>("create")
       .def<&VideoFrame::isNull>("isNull")
@@ -354,6 +361,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
+      .def<&AudioSamples::null>("null")
       .def<&CreateAudioSamples>("create")
       .def<&AudioSamples::isNull>("isNull")
       .def<&AudioSamples::isComplete>("isComplete")
@@ -416,6 +424,45 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop")
       .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop),
            Nobind::ReturnAsync>("popAsync");
+
+  m.def<Filter>("Filter").cons<const char *>();
+
+  m.def<FilterGraph>("FilterGraph")
+      .cons<>()
+      .def<&FilterGraph::createFilter>("createFilter")
+      .def<static_cast<void (FilterGraph::*)(const std::string &, OptionalErrorCode)>(&FilterGraph::parse)>("parse")
+      .def<&FilterGraph::config>("config")
+      .def<static_cast<FilterContext (FilterGraph::*)(const std::string &, OptionalErrorCode)>(&FilterGraph::filter)>(
+          "filter");
+
+  m.def<FilterContext>("FilterContext");
+
+  // We only export the safer API that copies frames for now
+  m.def<BufferSrcFilterContext>("BufferSrcFilterContext")
+      .cons<FilterContext &>()
+      .def<static_cast<void (BufferSrcFilterContext::*)(const VideoFrame &, OptionalErrorCode)>(
+          &BufferSrcFilterContext::writeVideoFrame)>("writeVideoFrame")
+      .def<static_cast<void (BufferSrcFilterContext::*)(const AudioSamples &, OptionalErrorCode)>(
+          &BufferSrcFilterContext::writeAudioSamples)>("writeAudioSamples")
+      .def<static_cast<void (BufferSrcFilterContext::*)(const VideoFrame &, OptionalErrorCode)>(
+               &BufferSrcFilterContext::writeVideoFrame),
+           Nobind::ReturnAsync>("writeVideoFrameAsync")
+      .def<static_cast<void (BufferSrcFilterContext::*)(const AudioSamples &, OptionalErrorCode)>(
+               &BufferSrcFilterContext::writeAudioSamples),
+           Nobind::ReturnAsync>("writeAudioSamplesAsync")
+      .def<&BufferSrcFilterContext::checkFilter>("checkFilter");
+
+  m.def<BufferSinkFilterContext>("BufferSinkFilterContext")
+      .cons<FilterContext &>()
+      .ext<&GetVideoFrame, Nobind::ReturnNullAccept>("getVideoFrame")
+      .ext<&GetAudioFrame, Nobind::ReturnNullAccept>("getAudioFrame")
+      .def<&BufferSinkFilterContext::setFrameSize>("setFrameSize")
+      .def<&BufferSinkFilterContext::frameRate>("frameRate")
+      .def<&BufferSinkFilterContext::checkFilter>("checkFilter");
+
+  REGISTER_ENUM(FilterMediaType, Unknown);
+  REGISTER_ENUM(FilterMediaType, Audio);
+  REGISTER_ENUM(FilterMediaType, Video);
 
   m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
   m.Exports().Set("ReadableCustomIO", ReadableCustomIO::GetClass(m.Env()));
