@@ -3,7 +3,7 @@
 #include <exception>
 
 ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
-    : av::CustomIO(), Napi::ObjectWrap<ReadableCustomIO>(info), queue_size(0), eof(false) {
+    : av::CustomIO(), Napi::ObjectWrap<ReadableCustomIO>(info), queue_size(0), eof(false), final_callback() {
   Napi::Env env{info.Env()};
 
   instance_data = env.GetInstanceData<Nobind::EnvInstanceData<ffmpegInstanceData>>();
@@ -82,6 +82,9 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
       push.MakeCallback(Value(), {env.Null()});
       delete buf;
       eof = true;
+      if (!final_callback.IsEmpty()) {
+        final_callback.MakeCallback(Value(), 0, nullptr);
+      }
       return;
     }
     to_read -= buf->length;
@@ -153,6 +156,10 @@ void ReadableCustomIO::_Final(const Napi::CallbackInfo &info) {
   verbose("ReadableCustomIO: received EOF\n");
 
   auto *buffer = new BufferReadableItem{nullptr, 0};
+
+  if (info[0].IsFunction()) {
+    final_callback = Napi::Persistent<Napi::Function>(info[0].As<Napi::Function>());
+  }
 
   std::unique_lock lk{lock};
   queue.push(buffer);
