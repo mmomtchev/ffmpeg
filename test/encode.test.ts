@@ -62,13 +62,7 @@ it('produce a video from stills', (done) => {
   let pts = 0;
   const write = function () {
     let frame;
-    let callback: (() => void) | undefined = undefined;
     do {
-      if (--totalFrames === 0) {
-        callback = () => {
-          videoOutput.end();
-        };
-      }
       const image = genFrame(state);
       const blob = new Magick.Blob;
       image.write(blob);
@@ -78,9 +72,12 @@ it('produce a video from stills', (done) => {
       frame.setPts(new ffmpeg.Timestamp(pts++, timeBase));
 
       // This is the Node.js Writable protocol
-    } while (videoOutput.write(frame, 'binary', callback) && totalFrames > 0);
+      // write until write returns false, then wait for 'drain'
+    } while (videoOutput.write(frame, 'binary') && --totalFrames > 0);
     if (totalFrames > 0)
       videoOutput.once('drain', write);
+    else
+      videoOutput.end();
   };
   write();
 
