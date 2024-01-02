@@ -71,6 +71,11 @@ int ReadableCustomIO::seekable() const { return 0; }
 void ReadableCustomIO::PushPendingData(int64_t to_read) {
   verbose("ReadableCustomIO: push pending data: request %lu bytes\n", to_read);
   Napi::Env env(Env());
+  Napi::Value self = this->Value();
+  if (self.IsEmpty()) {
+    verbose("this is empty.... isn't it simply brilliant?\n");
+    return;
+  }
   Napi::Value push_value;
   try {
     push_value = this->Value().Get("push");
