@@ -70,39 +70,40 @@ int ReadableCustomIO::seekable() const { return 0; }
 // with the lock already held
 void ReadableCustomIO::PushPendingData(int64_t to_read) {
   verbose("ReadableCustomIO: push pending data: request %lu bytes\n", to_read);
-  try {
-    Napi::Env env(Env());
-    Napi::Function push = this->Value().Get("push").As<Napi::Function>();
-    assert(!queue.empty());
-    do {
-      auto buf = queue.front();
-      queue.pop();
-      if (buf->data == nullptr) {
-        // This is EOF
-        verbose("ReadableCustomIO: pushing null to signal EOF\n");
-        push.MakeCallback(this->Value(), {env.Null()});
-        delete buf;
-        eof = true;
-        return;
-      }
-      to_read -= buf->length;
-      // Some alternative Node-API implementations (Electron for example) disallow external buffers
-#ifdef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
-      napi_value js_buffer = Napi::Buffer<uint8_t>::Copy(env, buf->data, buf->length);
-      delete[] buf->data;
-#else
-      napi_value js_buffer =
-          Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
-#endif
-      verbose("ReadableCustomIO: pushed Buffer length %lu, request remaining %ld\n", buf->length, to_read);
-      push.MakeCallback(this->Value(), 1, &js_buffer);
-      queue_size -= buf->length;
-      delete buf;
-    } while (!queue.empty() && to_read > 0);
-  } catch (const std::exception &e) {
-    verbose("ReadableCustomIO: C++ exception %s\n", e.what());
-    std::rethrow_exception(std::current_exception());
+  Napi::Env env(Env());
+  Napi::Value push_value = this->Value().Get("push");
+  if (!push_value.IsFunction()) {
+    verbose("ReadableCustomIO: push disappeared???\n");
+    verbose("%s\n", push_value.ToString().Utf8Value().c_str());
   }
+  Napi::Function push = push_value.As<Napi::Function>();
+
+  assert(!queue.empty());
+  do {
+    auto buf = queue.front();
+    queue.pop();
+    if (buf->data == nullptr) {
+      // This is EOF
+      verbose("ReadableCustomIO: pushing null to signal EOF\n");
+      push.MakeCallback(this->Value(), {env.Null()});
+      delete buf;
+      eof = true;
+      return;
+    }
+    to_read -= buf->length;
+    // Some alternative Node-API implementations (Electron for example) disallow external buffers
+#ifdef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
+    napi_value js_buffer = Napi::Buffer<uint8_t>::Copy(env, buf->data, buf->length);
+    delete[] buf->data;
+#else
+    napi_value js_buffer =
+        Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
+#endif
+    verbose("ReadableCustomIO: pushed Buffer length %lu, request remaining %ld\n", buf->length, to_read);
+    push.MakeCallback(this->Value(), 1, &js_buffer);
+    queue_size -= buf->length;
+    delete buf;
+  } while (!queue.empty() && to_read > 0);
 }
 
 void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
