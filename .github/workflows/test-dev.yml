@@ -133,7 +133,7 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
-    - run: npm test
+    - run: node node_modules/mocha/lib/cli/cli.js
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
         LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.5.0.0
