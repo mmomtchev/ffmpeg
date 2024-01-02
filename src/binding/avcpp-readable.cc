@@ -71,7 +71,13 @@ int ReadableCustomIO::seekable() const { return 0; }
 void ReadableCustomIO::PushPendingData(int64_t to_read) {
   verbose("ReadableCustomIO: push pending data: request %lu bytes\n", to_read);
   Napi::Env env(Env());
-  Napi::Value push_value = this->Value().Get("push");
+  Napi::Value push_value;
+  try {
+    push_value = this->Value().Get("push");
+  } catch (const std::exception &e) {
+    verbose("ReadableCustomIO: C++ exception 3: %s\n", e.what());
+    std::rethrow_exception(std::current_exception());
+  }
   if (!push_value.IsFunction()) {
     verbose("ReadableCustomIO: push disappeared???\n");
     verbose("%s\n", push_value.ToString().Utf8Value().c_str());
