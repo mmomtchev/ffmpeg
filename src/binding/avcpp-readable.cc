@@ -13,7 +13,14 @@ ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
   instance_data->js_Readable_ctor.Call(this->Value(), {});
 }
 
-ReadableCustomIO::~ReadableCustomIO() { verbose("ReadableCustomIO: destroy\n"); }
+ReadableCustomIO::~ReadableCustomIO() {
+  verbose("ReadableCustomIO: destroy, queue elements %lu, queue_size %lu\n", queue.size(), queue_size);
+  std::unique_lock lk{lock};
+  while (!queue.empty()) {
+    delete queue.front();
+    queue.pop();
+  }
+}
 
 void ReadableCustomIO::Init(const Napi::CallbackInfo &info) {
   Napi::Env env{info.Env()};
