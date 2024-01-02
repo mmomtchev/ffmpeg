@@ -31,15 +31,15 @@
       ],
       'actions': [
         {
-          'action_name': 'tsc',
+          'action_name': 'tspc',
           'inputs':  [ 'src/lib/Stream.ts' ],
           'outputs': [ 'lib/Stream.js' ],
           'conditions': [
             ['OS != "win"', {
-              'action': [ 'npx', 'tsc' ]
+              'action': [ 'npx', 'tspc' ]
             }],
             ['OS == "win"', {
-              'action': [ 'cmd', '/c"npx tsc"' ]
+              'action': [ 'cmd', '/c"npx tspc"' ]
             }]
           ]
         }

@@ -16,7 +16,12 @@
       "@mmomtchev/ffmpeg/stream": [
         "./lib/Stream"
       ]
-    }
+    },
+    "plugins": [
+      {
+        "transform": "./src/undebug.ts"
+      }
+    ]
   },
   "include": [
     "src/lib"
