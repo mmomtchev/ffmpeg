@@ -71,7 +71,7 @@ int ReadableCustomIO::seekable() const { return 0; }
 void ReadableCustomIO::PushPendingData(int64_t to_read) {
   verbose("ReadableCustomIO: push pending data: request %lu bytes\n", to_read);
   Napi::Env env(Env());
-  Napi::Function push = Value().Get("push").As<Napi::Function>();
+  Napi::Function push = this->Value().Get("push").As<Napi::Function>();
   assert(!queue.empty());
   do {
     auto buf = queue.front();
@@ -79,7 +79,7 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
     if (buf->data == nullptr) {
       // This is EOF
       verbose("ReadableCustomIO: pushing null to signal EOF\n");
-      push.MakeCallback(Value(), {env.Null()});
+      push.MakeCallback(this->Value(), {env.Null()});
       delete buf;
       eof = true;
       return;
@@ -94,7 +94,7 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
         Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
 #endif
     verbose("ReadableCustomIO: pushed Buffer length %lu, request remaining %ld\n", buf->length, to_read);
-    push.MakeCallback(Value(), 1, &js_buffer);
+    push.MakeCallback(this->Value(), 1, &js_buffer);
     queue_size -= buf->length;
     delete buf;
   } while (!queue.empty() && to_read > 0);
