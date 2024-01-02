@@ -77,6 +77,7 @@ class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCu
   std::mutex lock;
   std::condition_variable cv;
   bool eof;
+  Napi::FunctionReference final_callback;
 
   void PushPendingData(int64_t);
 
