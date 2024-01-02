@@ -76,7 +76,13 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
     verbose("ReadableCustomIO: push disappeared???\n");
     verbose("%s\n", push_value.ToString().Utf8Value().c_str());
   }
-  Napi::Function push = push_value.As<Napi::Function>();
+  Napi::Function push;
+  try {
+    push = push_value.As<Napi::Function>();
+  } catch (const std::exception &e) {
+    verbose("ReadableCustomIO: C++ exception 1: %s\n", e.what());
+    std::rethrow_exception(std::current_exception());
+  }
 
   assert(!queue.empty());
   do {
@@ -91,14 +97,22 @@ void ReadableCustomIO::PushPendingData(int64_t to_read) {
       return;
     }
     to_read -= buf->length;
-    // Some alternative Node-API implementations (Electron for example) disallow external buffers
+    napi_value js_buffer;
+    try {
+      // Some alternative Node-API implementations (Electron for example) disallow external buffers
 #ifdef NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED
-    napi_value js_buffer = Napi::Buffer<uint8_t>::Copy(env, buf->data, buf->length);
-    delete[] buf->data;
+      napi_value js_buffer = Napi::Buffer<uint8_t>::Copy(env, buf->data, buf->length);
+      delete[] buf->data;
 #else
-    napi_value js_buffer =
-        Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
+      js_buffer =
+          Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
 #endif
+    } catch (const std::exception &e) {
+      verbose("ReadableCustomIO: C++ exception 2: %s\n", e.what());
+      verbose("ReadableCustomIO: buf->data: %p, buf->length: %lu\n", buf->data, buf->length);
+      std::rethrow_exception(std::current_exception());
+    }
+
     verbose("ReadableCustomIO: pushed Buffer length %lu, request remaining %ld\n", buf->length, to_read);
     push.MakeCallback(this->Value(), 1, &js_buffer);
     queue_size -= buf->length;
