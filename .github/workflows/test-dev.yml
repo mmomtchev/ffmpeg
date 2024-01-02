@@ -100,7 +100,7 @@ jobs:
 
   asan:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v4
@@ -131,5 +131,5 @@ jobs:
     - run: npm install
     - run: npm test
       env:
-        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt:use_tls=0
-        LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.6.0.0
+        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
+        LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.5.0.0
