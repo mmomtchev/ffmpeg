@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## []
  - Add `streams/Filter` to support ffmpeg filters
+ - Support the built-in networking capabilities of ffmpeg
  - Support piping from a `ReadStream` to a `Demuxer`
  - Support piping from a `Muxer` to a `WriteStream`
  - Send `error` events on `Demuxer` and `Muxer`
