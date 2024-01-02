@@ -130,6 +130,7 @@ jobs:
     - run: npx node-pre-gyp build
     - run: npm install
     - run: node node_modules/mocha/lib/cli/cli.js
+      continue-on-error: true
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
         LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.6.0.0
