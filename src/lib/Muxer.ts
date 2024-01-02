@@ -27,6 +27,10 @@ export interface MuxerOptions extends WritableOptions {
    * Output format options
    */
   outputFormatOptions?: Record<string, string>;
+  /**
+   * Open options
+   */
+  openOptions?: Record<string, string>;
 }
 
 /**
@@ -54,6 +58,7 @@ export class Muxer extends EventEmitter {
   protected outputFormatName: string;
   protected outputFormatOptions: Record<string, string>;
   protected outputFormat: any;
+  protected openOptions: Record<string, string>;
   protected formatContext: any;
   protected rawStreams: MediaEncoder[];
   protected writing: boolean;
@@ -78,6 +83,7 @@ export class Muxer extends EventEmitter {
     this.highWaterMark = options.highWaterMark ?? (64 * 1024);
     this.outputFormatName = options.outputFormat ?? '';
     this.outputFormatOptions = options.outputFormatOptions ?? {};
+    this.openOptions = options.openOptions ?? {};
     this.rawStreams = options.streams;
     this.streams = [];
     this.audio = [];
@@ -178,7 +184,7 @@ export class Muxer extends EventEmitter {
       // If all inputs are not properly primed before opening the muxer, this can lead
       // to some very subtle problems such as the codec flags not being properly carried over
       await Promise.all(this.ready);
-      verbose(`Muxer: opening ${this.outputFile}, all inputs are primed`);
+      verbose(`Muxer: opening ${this.outputFile}, all inputs are primed`, this.openOptions);
 
       for (const idx in this.rawStreams) {
         const codec = this.rawStreams[idx].codec();
@@ -198,7 +204,7 @@ export class Muxer extends EventEmitter {
       }
 
       if (!this.output) {
-        await this.formatContext.openOutputAsync(this.outputFile);
+        await this.formatContext.openOutputOptionsAsync(this.outputFile, this.openOptions);
       } else {
         await this.formatContext.openReadableAsync(this.output, this.highWaterMark);
       }
@@ -242,7 +248,6 @@ export class Muxer extends EventEmitter {
         } catch (err) {
           verbose(`Muxer: ${err}`);
           job.callback(err as Error);
-          for (const s of this.streams) s.destroy(err as Error);
           this.destroy(err as Error);
         }
       }

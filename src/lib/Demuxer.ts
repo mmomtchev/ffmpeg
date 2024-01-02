@@ -15,6 +15,10 @@ export interface DemuxerOptions extends ReadableOptions {
    * Amount of data to buffer, only when reading from a ReadStream, @default 64Kb
    */
   highWaterMark?: number;
+  /**
+   * Open options
+   */
+  openOptions?: Record<string, string>;
 }
 
 /**
@@ -49,6 +53,7 @@ export class Demuxer extends EventEmitter {
   protected highWaterMark: number;
   protected formatContext: any;
   protected rawStreams: any[];
+  protected openOptions: Record<string, string>;
   streams: EncodedMediaReadable[];
   video: EncodedMediaReadable[];
   audio: EncodedMediaReadable[];
@@ -64,6 +69,7 @@ export class Demuxer extends EventEmitter {
       this.input = new ffmpeg.WritableCustomIO;
     }
     this.highWaterMark = options?.highWaterMark ?? (64 * 1024);
+    this.openOptions = options?.openOptions ?? {};
     this.rawStreams = [];
     this.streams = [];
     this.video = [];
@@ -76,8 +82,8 @@ export class Demuxer extends EventEmitter {
     try {
       this.formatContext = new FormatContext;
       if (this.inputFile) {
-        verbose(`Demuxer: opening ${this.inputFile}`);
-        await this.formatContext.openInputAsync(this.inputFile);
+        verbose(`Demuxer: opening ${this.inputFile}`, this.openOptions);
+        await this.formatContext.openInputOptionsAsync(this.inputFile, this.openOptions);
       } else {
         verbose('Demuxer: reading from ReadStream');
         const format = new ffmpeg.InputFormat;
@@ -125,6 +131,7 @@ export class Demuxer extends EventEmitter {
         if (pkt.isNull()) {
           verbose('Demuxer: End of stream');
           for (const s of this.streams) s.push(null);
+          this.emit('close');
           return;
         }
         if (!this.streams[pkt.streamIndex()]) {
@@ -140,6 +147,7 @@ export class Demuxer extends EventEmitter {
       verbose('Demuxer: end of _read');
     })()
       .catch((err) => {
+        verbose(`Demuxer: ${err}`);
         for (const s of this.streams) s.destroy(err);
         this.emit('error', err);
       })

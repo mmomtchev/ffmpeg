@@ -67,6 +67,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           "openInput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput),
            Nobind::ReturnAsync>("openInputAsync")
+      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
+          &FormatContext::openInput)>("openInputOptions")
+      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
+               &FormatContext::openInput),
+           Nobind::ReturnAsync>("openInputOptionsAsync")
       .def<static_cast<void (FormatContext::*)(CustomIO *, InputFormat, OptionalErrorCode, size_t)>(
                &FormatContext::openInput),
            Nobind::ReturnAsync>("openWritableAsync")
@@ -84,6 +89,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           "openOutput")
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
            Nobind::ReturnAsync>("openOutputAsync")
+      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
+          &FormatContext::openOutput)>("openOutputOptions")
+      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
+               &FormatContext::openOutput),
+           Nobind::ReturnAsync>("openOutputOptionsAsync")
       .def<static_cast<void (FormatContext::*)(CustomIO *, OptionalErrorCode, size_t)>(&FormatContext::openOutput),
            Nobind::ReturnAsync>("openReadableAsync")
       .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
