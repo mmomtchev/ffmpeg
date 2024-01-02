@@ -51,3 +51,39 @@ jobs:
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npm test
+
+  asan:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18.x
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+    - name: Install fonts
+      run: sudo apt-get install -y fonts-ubuntu || true
+    - name: Cache conan artifacts
+      id: conan-artifacts
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan
+        key: asan
+    - run: npm install --ignore-scripts --production
+    - run: npm install typescript
+    - run: npx node-pre-gyp configure --debug --enable_asan
+      env:
+        PKG_CONFIG_PATH:
+    - run: npx node-pre-gyp build
+    - run: npm install
+    - run: npm test
+      env:
+        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
+        LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.6.0.0
