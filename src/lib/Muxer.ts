@@ -242,6 +242,9 @@ export class Muxer extends EventEmitter {
       callback();
       return;
     }
+    if (this.delayedDestroy) {
+      return void callback(this.delayedDestroy);
+    }
 
     this.writingQueue.push({ idx, packet, callback });
     if (this.writing) {
@@ -269,6 +272,7 @@ export class Muxer extends EventEmitter {
           if (this.delayedDestroy) {
             verbose('Muxer: destroyed while writing, resuming destroy');
             this.writing = false;
+            this.writingQueue = [];
             return void job.callback(this.delayedDestroy);
           }
           job.callback();
