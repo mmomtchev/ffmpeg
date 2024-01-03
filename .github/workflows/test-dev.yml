@@ -98,9 +98,11 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
+    - run: npx tsc
     - run: while node node_modules/mocha/lib/cli/cli.js -g streaming && [ $I -gt 0 ]; do I=$(( I - 1 )); done
       env:
         I: 100
+        DEBUG_MUXER: 1
 
 
   asan:
