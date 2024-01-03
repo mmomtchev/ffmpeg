@@ -173,13 +173,17 @@ export class Muxer extends EventEmitter {
     this.destroyed = true;
     verbose(`Muxer: destroy: ${e}`);
     await this.formatContext.closeAsync();
+    const finalize = () => {
+      for (const s in this.streams) {
+        this.streams[s].destroy(e);
+      }
+      this.emit('error', e);
+    };
     if (this.output) {
-      (this.output as any)._final();
+      (this.output as any)._final(finalize);
+    } else {
+      finalize();
     }
-    for (const s in this.streams) {
-      this.streams[s].destroy(e);
-    }
-    this.emit('error', e);
   }
 
   protected async prime(): Promise<void> {
