@@ -66,6 +66,7 @@ export class Muxer extends EventEmitter {
   protected ended: number;
   protected writingQueue: { idx: number, packet: any, callback: (error?: Error | null | undefined) => void; }[];
   protected ready: Promise<void>[];
+  protected delayedDestroy: Error | null;
   streams: EncodedMediaWritable[];
   video: EncodedMediaWritable[];
   audio: EncodedMediaWritable[];
@@ -94,6 +95,7 @@ export class Muxer extends EventEmitter {
     this.writingQueue = [];
     this.ready = [];
     this.destroyed = false;
+    this.delayedDestroy = null;
 
     this.outputFormat = new OutputFormat;
     this.outputFormat.setFormat(this.outputFormatName, this.outputFile, '');
@@ -169,16 +171,27 @@ export class Muxer extends EventEmitter {
   }
 
   protected async destroy(e: Error) {
+    if (this.writing) {
+      // Delayed destroy
+      // This kludge is needed because nobind17 does not support locking atm
+      verbose('Muxer: delaying destroy');
+      this.delayedDestroy = e;
+      return;
+    }
     if (this.destroyed) return;
     this.destroyed = true;
     verbose(`Muxer: destroy: ${e}`);
-    if (this.output) {
-      (this.output as any)._final();
-    }
-    for (const s in this.streams) {
-      this.streams[s].destroy(e);
-    }
     await this.formatContext.closeAsync();
+    const finalize = () => {
+      for (const s in this.streams) {
+        this.streams[s].destroy(e);
+      }
+    };
+    if (this.output) {
+      (this.output as any)._final(finalize);
+    } else {
+      finalize();
+    }
     this.emit('error', e);
   }
 
@@ -224,6 +237,10 @@ export class Muxer extends EventEmitter {
   }
 
   protected write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
+    if (this.delayedDestroy || this.destroyed) {
+      verbose('Muxer: already destroyed');
+      return void callback(this.delayedDestroy);
+    }
     if (!packet.isComplete()) {
       verbose('Muxer: skipping empty packet (codec is still priming)');
       callback();
@@ -240,6 +257,11 @@ export class Muxer extends EventEmitter {
       this.writing = true;
       if (!this.primed) {
         await this.prime();
+        if (this.delayedDestroy) {
+          verbose('Muxer: destroyed while priming, resuming destroy');
+          this.writing = false;
+          return void callback(this.delayedDestroy);
+        }
         if (!this.primed) return;
       }
       while (this.writingQueue.length > 0) {
@@ -248,6 +270,12 @@ export class Muxer extends EventEmitter {
           job.packet.setStreamIndex(job.idx);
           verbose(`Muxer: packet #${job.idx}: pts=${job.packet.pts()}, dts=${job.packet.dts()} / ${job.packet.pts().seconds()} / ${job.packet.timeBase()} / stream ${job.packet.streamIndex()}, size: ${job.packet.size()}`);
           await this.formatContext.writePacketAsync(job.packet);
+          if (this.delayedDestroy) {
+            verbose('Muxer: destroyed while writing, resuming destroy');
+            this.writing = false;
+            this.writingQueue = [];
+            return void job.callback(this.delayedDestroy);
+          }
           job.callback();
         } catch (err) {
           verbose(`Muxer: ${err}`);

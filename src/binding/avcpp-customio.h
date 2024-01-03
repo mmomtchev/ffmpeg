@@ -6,6 +6,7 @@
 #include <nobind.h>
 #include <queue>
 #include <thread>
+#include <uv.h>
 
 // These are the BufferItems that are passed to the background threads
 // The second structure must be freed in the main thread!
@@ -72,14 +73,25 @@ public:
 
 class ReadableCustomIO : public av::CustomIO, public Napi::ObjectWrap<ReadableCustomIO> {
   Nobind::EnvInstanceData<ffmpegInstanceData> *instance_data;
+  // Main queue, can be used from all threads, must be locked
   std::queue<BufferReadableItem *> queue;
+  // Queue size in number of bytes (sum of all items)
   size_t queue_size;
+  // Queue locks
   std::mutex lock;
   std::condition_variable cv;
+  // Has the end been reached
   bool eof;
+  Napi::AsyncContext async_context;
+  // Does writing from ffmpeg trigger an immediate push, can be used only from the main thread
+  bool flowing;
+  // Callback for pushing data
+  uv_async_t *push_callback;
+  // Callback to call after handling EOF, passed by _final
   Napi::FunctionReference final_callback;
 
-  void PushPendingData(int64_t);
+  // Main push loop, pushes available data until this.push returns false
+  static void PushPendingData(uv_async_t *);
 
 public:
   // A JS-convention constructor

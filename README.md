@@ -6,11 +6,11 @@
 
 The project has an alpha version published to `npm` and basic video and audio demultiplexing, transcoding and multiplexing are functional.
 
-You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use - trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. `ffmpeg` should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use - trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
 
 Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
 
-The current goal is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
+The current goal is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file. The recommended way to use `ffmpeg` is through the higher level streams API which hides most of the complexity and the various low-level pitfalls of the native `ffmpeg` API.
 
 ## Performance
 

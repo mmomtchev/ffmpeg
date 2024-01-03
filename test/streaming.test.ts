@@ -204,6 +204,7 @@ describe('streaming', () => {
   it('error handling on creation', (done) => {
     // MP4 does not support streaming in its default configuration
     const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
+    const output = fs.createWriteStream(tempFile);
 
     demuxer.on('error', done);
     demuxer.on('ready', () => {
@@ -243,6 +244,7 @@ describe('streaming', () => {
         muxer.on('error', (e) => {
           try {
             assert.match(e.message, /Invalid argument/);
+            output.close();
             done();
           } catch (e) {
             done(e);
@@ -250,7 +252,6 @@ describe('streaming', () => {
         });
 
         assert.instanceOf(muxer.output, Readable);
-        const output = fs.createWriteStream(tempFile);
 
         demuxer.video[0].pipe(videoInput).pipe(videoOutput).pipe(muxer.video[0]);
         demuxer.audio[0].pipe(audioInput).pipe(audioOutput).pipe(muxer.audio[0]);
