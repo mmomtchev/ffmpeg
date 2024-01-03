@@ -237,13 +237,14 @@ export class Muxer extends EventEmitter {
   }
 
   protected write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
+    if (this.delayedDestroy || this.destroyed) {
+      verbose('Muxer: already destroyed');
+      return void callback(this.delayedDestroy);
+    }
     if (!packet.isComplete()) {
       verbose('Muxer: skipping empty packet (codec is still priming)');
       callback();
       return;
-    }
-    if (this.delayedDestroy) {
-      return void callback(this.delayedDestroy);
     }
 
     this.writingQueue.push({ idx, packet, callback });
@@ -257,7 +258,7 @@ export class Muxer extends EventEmitter {
       if (!this.primed) {
         await this.prime();
         if (this.delayedDestroy) {
-          verbose('Muxer: destroyed while writing, resuming destroy');
+          verbose('Muxer: destroyed while priming, resuming destroy');
           this.writing = false;
           return void callback(this.delayedDestroy);
         }
