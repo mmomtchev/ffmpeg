@@ -24,8 +24,10 @@ ReadableCustomIO::~ReadableCustomIO() {
   verbose("ReadableCustomIO %p: destroy\n", this);
   std::unique_lock lk{lock};
   push_callback->data = nullptr;
-  uv_close(reinterpret_cast<uv_handle_t *>(push_callback),
-           [](uv_handle_t *async) { delete (reinterpret_cast<uv_async_t *>(async)); });
+  uv_close(reinterpret_cast<uv_handle_t *>(push_callback), [](uv_handle_t *async) {
+    verbose("ReadableCustomIO %p: closed async\n", this);
+    delete (reinterpret_cast<uv_async_t *>(async));
+  });
   if (flowing) {
     verbose("ReadableCustomIO: destroyed a flowing stream");
   }
