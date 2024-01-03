@@ -177,13 +177,13 @@ export class Muxer extends EventEmitter {
       for (const s in this.streams) {
         this.streams[s].destroy(e);
       }
-      this.emit('error', e);
     };
     if (this.output) {
       (this.output as any)._final(finalize);
     } else {
       finalize();
     }
+    this.emit('error', e);
   }
 
   protected async prime(): Promise<void> {
