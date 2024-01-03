@@ -181,14 +181,6 @@ export class Muxer extends EventEmitter {
     if (this.destroyed) return;
     this.destroyed = true;
     verbose(`Muxer: destroy: ${e}`);
-    if (this.writing) {
-      verbose('Muxer: delaying destroy');
-      this.delayedDestroy = e;
-      return;
-    }
-    if (this.destroyed) return;
-    this.destroyed = true;
-    verbose(`Muxer: destroy: ${e}`);
     await this.formatContext.closeAsync();
     const finalize = () => {
       for (const s in this.streams) {
