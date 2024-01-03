@@ -21,11 +21,14 @@ ReadableCustomIO::ReadableCustomIO(const Napi::CallbackInfo &info)
 }
 
 ReadableCustomIO::~ReadableCustomIO() {
+  verbose("ReadableCustomIO %p: destroy\n", this);
   std::unique_lock lk{lock};
   push_callback->data = nullptr;
   uv_close(reinterpret_cast<uv_handle_t *>(push_callback),
            [](uv_handle_t *async) { delete (reinterpret_cast<uv_async_t *>(async)); });
-  assert(!flowing);
+  if (flowing) {
+    verbose("ReadableCustomIO: destroyed a flowing stream");
+  }
   while (!queue.empty()) {
     auto buf = queue.front();
     queue.pop();
@@ -33,7 +36,6 @@ ReadableCustomIO::~ReadableCustomIO() {
       delete[] buf->data;
     delete buf;
   }
-  verbose("ReadableCustomIO %p: destroy\n", this);
 }
 
 void ReadableCustomIO::Init(const Napi::CallbackInfo &info) {
