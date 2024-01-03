@@ -50,7 +50,9 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
-    - run: npm test
+    - run: while node node_modules/mocha/lib/cli/cli.js -g streaming && [ $I -gt 0 ]; do I=$(( I - 1 )); done
+      env:
+        I: 100
 
 
   debug:
@@ -95,7 +97,9 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
-    - run: npm test
+    - run: while node node_modules/mocha/lib/cli/cli.js -g streaming && [ $I -gt 0 ]; do I=$(( I - 1 )); done
+      env:
+        I: 100
 
 
   asan:
@@ -129,8 +133,9 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
-    - run: node node_modules/mocha/lib/cli/cli.js
+    - run: while node node_modules/mocha/lib/cli/cli.js -g streaming && [ $I -gt 0 ]; do I=$(( I - 1 )); done
       continue-on-error: true
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
         LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.6.0.0
+        I: 100
