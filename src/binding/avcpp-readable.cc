@@ -60,7 +60,7 @@ Napi::Function ReadableCustomIO::GetClass(Napi::Env env) {
 }
 
 int ReadableCustomIO::write(const uint8_t *data, size_t size) {
-  verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu\n", size, queue_size);
+  verbose("ReadableCustomIO: ffmpeg wrote data %lu\n", size);
   if (std::this_thread::get_id() == instance_data->v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
 
