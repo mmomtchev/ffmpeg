@@ -124,8 +124,8 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
       }
       if (self->flowing) {
         verbose("ReadableCustomIO: EOF, stop flowing\n");
+        uv_unref(reinterpret_cast<uv_handle_t *>(self->push_callback));
         self->flowing = false;
-        self->Unref();
       }
       return;
     }
@@ -147,8 +147,8 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
   } while (!self->queue.empty() && more.ToBoolean().Value());
   if (more.ToBoolean().Value() == false) {
     verbose("ReadableCustomIO: pipe is full, stop flowing\n");
+    uv_unref(reinterpret_cast<uv_handle_t *>(self->push_callback));
     self->flowing = false;
-    self->Unref();
   }
   lk.unlock();
   // Unblock write if it is waiting because it has reached the high water mark
@@ -171,8 +171,8 @@ void ReadableCustomIO::_Read(const Napi::CallbackInfo &info) {
   }
 
   verbose("ReadableCustomIO: start flowing\n");
+  uv_ref(reinterpret_cast<uv_handle_t *>(push_callback));
   flowing = true;
-  Ref();
   uv_async_send(push_callback);
 }
 
