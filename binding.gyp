@@ -31,15 +31,15 @@
       ],
       'actions': [
         {
-          'action_name': 'tspc',
+          'action_name': 'rollup',
           'inputs':  [ 'src/lib/Stream.ts' ],
           'outputs': [ 'lib/Stream.js' ],
           'conditions': [
             ['OS != "win"', {
-              'action': [ 'npx', 'tspc' ]
+              'action': [ 'npx', 'rollup', '-c', 'rollup.config.js' ]
             }],
             ['OS == "win"', {
-              'action': [ 'cmd', '/c"npx tspc"' ]
+              'action': [ 'cmd', '/c"npx rollup -c rollup.config.js"' ]
             }]
           ]
         }
