@@ -33,7 +33,7 @@
         {
           'action_name': 'rollup',
           'inputs':  [ 'src/lib/Stream.ts' ],
-          'outputs': [ 'lib/Stream.js' ],
+          'outputs': [ './stream.js' ],
           'conditions': [
             ['OS != "win"', {
               'action': [ 'npx', 'rollup', '-c', 'rollup.config.js' ]
