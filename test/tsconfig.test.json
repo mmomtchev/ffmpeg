@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node16",
+    "moduleResolution": "node",
     "strict": true,
     "strictNullChecks": true,
     "target": "es2015",
     "module": "commonjs",
-    "esModuleInterop": true,
-    "outDir": "lib",
-    "declaration": true
+    "esModuleInterop": true
   }
 }
