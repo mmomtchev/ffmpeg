@@ -65,7 +65,6 @@
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",
     "ts-node": "^10.9.1",
-    "ts-patch": "^3.1.1",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
