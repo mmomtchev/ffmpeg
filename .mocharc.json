@@ -1,5 +1,5 @@
 {
-  "spec": "test/*.test.[tj]s",
+  "spec": "test/*.test.@(mjs|cjs|js|ts)",
   "require": [
     "ts-node/register",
     "tsconfig-paths/register",
