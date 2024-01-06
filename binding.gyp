@@ -42,7 +42,7 @@
               'action': [ 'npx', 'rollup', '-c', 'rollup.config.js' ]
             }],
             ['OS == "win"', {
-              'action': [ 'rollup.cmd' ]
+              'action': [ 'cmd', '/c"npm run rollup"' ]
             }]
           ]
         }

@@ -21,7 +21,7 @@ module.exports = [
     ]
   },
   {
-    input: 'src/lib/Stream.ts',
+    input: path.resolve(__dirname, 'src', 'lib', 'Stream.ts'),
     plugins: [dts()],
     output: [
       {

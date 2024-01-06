@@ -9,6 +9,7 @@
     "test": "npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
     "clean": "node-pre-gyp clean && tsc --build --clean",
+    "rollup": "npx rollup -c rollup.config.js",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags && node ./scripts/publish-packages.js",
     "postpublish": "gh workflow run test-npm.yml -F version=$npm_package_version"
