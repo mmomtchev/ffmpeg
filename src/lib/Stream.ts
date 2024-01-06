@@ -1,4 +1,4 @@
-export { AudioStreamDefinition, VideoStreamDefinition, MediaStream, MediaStreamDefinition } from './MediaStream';
+export { AudioStreamDefinition, VideoStreamDefinition, MediaStream, MediaStreamDefinition, MediaTransform } from './MediaStream';
 export { Muxer } from './Muxer';
 export { Demuxer } from './Demuxer';
 export { VideoEncoder } from './VideoEncoder';

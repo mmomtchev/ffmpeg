@@ -4,9 +4,8 @@ import * as fs from 'node:fs';
 import { assert } from 'chai';
 
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, AudioTransform, VideoTransform } from '@mmomtchev/ffmpeg/stream';
+import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, AudioTransform, VideoTransform, MediaTransform, VideoStreamDefinition } from '@mmomtchev/ffmpeg/stream';
 import { Readable, Transform, TransformCallback } from 'node:stream';
-import { MediaTransform, VideoStreamDefinition } from '../lib/MediaStream';
 import { Magick, MagickCore } from 'magickwand.js';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);

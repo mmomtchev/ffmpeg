@@ -10,10 +10,10 @@
     "declaration": true,
     "paths": {
       "@mmomtchev/ffmpeg": [
-        "../lib"
+        ".."
       ],
-      "@mmomtchev/ffmpeg/stream": [
-        "../lib/Stream"
+      "@mmomtchev/ffmpeg/*": [
+        "../*"
       ]
     }
   }

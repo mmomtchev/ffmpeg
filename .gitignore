@@ -1,8 +1,9 @@
 node_modules
 build
-lib/*
-!lib/index.js
-!lib/index.d.ts
+/stream.js
+/stream.js.map
+/stream.d.ts
+/lib/binding
 
 /test/*.mp4
 /test/*.mkv
