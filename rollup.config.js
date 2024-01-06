@@ -1,9 +1,10 @@
+const path = require('path');
 const ts = require('@rollup/plugin-typescript');
 const dts = require('rollup-plugin-dts').dts;
 
 module.exports = [
   {
-    input: 'src/lib/Stream.ts',
+    input: path.resolve(__dirname, 'src', 'lib', 'Stream.ts'),
     plugins: [ts({
       transformers: {
         after: [

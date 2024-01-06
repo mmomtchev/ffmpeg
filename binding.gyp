@@ -2,6 +2,9 @@
   'target_defaults': {
     'includes': [ 'defaults.gypi' ],
   },
+  'variables': {
+    'empty': 'cd ..'
+  },
   'targets': [
     {
       'target_name': '<(module_name)',
@@ -39,7 +42,7 @@
               'action': [ 'npx', 'rollup', '-c', 'rollup.config.js' ]
             }],
             ['OS == "win"', {
-              'action': [ 'cmd', '/c"npx rollup -c ..\\rollup.config.js"' ]
+              'action': [ 'rollup.cmd' ]
             }]
           ]
         }
