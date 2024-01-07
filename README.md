@@ -1,20 +1,34 @@
 # ffmpeg (w/avcpp) bindings for Node.js
 
-`ffmpeg` is a JavaScript wrapper around [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper around the low-level C API of [`ffmpeg`](https://ffmpeg.org/).
+`node-ffmpeg` is a JavaScript wrapper around [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper around the low-level C API of [`ffmpeg`](https://ffmpeg.org/).
 
-# Current status
+# Overview
 
-The project has an alpha version published to `npm` and basic video and audio demultiplexing, transcoding and multiplexing are functional.
+Unlike the myriad of other `npm` packages, this project does not launch the `ffmpeg` binary in a separate process - it loads it as a shared library and it uses its C/C++ API. It allows to do (mostly) everything that can be accomplished through the C API such as processing individual video frames and audio samples and interacting with multiple streams at the same time. The project relies on [`nobind17`](https://github.com/mmomtchev/nobind) for interfacing with the C/C++ API. It supports asynchronous operations that can run independently in different threads on multiple cores. Additionally, it takes advantage of the built-in multithreading of most included codecs.
 
-You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use - trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+Currently the project has a first beta release on `npm`.
 
-Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
+## Low-level C++ API
 
-The current goal is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file. The recommended way to use `ffmpeg` is through the higher level streams API which hides most of the complexity and the various low-level pitfalls of the native `ffmpeg` API.
+`node-ffmpeg` exports directly most of the C++ interface of [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper for the low-level C API of `ffmpeg`. You should be aware that `ffmpeg` has a notoriously poorly documented and difficult to use C API. `avcpp` is a layer on top of it, which renders is somewhat more intuitive, but you should still have a very good understanding of its API in order to take full advantage of it. Unless you have previous experience with the C API, it is recommended to use the higher-level streams API which is much safer and easier to use and adds a minimal overhead.
+
+## Streams API
+
+`node-ffmpeg` includes a Node.js `Readable`/`Writable`-compatible API that allows to work very naturally with video and audio data for everyone who has used Node.js streams. In this mode, a `Demuxer` is an object that provides a number of `Readables` that send compressed packet data. Each one of them can be fed into Node.js `Transform`s such as `AudioDecoder` or `VideoDecoder` to obtain a stream of uncompressed video frames or audio samples. These can be processed by other `Transform`s such as `Filter`, `VideoTransform` or `AudioTransform` that expect uncompressed data - or their underlying `Buffer`s can be accessed. New streams can be created by creating video frames from scratch. There are various examples that show how the raw pixel data can be imported and exported from and to `ImageMagick`. Finally, raw uncompressed video and audio frames can be sent to a `VideoEncoder` or `AudioEncoder` for compression and then to a `Muxer` for multiplexing and time-based interleaving.
+
+## Memory safety
+
+You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use. There are many cases in which a video frame will simply be identified by a raw C pointer - in this case trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
+
+These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+
+The current goal of `node-ffmpeg` is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
+
+The goal of the streams API is to make writing such correct code trivially simple and intuitive.
 
 ## Performance
 
-All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools. Background processing is provided via the `libuv` thread pool of Node.js - which means that, at least in theory - you can be decoding and encoding on two different cores while V8/JavaScript runs on a third core. In practice, you need huge buffers for this to actually be the case.
+All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools and using built-in filters. Background processing is provided via the `libuv` thread pool of Node.js - which means that when processing a stream, it is possible to automatically run each stage of the pipeline - demuxing, video decoding, audio decoding, filtering, video encoding, audio encoding and muxing on a separate physical processor core independently of V8/JavaScript.
 
 If you need to access the actual pixel data or audio samples, then, depending on the processing, performance may be an order of magnitude lower.
 
@@ -42,11 +56,7 @@ import ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer } from '@mmomtchev/ffmpeg/stream';
 ```
 
-## Streams API
-
-The easiest way to use `ffmpeg` is the high-level streams API.
-
-### Quickstart
+## Quickstart
 
 A quick example for generalized video transcoding using the streams API.
 
@@ -61,25 +71,30 @@ import {
   VideoStreamDefinition
 } from '@mmomtchev/ffmpeg/stream';
 
-// Create a Demuxer - a Demuxer is an object that has multiple ReadableStream,
+// Create a Demuxer - a Demuxer is an object that exports
+// multiple ReadableStream,
 // it decodes the input container format and emits compressed data
 const input = new Demuxer({ inputFile:'launch.mp4' });
 
-// Wait for the Demuxer to read the file headers and to identify the various streams
+// Wait for the Demuxer to read the file headers and to
+// identify the various streams
 input.on('ready', () => {
-    // Once the input Demuxer is ready, it will contain two arrays of ReadableStream:
+    // Once the input Demuxer is ready,
+    // it will contain two arrays of ReadableStream:
     // input.video[]
     // input.audio[]
 
     // We will be discarding the audio stream
+    // (unless you discard these will keep piling in memory
+    // until you destroy the demuxer object)
     const audioDiscard = new Discarder();
-    // A VideoDecoder is a TransformStream that reads compressed video data
+    // A VideoDecoder is a Transform that reads compressed video data
     // and sends raw video frames (this is the decoding codec)
     const videoInput = new VideoDecoder(input.video[0]);
     // A VideoDefinition is an object with all the properties of the stream
     const videoInputDefinition = videoInput.definition();
 
-    // Such as codec, bitrate, framerate, frame size, pixel format
+    // such as codec, bitrate, framerate, frame size, pixel format
     const videoOutputDefinition = {
       type: 'Video',
       codec: ffmpeg.AV_CODEC_H264,
@@ -90,11 +105,11 @@ input.on('ready', () => {
       pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_YUV422P)
     } as VideoStreamDefinition;
 
-    // A video encoder is a TransformStream that reads raw video frames
+    // A video encoder is a Transform that reads raw video frames
     // and sends compressed video data (this is the encoding codec)
     const videoOutput = new VideoEncoder(videoOutputDefinition);
 
-    // A VideoTransform is a TransformStream that reads raw video frames
+    // A VideoTransform is a Transform that reads raw video frames
     // and sends raw video frames - with different frame size or pixel format
     const videoRescaler = new VideoTransform({
       input: videoInputDefinition,
@@ -124,14 +139,15 @@ input.on('ready', () => {
 
     // This launches the transcoding
     // Demuxer -> Decoder -> Rescaler -> Encoder -> Muxer
-    input.video[0].pipe(videoInput).pipe(videoRescaler).pipe(videoOutput).pipe(output.video[0]);
+    input.video[0].pipe(videoInput).pipe(videoRescaler)
+        .pipe(videoOutput).pipe(output.video[0]);
     input.audio[0].pipe(audioDiscard);
 });
 ```
 
-### More examples
+## More examples
 
-You should start by looking at the unit tests:
+You should start by looking at the unit tests which are also meant to be used as examples:
   * [`transcode.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/transcode.test.ts) contains simple examples for transcoding audio and video
   * [`extract.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/extract.test.ts) contains a simple example for extracting a still from a video and importing it in ImageMagick
   * [`encode.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/encode.test.ts) contains a simple example for producing a video from stills using ImageMagick
@@ -139,6 +155,13 @@ You should start by looking at the unit tests:
   * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
   * [`streaming.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/streaming.test.ts) contains examples for transcoding to various formats and sending the resulting data to a Node.js `WriteStream`
   * [`filtering.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/filtering.test.ts) contains several examples for using ffmpeg's filters including overlaying text or Picture-in-Picture that are fast enough to be used in real-time
+
+  ---
+
+  * [`transcodeVideo.js`](https://github.com/mmomtchev/ffmpeg/blob/main/example/transcodeAudio.js) is a low-level C/C++ style example that transcodes the video stream obtained from a container file without using the streams API
+  * [`transcodeAudio.js`](https://github.com/mmomtchev/ffmpeg/blob/main/example/transcodeAudio.js) is a low-level C/C++ style example that transcodes the audio stream obtained from a container file without using the streams API
+
+  ---
 
   * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/node-ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
 
