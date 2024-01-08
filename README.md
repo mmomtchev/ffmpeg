@@ -1,5 +1,10 @@
 # ffmpeg (w/avcpp) bindings for Node.js
 
+[![Node.js CI](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml/badge.svg)](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml)
+![GitHub License](https://img.shields.io/github/license/mmomtchev/ffmpeg)
+![npm (scoped)](https://img.shields.io/npm/v/%40mmomtchev/ffmpeg)
+[![Test npm package](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-npm.yml/badge.svg)](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-npm.yml)
+
 `node-ffmpeg` is a JavaScript wrapper around [`avcpp`](https://github.com/h4tr3d/avcpp) which is a C++ wrapper around the low-level C API of [`ffmpeg`](https://ffmpeg.org/).
 
 # Overview
