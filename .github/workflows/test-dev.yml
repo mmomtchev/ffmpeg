@@ -168,11 +168,11 @@ jobs:
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npx c8 npm test
-    - name: gcov
+    - name: Run gcov
       run: mkdir -p coverage && cd coverage && gcov -o ../build/Debug/obj.target/ffmpeg/src/binding ../src/binding/*
-    - name: lcov
+    - name: Run lcov
       run: npx c8 report --reporter=text-lcov > coverage/tests.lcov
-      
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:

@@ -1,7 +1,8 @@
 # ffmpeg (w/avcpp) bindings for Node.js
 
-[![Node.js CI](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml/badge.svg)](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml)
 ![GitHub License](https://img.shields.io/github/license/mmomtchev/ffmpeg)
+[![Node.js CI](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml/badge.svg)](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-dev.yml)
+[![codecov](https://codecov.io/github/mmomtchev/ffmpeg/graph/badge.svg?token=GYQQLAZ8MC)](https://codecov.io/github/mmomtchev/ffmpeg)
 ![npm (scoped)](https://img.shields.io/npm/v/%40mmomtchev/ffmpeg)
 [![Test npm package](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-npm.yml/badge.svg)](https://github.com/mmomtchev/ffmpeg/actions/workflows/test-npm.yml)
 
