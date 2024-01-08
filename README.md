@@ -77,7 +77,7 @@ import {
 } from '@mmomtchev/ffmpeg/stream';
 
 // Create a Demuxer - a Demuxer is an object that exports
-// multiple ReadableStream,
+// multiple Readable,
 // it decodes the input container format and emits compressed data
 const input = new Demuxer({ inputFile:'launch.mp4' });
 
@@ -85,7 +85,7 @@ const input = new Demuxer({ inputFile:'launch.mp4' });
 // identify the various streams
 input.on('ready', () => {
     // Once the input Demuxer is ready,
-    // it will contain two arrays of ReadableStream:
+    // it will contain two arrays of Readable:
     // input.video[]
     // input.audio[]
 
@@ -122,7 +122,7 @@ input.on('ready', () => {
       interpolation: ffmpeg.SWS_BILINEAR
     });
 
-    // A Muxer is an object that contains multiple WritableStream
+    // A Muxer is an object that contains multiple Writable
     // It multiplexes those streams, handling interleaving by buffering,
     // and writes the to the output format
     const output = new Muxer({
