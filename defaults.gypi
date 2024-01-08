@@ -1,6 +1,7 @@
 {
   'variables': {
-    'enable_asan%': 'false'
+    'enable_asan%': 'false',
+    'enable_coverage%': 'false'
   },
   'includes': [
     'except.gypi'
@@ -18,6 +19,22 @@
       'xcode_settings': {
         'OTHER_CPLUSPLUSFLAGS': [
           '-fsanitize=address'
+        ]
+      }
+    }],
+    ['enable_coverage == "true"', {
+      'cflags_cc': [
+        '-fprofile-arcs',
+        '-ftest-coverage'
+      ],
+      'ldflags': [
+        '-lgcov',
+        '--coverage'
+      ],
+      'xcode_settings': {
+        'OTHER_CPLUSPLUSFLAGS': [
+          '-fprofile-arcs',
+          '-ftest-coverage'
         ]
       }
     }]
