@@ -4,6 +4,7 @@ build
 /stream.js.map
 /stream.d.ts
 /lib/binding
+/coverage
 
 /test/*.mp4
 /test/*.mkv
