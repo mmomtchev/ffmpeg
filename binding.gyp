@@ -2,9 +2,6 @@
   'target_defaults': {
     'includes': [ 'defaults.gypi' ],
   },
-  'variables': {
-    'empty': 'cd ..'
-  },
   'targets': [
     {
       'target_name': '<(module_name)',
