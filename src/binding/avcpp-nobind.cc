@@ -41,6 +41,8 @@ template <typename T> using ToString_t = std::string (*)(T &v);
 
 void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
+constexpr auto ReturnNullAsync = Nobind::ReturnAsync | Nobind::ReturnNullAccept;
+
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
@@ -469,6 +471,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&BufferSinkFilterContext::setFrameSize>("setFrameSize")
       .def<&BufferSinkFilterContext::frameRate>("frameRate")
       .def<&BufferSinkFilterContext::checkFilter>("checkFilter");
+  // These are the async versions of the BufferSink functions
+  // which are global because of the limitations of Nobind
+  // we patch them at runtime in JS
+  m.def<&GetAudioFrame, ReturnNullAsync>("_getAudioFrameAsync");
+  m.def<&GetVideoFrame, ReturnNullAsync>("_getVideoFrameAsync");
 
   REGISTER_ENUM(FilterMediaType, Unknown);
   REGISTER_ENUM(FilterMediaType, Audio);
