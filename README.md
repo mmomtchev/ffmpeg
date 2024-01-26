@@ -169,7 +169,8 @@ You should start by looking at the unit tests which are also meant to be used as
 
   ---
 
-  * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/node-ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
+  * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
+  * [`orbitron`](https://github.com/mmomtchev/orbitron.git) is a tool for making short animations of objects in the Solar System using the NASA/JPL Horizons API - it can produce `mp4` and `gif` videos using `@mmomtchev/ffmpeg`
 
 ## Supported pixel and audio formats
 
