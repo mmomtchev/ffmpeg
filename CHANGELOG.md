@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Publish the package as a traditional CommonJS package to ensure best support across different environments
  - Fix [#1](https://github.com/mmomtchev/ffmpeg/issues/1), crash when loading the module in a debug build of Node.js
  - Fix [#26](https://github.com/mmomtchev/ffmpeg/issues/26), missing constants
+ - Fix [#28](https://github.com/mmomtchev/ffmpeg/issues/28), flow control issues in `Filter`
 
 ## [0.9.0] 2023-12-08
  - First release
