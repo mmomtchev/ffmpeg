@@ -1,13 +1,9 @@
-.github
-.vscode
-.git
-
 node_modules
 build
-lib/binding
+/lib/binding
+/coverage
 
-*.mp4
-*.mkv
-
-test
-deps
+/test/*.mp4
+/test/*.mkv
+/test/*.jpg
+!test/data/*
