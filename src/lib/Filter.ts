@@ -32,6 +32,7 @@ export class Filter extends EventEmitter {
     type: 'Audio' | 'Video';
     buffer: any;
     waitingToRead: number;
+    busy: boolean;
     id: string;
   }>;
   protected timeBase: any;
@@ -151,6 +152,7 @@ export class Filter extends EventEmitter {
         type,
         id,
         buffer: new ffmpeg.BufferSinkFilterContext(this.filterGraph.filter(id)),
+        busy: false,
         waitingToRead: 0
       };
       this.sink[outp] = new Readable({
@@ -214,14 +216,9 @@ export class Filter extends EventEmitter {
         callback(null);
         // Now that we pushed more data, try reading again, refer to 1* below
         for (const sink of Object.keys(this.bufferSink)) {
-          // This is fully synchronous on purpose - otherwise we might run
-          // into complex synchronization issues where someone else manages
-          // to call read between the two operations
-          const size = this.bufferSink[sink].waitingToRead;
-          if (size) {
+          if (this.bufferSink[sink].waitingToRead) {
             verbose(`Filter: wake up sink [${sink}]`);
-            this.bufferSink[sink].waitingToRead = 0;
-            this.read(sink, size);
+            this.read(sink, 0);
           }
         }
       })
@@ -231,46 +228,44 @@ export class Filter extends EventEmitter {
     }
   }
 
-  protected read(id: string, size: number) {
+  protected async read(id: string, size: number) {
     const sink = this.bufferSink[id];
     if (!sink) {
       throw new Error(`Invalid buffer sink [${id}]`);
     }
-    verbose(`Filter: received a request for data from sink [${id}]`);
+    verbose(`Filter: received a request for data from sink [${id}], busy: ${sink.busy}`);
+    sink.waitingToRead += size;
+    if (sink.busy) {
+      return;
+    }
+    sink.busy = true;
 
-    let getFrame: () => any;
+    let getFrame: () => Promise<any>;
     if (sink.type === 'Video') {
-      getFrame = sink.buffer.getVideoFrame.bind(sink.buffer);
+      getFrame = sink.buffer.getVideoFrameAsync.bind(sink.buffer);
     } else if (sink.type === 'Audio') {
-      getFrame = sink.buffer.getAudioFrame.bind(sink.buffer);
+      getFrame = sink.buffer.getAudioFrameAsync.bind(sink.buffer);
     } else {
       throw new Error('Only Video and Audio filtering is supported');
     }
-    // read must always return immediately
-    // this means that we depend on ffmpeg not doing any filtering work on this call.
-    // TODO: Check to what extent this is true
     let frame;
-    let frames = 0;
-    while ((frame = getFrame()) !== null && frames < size) {
+    let more = true;
+    while ((frame = await getFrame()) !== null && sink.waitingToRead > 0 && more) {
       verbose(`Filter: sent data from sink [${id}], pts=${frame.pts().toString()}`);
       if (sink.type === 'Video') {
         frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
       }
       frame.setTimeBase(this.timeBase);
       frame.setStreamIndex(0);
-      this.sink[id].push(frame);
-      frames++;
+      more = this.sink[id].push(frame);
+      sink.waitingToRead++;
     }
-    if (this.stillStreamingSources === 0) {
+    if (this.stillStreamingSources === 0 && frame === null) {
       verbose(`Filter: sending null for EOF on sink [${id}]`);
       this.sink[id].push(null);
       return;
     }
-    if (frames === 0) {
-      verbose(`Filter: no data for sink [${id}] will call back later`);
-      // If nothing was readily available, now it will be up to us
-      // to call back when something is, see 1* above
-      sink.waitingToRead = size;
-    }
+    verbose(`Filter: cycle end, more: ${more}, last: ${frame && frame.pts().toString()}, waiting: ${sink.waitingToRead}`);
+    sink.busy = false;
   }
 }

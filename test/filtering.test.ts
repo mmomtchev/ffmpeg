@@ -5,7 +5,13 @@ import ReadableStreamClone from 'readable-stream-clone';
 import { assert } from 'chai';
 
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, Filter, Discarder, MediaTransform, VideoStreamDefinition } from '@mmomtchev/ffmpeg/stream';
+import {
+  Muxer, Demuxer,
+  VideoDecoder, VideoEncoder,
+  AudioDecoder, AudioEncoder,
+  Filter, Discarder,
+  MediaTransform, VideoStreamDefinition
+} from '@mmomtchev/ffmpeg/stream';
 import { Readable, Writable } from 'node:stream';
 import { Magick, MagickCore } from 'magickwand.js';
 
@@ -221,6 +227,66 @@ describe('filtering', () => {
         filter.sink['video_out'].pipe(videoOutput).pipe(muxer.video[0]);
         filter.sink['audio_out'].pipe(audioOutput).pipe(muxer.audio[0]);
 
+        muxer.output!.pipe(output);
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  it('convert to gif with a palette filter', (done) => {
+    // This uses ffmpeg's filter subsystem to perform a high-quality video to
+    // GIF conversion
+    //
+    const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
+
+    demuxer.on('error', done);
+    demuxer.on('ready', () => {
+      try {
+        const videoInput = new VideoDecoder(demuxer.video[0]);
+
+        const videoDefinition = videoInput.definition();
+
+        const videoOutput = new VideoEncoder({
+          type: 'Video',
+          codec: ffmpeg.AV_CODEC_GIF,
+          bitRate: 500e3,
+          width: videoDefinition.width,
+          height: videoDefinition.height,
+          frameRate: new ffmpeg.Rational(25, 1),
+          pixelFormat: new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_PAL8),
+          codecOptions: { preset: 'veryfast' }
+        });
+
+        const filter = new Filter({
+          inputs: { 'in': videoDefinition },
+          outputs: { 'out': videoOutput.definition() },
+          graph:
+            // This filter uses ffmpeg split to feed a palette generator and the main output
+            // The .GIF format is limited to 256 colors and requires special processing
+            // in order to obtain a good palette
+            '[in] split [a][b]; [a] palettegen [palette] ; [b][palette] paletteuse [out]; ',
+          timeBase: videoDefinition.timeBase
+        });
+        // These should be available based on the above configuration
+        assert.instanceOf(filter.src['in'], Writable);
+        assert.instanceOf(filter.sink['out'], Readable);
+
+        const muxer = new Muxer({ outputFormat: 'gif', streams: [videoOutput] });
+        assert.instanceOf(muxer.output, Readable);
+
+        muxer.on('finish', done);
+        muxer.on('error', done);
+
+        const output = fs.createWriteStream(tempFile);
+
+        // Demuxer -> Decoder -> Filter source
+        demuxer.video[0].pipe(videoInput).pipe(filter.src['in']);
+
+        // Filter sink -> Encoder -> Muxer 
+        filter.sink['out'].pipe(videoOutput).pipe(muxer.video[0]);
+
+        // Muxer -> File
         muxer.output!.pipe(output);
       } catch (err) {
         done(err);
