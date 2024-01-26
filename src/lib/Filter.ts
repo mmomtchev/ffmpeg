@@ -21,6 +21,8 @@ export interface FilterOptions {
  */
 export class Filter extends EventEmitter {
   protected filterGraph: any;
+  // The currently running filterGraph op, prevents reentering
+  protected filterGraphOp: Promise<void> | false;
   protected bufferSrc: Record<string, {
     type: 'Audio' | 'Video';
     buffer: any;
@@ -108,9 +110,10 @@ export class Filter extends EventEmitter {
           this.write(inp, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
+          verbose(`Filter: destroy src [${inp}]`, error);
           if (error) {
             this.stillStreamingSources--;
-            verbose(`Filter: error on source [${inp}], destroy all streams`, error);
+            verbose(`Filter: error on source [${inp}]: destroy all streams`, error);
             this.destroy(error);
           } else {
             verbose(`Filter: destroy source [${inp}]`);
@@ -163,9 +166,12 @@ export class Filter extends EventEmitter {
       });
       this.sink[outp].on('error', this.destroy.bind(this));
     }
+
+    this.filterGraphOp = false;
   }
 
   protected destroy(error: Error) {
+    verbose('Filter: destroy', error);
     if (this.destroyed) return;
     this.destroyed = true;
     for (const s of Object.keys(this.bufferSrc)) {
@@ -177,7 +183,7 @@ export class Filter extends EventEmitter {
     this.emit('error', error);
   }
 
-  protected write(id: string, frame: any, callback: (error?: Error | null | undefined) => void) {
+  protected async write(id: string, frame: any, callback: (error?: Error | null | undefined) => void) {
     const src = this.bufferSrc[id];
     if (!src) {
       return void callback(new Error(`Invalid buffer src [${id}]`));
@@ -189,35 +195,37 @@ export class Filter extends EventEmitter {
     }
     src.busy = true;
 
-    verbose(`Filter: received data for source [${id}]`);
+    verbose(`Filter: write source [${id}]: received data`);
 
     try {
-      let q: Promise<void>;
       if (src.type === 'Video') {
         if (!(frame instanceof ffmpeg.VideoFrame))
           return void callback(new Error('Filter source video input must be a stream of VideoFrames'));
         frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
         frame.setTimeBase(this.timeBase);
         frame.setStreamIndex(0);
-        q = src.buffer.writeVideoFrameAsync(frame);
+        while (this.filterGraphOp) await this.filterGraphOp;
+        this.filterGraphOp = src.buffer.writeVideoFrameAsync(frame);
       } else if (src.type === 'Audio') {
         if (!(frame instanceof ffmpeg.AudioSamples))
           return void callback(new Error('Filter source video input must be a stream of AudioSamples'));
         frame.setTimeBase(this.timeBase);
         frame.setStreamIndex(0);
-        q = src.buffer.writeAudioSamplesAsync(frame);
+        while (this.filterGraphOp) await this.filterGraphOp;
+        this.filterGraphOp = src.buffer.writeAudioSamplesAsync(frame);
       } else {
         return void callback(new Error('Only Video and Audio filtering is supported'));
       }
 
-      q.then(() => {
+      (this.filterGraphOp as Promise<void>).then(() => {
+        this.filterGraphOp = false;
         src.busy = false;
-        verbose(`Filter: consumed data for source [${id}], pts=${frame.pts().toString()}`);
+        verbose(`Filter: write source [${id}]: wrote, pts=${frame.pts().toString()}`);
         callback(null);
-        // Now that we pushed more data, try reading again, refer to 1* below
+        // Now that we pushed more data, try reading again if there were waiting reads
         for (const sink of Object.keys(this.bufferSink)) {
-          if (this.bufferSink[sink].waitingToRead) {
-            verbose(`Filter: wake up sink [${sink}]`);
+          if (this.bufferSink[sink].waitingToRead && !this.bufferSink[sink].busy) {
+            verbose(`Filter: write source [${id}]: wake up sink [${sink}]`);
             this.read(sink, 0);
           }
         }
@@ -233,7 +241,7 @@ export class Filter extends EventEmitter {
     if (!sink) {
       throw new Error(`Invalid buffer sink [${id}]`);
     }
-    verbose(`Filter: received a request for data from sink [${id}], busy: ${sink.busy}`);
+    verbose(`Filter: read sink [${id}] begin: received a request for data, busy: ${sink.busy}`);
     sink.waitingToRead += size;
     if (sink.busy) {
       return;
@@ -248,24 +256,31 @@ export class Filter extends EventEmitter {
     } else {
       throw new Error('Only Video and Audio filtering is supported');
     }
-    let frame;
+    let frame: any;
     let more = true;
-    while ((frame = await getFrame()) !== null && sink.waitingToRead > 0 && more) {
-      verbose(`Filter: sent data from sink [${id}], pts=${frame.pts().toString()}`);
-      if (sink.type === 'Video') {
-        frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
+    do {
+      while (this.filterGraphOp) await this.filterGraphOp;
+      this.filterGraphOp = getFrame();
+      frame = await this.filterGraphOp;
+      this.filterGraphOp = false;
+      if (frame) {
+        verbose(`Filter: read sink [${id}] received: data, pts=${frame.pts().toString()}`);
+        if (sink.type === 'Video') {
+          frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
+        }
+        frame.setTimeBase(this.timeBase);
+        frame.setStreamIndex(0);
+        more = this.sink[id].push(frame);
+        sink.waitingToRead++;
       }
-      frame.setTimeBase(this.timeBase);
-      frame.setStreamIndex(0);
-      more = this.sink[id].push(frame);
-      sink.waitingToRead++;
-    }
+    } while (frame && sink.waitingToRead > 0 && more);
+
     if (this.stillStreamingSources === 0 && frame === null) {
-      verbose(`Filter: sending null for EOF on sink [${id}]`);
+      verbose(`Filter: read sink [${id}]: sending null for EOF`);
       this.sink[id].push(null);
       return;
     }
-    verbose(`Filter: cycle end, more: ${more}, last: ${frame && frame.pts().toString()}, waiting: ${sink.waitingToRead}`);
+    verbose(`Filter: read sink [${id}]: cycle for [${id}] end, more: ${more}, last: ${frame && frame.pts().toString()}, waiting: ${sink.waitingToRead}`);
     sink.busy = false;
   }
 }
