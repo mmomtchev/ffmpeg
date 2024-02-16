@@ -63,7 +63,7 @@
     "eslint-plugin-mocha": "^10.2.0",
     "magickwand.js": "^1.0.0-beta.6",
     "mocha": "^10.2.0",
-    "readable-stream-clone": "^0.0.7",
+    "readable-stream-clone": "^1.0.0",
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",
     "ts-node": "^10.9.1",
