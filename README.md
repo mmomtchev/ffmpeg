@@ -184,6 +184,10 @@ You should start by looking at the unit tests which are also meant to be used as
   * [Full List](https://github.com/FFmpeg/FFmpeg/blob/master/libavformat/allformats.c)
   * [Each Invidiual Format](https://github.com/FFmpeg/FFmpeg/tree/master/libavformat)
 
+# Security
+
+Prebuilt binaries of `@mmomtchev/ffmpeg` are **NOT** affected by [CVE-2024-3094](https://nvd.nist.gov/vuln/detail/CVE-2024-3094) since these are linked with xz-utils 5.4.5, the last version before the backdoor.
+
 # License
 
 ISC License
