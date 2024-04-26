@@ -15,7 +15,21 @@
         '<!@(node -p "require(\'node-addon-api\').include")',
         '<!@(node -p "require(\'nobind17\').include")'
       ],
-      'dependencies': [ 'deps/avcpp.gyp:avcpp' ]
+      'dependencies': [ 'deps/avcpp.gyp:avcpp' ],
+      'configurations': {
+        'Debug': {
+          'conditions': [
+            ["OS=='linux'", {
+              'ldflags': [ '-Wl,-z,now' ],
+            }],
+            ["OS=='mac'", {
+              'xcode_settings': {
+                'OTHER_LDFLAGS': [ '-Wl,-bind_at_load' ]
+              }
+            }]
+          ]
+        }
+      }
     },
     {
       'target_name': 'action_after_build',
