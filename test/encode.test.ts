@@ -34,52 +34,61 @@ function genFrame(state: { height: number; speed: number; }) {
 }
 
 it('produce a video from stills', (done) => {
-  const tmpFile = path.resolve(__dirname, 'bouncing.mp4');
-  const format = new ffmpeg.PixelFormat('yuv420p');
-  // If the timebase is 1/25th, each frame's duration is 1
-  // (which is very practical but does not allow to add audio)
-  const timeBase = new ffmpeg.Rational(1, 25);
+  try {
+    const tmpFile = path.resolve(__dirname, 'bouncing.mp4');
+    const format = new ffmpeg.PixelFormat('yuv420p');
+    // If the timebase is 1/25th, each frame's duration is 1
+    // (which is very practical but does not allow to add audio)
+    const timeBase = new ffmpeg.Rational(1, 25);
 
-  const videoOutput = new VideoEncoder({
-    type: 'Video',
-    codec: ffmpeg.AV_CODEC_H264,
-    bitRate: 2.5e6,
-    width,
-    height,
-    frameRate: new ffmpeg.Rational(25, 1),
-    timeBase,
-    pixelFormat: format
-  });
+    const videoOutput = new VideoEncoder({
+      type: 'Video',
+      codec: ffmpeg.AV_CODEC_H264,
+      bitRate: 2.5e6,
+      width,
+      height,
+      frameRate: new ffmpeg.Rational(25, 1),
+      timeBase,
+      pixelFormat: format
+    });
+    videoOutput.on('error', done);
 
-  const output = new Muxer({ outputFile: tmpFile, streams: [videoOutput] });
+    const output = new Muxer({ outputFile: tmpFile, streams: [videoOutput] });
 
-  output.on('finish', () => {
-    fs.rm(tmpFile, done);
-  });
+    output.on('finish', () => {
+      fs.rm(tmpFile, done);
+    });
 
-  const state = { height: 720 / 2, speed: 0 };
-  let totalFrames = 250;
-  let pts = 0;
-  const write = function () {
-    let frame;
-    do {
-      const image = genFrame(state);
-      const blob = new Magick.Blob;
-      image.write(blob);
+    const state = { height: 720 / 2, speed: 0 };
+    let totalFrames = 250;
+    let pts = 0;
+    const write = function () {
+      try {
+        let frame;
+        do {
+          const image = genFrame(state);
+          const blob = new Magick.Blob;
+          image.write(blob);
 
-      frame = ffmpeg.VideoFrame.create(Buffer.from(blob.data()), format, width, height);
-      frame.setTimeBase(timeBase);
-      frame.setPts(new ffmpeg.Timestamp(pts++, timeBase));
+          frame = ffmpeg.VideoFrame.create(Buffer.from(blob.data()), format, width, height);
+          frame.setTimeBase(timeBase);
+          frame.setPts(new ffmpeg.Timestamp(pts++, timeBase));
 
-      // This is the Node.js Writable protocol
-      // write until write returns false, then wait for 'drain'
-    } while (videoOutput.write(frame, 'binary') && --totalFrames > 0);
-    if (totalFrames > 0)
-      videoOutput.once('drain', write);
-    else
-      videoOutput.end();
-  };
-  write();
+          // This is the Node.js Writable protocol
+          // write until write returns false, then wait for 'drain'
+        } while (videoOutput.write(frame, 'binary') && --totalFrames > 0);
+        if (totalFrames > 0)
+          videoOutput.once('drain', write);
+        else
+          videoOutput.end();
+      } catch (error) {
+        done(error);
+      }
+    };
+    write();
 
-  videoOutput.pipe(output.video[0]);
+    videoOutput.pipe(output.video[0]);
+  } catch (error) {
+    done(error);
+  }
 });
