@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@octokit/core": "^6.0.0",
-    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-typescript": "^12.1.0",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^22.0.0",
