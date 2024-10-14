@@ -13,7 +13,7 @@ import {
   MediaTransform, VideoStreamDefinition
 } from '@mmomtchev/ffmpeg/stream';
 import { Readable, Writable } from 'node:stream';
-import { Magick, MagickCore } from 'magickwand.js';
+import { Magick, MagickCore } from 'magickwand.js/native';
 
 ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
 

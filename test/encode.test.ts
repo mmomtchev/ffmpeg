@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { Magick } from 'magickwand.js';
+import { Magick } from 'magickwand.js/native';
 
 import ffmpeg from '@mmomtchev/ffmpeg';
 import { VideoEncoder, Muxer } from '@mmomtchev/ffmpeg/stream';
