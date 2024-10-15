@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { Magick } from 'magickwand.js';
+import { Magick } from 'magickwand.js/native';
 
 import { assert } from 'chai';
 
