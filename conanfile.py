@@ -22,3 +22,4 @@ class ffmpeg(ConanFile):
         self.options['ffmpeg'].with_xcb = False
         self.options['ffmpeg'].with_vaapi = False
         self.options['ffmpeg'].with_vdpau = False
+        self.options['ffmpeg'].with_xlib = False
