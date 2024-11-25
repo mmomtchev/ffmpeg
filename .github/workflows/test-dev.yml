@@ -180,7 +180,7 @@ jobs:
       run: npx c8 report --reporter=text-lcov > coverage/tests.lcov
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ${{ github.workspace }}/coverage
