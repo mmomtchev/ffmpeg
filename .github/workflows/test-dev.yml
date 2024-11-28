@@ -52,7 +52,7 @@ jobs:
     - name: Cache short-path conan artifacts on Windows
       uses: actions/cache@v4
       with:
-        path: /.conan
+        path: C:/.conan
         key: ${{ matrix.platform }}-short-path
       if: runner.os == 'Windows'
     - run: npm install --ignore-scripts --production
