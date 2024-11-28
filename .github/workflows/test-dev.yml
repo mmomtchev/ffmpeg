@@ -54,6 +54,7 @@ jobs:
     - run: npx node-pre-gyp configure
       env:
         PKG_CONFIG_PATH:
+        CONAN_USER_HOME_SHORT: None
     - run: npx node-pre-gyp build
     - run: npm install
     - run: npm test
