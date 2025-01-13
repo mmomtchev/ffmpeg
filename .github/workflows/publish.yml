@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        platform: [ubuntu-20.04, windows-2022, macos-11]
+        platform: [ ubuntu-20.04, windows-2022, macos-13, macos-14 ]
 
     steps:
     - uses: actions/checkout@v4

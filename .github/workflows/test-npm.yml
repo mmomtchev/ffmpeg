@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16.x, 18.x, 20.x]
-        platform: [ubuntu-latest, windows-latest, macos-13]
+        platform: [ ubuntu-latest, windows-latest, macos-13, macos-14 ]
 
     steps:
     - name: Use Node.js ${{ matrix.node-version }}
