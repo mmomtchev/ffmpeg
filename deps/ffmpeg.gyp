@@ -51,7 +51,7 @@
             'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
               ' && (python3 -m conans.conan profile new conan-linux-const-macros --detect || echo profile already created)'
-              ' && python3 -m conans.conan profile update conf.tools.build:cflags=\'["-D__STDC_CONSTANT_MACROS"]\' conan-linux-const-macros'
+              ' && python3 -m conans.conan profile update conf.tools.build:cxxflags=\'["-D__STDC_CONSTANT_MACROS"]\' conan-linux-const-macros'
               ' && [ -n "$FFMPEG_FAST_REBUILD" ] || python3 -m conans.conan install .. --profile=conan-linux-const-macros -of build --build=libx265 --build=missing'
               ' 1>&2 )'
           },
