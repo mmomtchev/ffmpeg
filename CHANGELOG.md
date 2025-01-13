@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [1.0.1] 2025-01-13
  - Update ffmpeg to 6.1.1
+ - Update avcpp to 2.4.1
  - Apple ARM prebuilt binaries
  - Support rebuilding on Ubuntu 24.04
 
