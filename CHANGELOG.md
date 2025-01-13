@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [1.0.1] 2025-01-13
+ - Update ffmpeg to 6.1.1
+ - Support rebuilding on Ubuntu 24.04
+
 # [1.0.0] 2024-01-26
  - Add `streams/Filter` to support ffmpeg filters
  - Support the built-in networking capabilities of ffmpeg
