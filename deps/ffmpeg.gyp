@@ -50,7 +50,9 @@
           'variables': {
             'conaninfo': '<!(python3 -m pip install --user "conan<2.0.0"'
               ' && cd ../build'
-              ' && [ -n "$FFMPEG_FAST_REBUILD" ] || python3 -m conans.conan install .. -of build --build=libx265 --build=missing'
+              ' && (python3 -m conans.conan profile new conan-linux-const-macros --detect || echo profile already created)'
+              ' && python3 -m conans.conan profile update conf.tools.build:cxxflags=\'["-D__STDC_CONSTANT_MACROS"]\' conan-linux-const-macros'
+              ' && [ -n "$FFMPEG_FAST_REBUILD" ] || python3 -m conans.conan install .. --profile=conan-linux-const-macros -of build --build=libx265 --build=missing'
               ' 1>&2 )'
           },
           'direct_dependent_settings': {
@@ -60,6 +62,11 @@
           }
         }]
       ],
+      'all_dependent_settings': {
+        'defines': [
+          '__STDC_CONSTANT_MACROS'
+        ]
+      },
       'direct_dependent_settings': {
         'include_dirs': [
           '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json include_paths)'
