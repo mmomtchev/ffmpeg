@@ -25,6 +25,7 @@
         'avcpp/src/rect.cpp',
         'avcpp/src/pixelformat.cpp',
         'avcpp/src/codec.cpp',
+        'avcpp/src/codecparameters.cpp',
         'avcpp/src/timestamp.cpp',
         'avcpp/src/stream.cpp',
         'avcpp/src/avutils.cpp',
