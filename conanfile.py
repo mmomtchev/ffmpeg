@@ -4,7 +4,7 @@ required_conan_version = ">=1.60.0"
 
 class ffmpeg(ConanFile):
     settings = 'os', 'compiler', 'build_type', 'arch'
-    requires = 'ffmpeg/6.1'
+    requires = 'ffmpeg/6.1.1'
     generators = 'json'
 
     def configure(self):
