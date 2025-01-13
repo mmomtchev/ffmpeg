@@ -62,6 +62,11 @@
           }
         }]
       ],
+      'all_dependent_settings': {
+        'defines': [
+          '__STDC_CONSTANT_MACROS'
+        ]
+      },
       'direct_dependent_settings': {
         'include_dirs': [
           '<!@(node ../scripts/conaninfo.js ../build/conanbuildinfo.json include_paths)'
