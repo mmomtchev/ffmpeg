@@ -6,6 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "install": "node-pre-gyp install --fallback-to-build",
+    "postinstall": "node scripts/motd",
     "test": "npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
     "clean": "node-pre-gyp clean && tsc --build --clean",
