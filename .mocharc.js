@@ -12,3 +12,5 @@ module.exports = {
   'timeout': 120000,
   'v8-expose-gc': true
 };
+
+console.log('mocha config', module.exports);
