@@ -62,6 +62,7 @@ jobs:
         PKG_CONFIG_PATH:
     - run: npx node-pre-gyp build
     - run: npm install
+    - run: npm run lint
     - run: npm test
 
 

@@ -53,6 +53,8 @@
     "node-addon-api": "^8.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
     "@octokit/core": "^6.0.0",
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/chai": "^4.3.11",
@@ -62,6 +64,7 @@
     "c8": "^10.0.0",
     "chai": "^4.3.10",
     "eslint-plugin-mocha": "^10.2.0",
+    "globals": "^15.14.0",
     "magickwand.js": "^2.0.0",
     "mocha": "^10.2.0",
     "readable-stream-clone": "^1.0.0",
