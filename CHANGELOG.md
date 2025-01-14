@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Update avcpp to 2.4.1
  - Apple ARM prebuilt binaries
  - Support rebuilding on Ubuntu 24.04
+ - Fix rebuilding when installing from npm
 
 # [1.0.0] 2024-01-26
  - Add `streams/Filter` to support ffmpeg filters
