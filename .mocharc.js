@@ -6,7 +6,7 @@ module.exports = {
     './test/force-gc'
   ],
   'node-options': +process.versions.node.split('.')[0] >= 23 ? [
-    '--no-experimental-strip-types'
+    'no-experimental-strip-types'
   ] : [],
   'reporter': 'tap',
   'timeout': 120000,
