@@ -1,6 +1,6 @@
 {
   "name": "@mmomtchev/ffmpeg",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full native ffmpeg bindings for Node.js with Streams support",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
