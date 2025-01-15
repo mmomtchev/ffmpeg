@@ -5,7 +5,7 @@ module.exports = {
     'tsconfig-paths/register',
     './test/force-gc'
   ],
-  'node-options': +process.versions.node.split('.')[0] >= 23 ? [
+  'node-option': +process.versions.node.split('.')[0] >= 23 ? [
     'no-experimental-strip-types'
   ] : [],
   'reporter': 'tap',
