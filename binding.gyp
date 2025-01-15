@@ -42,21 +42,6 @@
           ],
           'destination': '<(module_path)'
         }
-      ],
-      'actions': [
-        {
-          'action_name': 'rollup',
-          'inputs':  [ 'src/lib/Stream.ts' ],
-          'outputs': [ './stream.js' ],
-          'conditions': [
-            ['OS != "win"', {
-              'action': [ 'npx', 'rollup', '-c', 'rollup.config.js' ]
-            }],
-            ['OS == "win"', {
-              'action': [ 'cmd', '/c"npm run rollup"' ]
-            }]
-          ]
-        }
       ]
     }
   ]
