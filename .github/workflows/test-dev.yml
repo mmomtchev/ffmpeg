@@ -57,6 +57,7 @@ jobs:
       if: runner.os == 'Windows'
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
+    - run: npx xpm install
     - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
@@ -102,6 +103,7 @@ jobs:
         key: ${{ matrix.platform }}-debug
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
+    - run: npx xpm install
     - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
@@ -157,6 +159,7 @@ jobs:
         key: asan
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
+    - run: npx xpm install
     - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
@@ -196,6 +199,7 @@ jobs:
         key: codecov
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
+    - run: npx xpm install
     - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
