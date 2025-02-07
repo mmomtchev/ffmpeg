@@ -5,7 +5,8 @@ required_conan_version = ">=1.60.0"
 class ffmpeg(ConanFile):
     settings = 'os', 'compiler', 'build_type', 'arch'
     requires = 'ffmpeg/6.1.1'
-    generators = 'json'
+    tool_requires = 'pkgconf/2.1.0'
+    generators = 'MesonToolchain', 'PkgConfigDeps'
 
     def configure(self):
       self.options['ffmpeg'].disable_all_devices = True

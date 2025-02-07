@@ -57,10 +57,10 @@ jobs:
       if: runner.os == 'Windows'
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
-    - run: npx node-pre-gyp configure
+    - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
-    - run: npx node-pre-gyp build
+    - run: npx xpm run build
     - run: npm install
     - run: npm test
 
@@ -102,10 +102,10 @@ jobs:
         key: ${{ matrix.platform }}-debug
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
-    - run: npx node-pre-gyp configure --debug
+    - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
-    - run: npx node-pre-gyp build
+    - run: npx xpm run build
     - run: npm install
     - run: npm test
 
@@ -157,10 +157,11 @@ jobs:
         key: asan
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
-    - run: npx node-pre-gyp configure --debug --enable_asan
+    - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
-    - run: npx node-pre-gyp build
+    - run: npx xpm run configure -- -Db_sanitize=address
+    - run: npx xpm run build
     - run: npm install
     - run: node node_modules/mocha/lib/cli/cli.js
       continue-on-error: true
@@ -195,10 +196,11 @@ jobs:
         key: codecov
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
-    - run: npx node-pre-gyp configure --debug --enable_coverage
+    - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
-    - run: npx node-pre-gyp build
+    - run: npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
+    - run: npx xpm run build
     - run: npm install
     - run: npx c8 npm test
     - name: Run gcov
