@@ -66,14 +66,15 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'Debug' || 'Release' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
+    - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      env:
+        PKG_CONFIG_PATH:
+
     - run: npx xpm run configure -- -Db_sanitize=address
       if: inputs.asan
     - run: npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
       if: inputs.codecov
 
-    - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
-      env:
-        PKG_CONFIG_PATH:
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
 
     - run: npm install
