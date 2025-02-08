@@ -93,6 +93,9 @@ jobs:
       if: inputs.asan
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
+    - name: (ASAN) Clear library from the environment
+      run: echo LD_PRELOAD='' >> $GITHUB_ENV
+      if: inputs.asan
 
     - name: (codecov) npm test
       run: |
