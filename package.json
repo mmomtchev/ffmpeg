@@ -119,7 +119,7 @@
     "actions": {
       "npm-install": [
         "{% if env.npm_config_loglevel %}{{ properties.commandShowEnv[os.platform] }}{% endif %}",
-        "{% unless env.npm_config_skip_node_ffmpeg_binary %}{{ properties.scriptInstallNative }}{% endunless %}"
+        "{% unless env.npm_config_skip_node_ffmpeg_binary %}{{ properties.scriptInstall }}{% endunless %}"
       ],
       "prepare": "npx xpm run prepare --config Release",
       "configure": "{{ properties.commandConfigure }}",
