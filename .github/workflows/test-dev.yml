@@ -14,108 +14,26 @@ on:
 
 jobs:
   release:
-
-    runs-on: ${{ matrix.platform }}
-
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 18.x, 20.x, 22.x, 23.x ]
         platform: [ ubuntu-latest, ubuntu-20.04, windows-latest, macos-13, macos-14 ]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: (if on Ubuntu 20.04) switch to g++ 10
-      run: |
-        echo CC=gcc-10 >> $GITHUB_ENV
-        echo CXX=g++-10 >> $GITHUB_ENV
-      if: matrix.platform == 'ubuntu-20.04'
-    - name: (if on Ubuntu) install fonts
-      run: sudo apt-get install -y fonts-ubuntu || true
-      if: ${{ contains(matrix.platform, 'ubuntu') }}
-    - run: npm install --ignore-scripts --production
-    - run: npm install typescript
-    - run: npx xpm install
-    - name: Get conan home
-      shell: bash
-      id: conan_home
-      run: |
-        npx xpm run -q conan -- version
-        echo path=`npx xpm run -q conan -- config home` >> $GITHUB_OUTPUT
-    - name: Cache conan artifacts
-      id: conan-artifacts
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.conan_home.outputs.path }}
-        key: ${{ matrix.platform }}
-    - run: npx xpm run prepare
-      env:
-        PKG_CONFIG_PATH:
-    - run: npx xpm run build
-    - run: npm install
-    - run: npm test
+    uses:
+      ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
 
 
   debug:
-
-    runs-on: ${{ matrix.platform }}
-
     strategy:
       fail-fast: false
       matrix:
         platform: [ ubuntu-latest, macos-13 ]
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18.x
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: (if on Ubuntu 20.04) switch to g++ 10
-      run: |
-        echo CC=gcc-10 >> $GITHUB_ENV
-        echo CXX=g++-10 >> $GITHUB_ENV
-      if: matrix.platform == 'ubuntu-20.04'
-    - name: (if on Ubuntu) install fonts
-      run: sudo apt-get install -y fonts-ubuntu || true
-      if: ${{ contains(matrix.platform, 'ubuntu') }}
-    - run: npm install --ignore-scripts --production
-    - run: npm install typescript
-    - run: npx xpm install
-    - name: Get conan home
-      shell: bash
-      id: conan_home
-      run: |
-        npx xpm run -q conan -- version
-        echo path=`npx xpm run -q conan -- config home` >> $GITHUB_OUTPUT
-    - name: Cache conan artifacts
-      id: conan-artifacts
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.conan_home.outputs.path }}
-        key: ${{ matrix.platform }}-debug
-    - run: npx xpm run prepare
-      env:
-        PKG_CONFIG_PATH:
-    - run: npx xpm run build
-    - run: npm install
-    - run: npm test
+    uses:
+      ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
+      debug: true
 
 
   lint:
@@ -140,98 +58,16 @@ jobs:
 
 
   asan:
-
-    runs-on: ubuntu-22.04
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18.x
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: Install fonts
-      run: sudo apt-get install -y fonts-ubuntu || true
-    - run: npm install --ignore-scripts --production
-    - run: npm install typescript
-    - run: npx xpm install
-    - name: Get conan home
-      shell: bash
-      id: conan_home
-      run: |
-        npx xpm run -q conan -- version
-        echo path=`npx xpm run -q conan -- config home` >> $GITHUB_OUTPUT
-    - name: Cache conan artifacts
-      id: conan-artifacts
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.conan_home.outputs.path }}
-        key: asan
-    - run: npx xpm run prepare
-      env:
-        PKG_CONFIG_PATH:
-    - run: npx xpm run configure -- -Db_sanitize=address
-    - run: npx xpm run build
-    - run: npm install
-    - run: node node_modules/mocha/lib/cli/cli.js
-      continue-on-error: true
-      env:
-        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
-        LD_PRELOAD: /usr/lib/x86_64-linux-gnu/libasan.so.6.0.0
+    uses:
+      ./.github/workflows/build.yml
+    with:
+      platform: ubuntu-22.04
+      asan: true
 
 
   codecov:
-
-    runs-on: ubuntu-22.04
-
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 18.x
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
-    - name: Install fonts
-      run: sudo apt-get install -y fonts-ubuntu || true
-    - run: npm install --ignore-scripts --production
-    - run: npm install typescript
-    - run: npx xpm install
-    - name: Get conan home
-      shell: bash
-      id: conan_home
-      run: |
-        npx xpm run -q conan -- version
-        echo path=`npx xpm run -q conan -- config home` >> $GITHUB_OUTPUT
-    - name: Cache conan artifacts
-      id: conan-artifacts
-      uses: actions/cache@v4
-      with:
-        path: ${{ steps.conan_home.outputs.path }}
-        key: codecov
-    - run: npx xpm run prepare
-      env:
-        PKG_CONFIG_PATH:
-    - run: npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
-    - run: npx xpm run build
-    - run: npm install
-    - run: npx c8 npm test
-    - name: Run gcov
-      run: mkdir -p coverage && cd coverage && gcov -o ../build/Debug/obj.target/ffmpeg/src/binding ../src/binding/*
-    - name: Run lcov
-      run: npx c8 report --reporter=text-lcov > coverage/tests.lcov
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ${{ github.workspace }}/coverage
+    uses:
+      ./.github/workflows/build.yml
+    with:
+      platform: ubuntu-22.04
+      codecov: true
