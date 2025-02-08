@@ -5,11 +5,11 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "install": "node-pre-gyp install --fallback-to-build",
+    "install": "npx xpm run npm-install",
     "postinstall": "node scripts/motd",
     "test": "npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
-    "clean": "node-pre-gyp clean && tsc --build --clean",
+    "clean": "npx xpm run clean && tsc --build --clean",
     "prepare": "npx rollup -c rollup.config.js",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags && node ./scripts/publish-packages.js",
@@ -48,7 +48,6 @@
   },
   "homepage": "https://github.com/mmomtchev/ffmpeg#readme",
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^2.0.0",
     "nobind17": "^1.2.0",
     "node-addon-api": "^8.0.0"
   },
@@ -76,5 +75,132 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "xpack": {
+    "minimumXpmRequired": "0.19.1",
+    "properties": {
+      "module_name": "example",
+      "buildFolderRelativePath": "{{ 'build' | to_filename | downcase }}",
+      "installFolderPath": "{{ '/' | path_join: properties.cwd | path_join: 'lib' | path_join: 'binding' }}",
+      "toolchain": "system",
+      "platformId": "{{ os.platform | concat: '-' | concat: os.arch }}",
+      "commandConanBuildEnv": {
+        "win32": "{{ properties.buildFolderRelativePath }}\\conanbuild.bat && ",
+        "linux": ". {{ properties.buildFolderRelativePath }}/conanbuild.sh && ",
+        "darwin": ". {{ properties.buildFolderRelativePath }}/conanbuild.sh && "
+      },
+      "commandShowEnv": {
+        "win32": "set",
+        "linux": "env",
+        "darwin": "env"
+      },
+      "commandInit": {
+        "win32": "IF NOT EXIST build ( mkdir build )",
+        "linux": "mkdir -p build",
+        "darwin": "mkdir -p build"
+      },
+      "commandWipe": {
+        "win32": "rd /q /s",
+        "linux": "rm -rf",
+        "darwin": "rm -rf"
+      },
+      "cwd": "{{ path.sep | path_relative: '.' }}",
+      "argsConan": "--build=missing --settings=build_type={{ properties.buildType | capitalize }} -pr=./hadron/{{ properties.toolchain }}-{{ os.platform }}.profile",
+      "commandConanDependencies": "conan install . {{ properties.argsConan }} -of {{ properties.buildFolderRelativePath }} --settings compiler.cppstd=17 ",
+      "commandConanLock": "conan lock create . {{ properties.argsConan }}",
+      "commandPrepare": "{{ properties.commandConanBuildEnv[os.platform] }} meson setup --backend ninja --buildtype {{ properties.buildType }} {{ properties.buildFolderRelativePath }} . -Dprefix={{ properties.installFolderPath }} --native-file hadron{{ path.sep }}conan.ini --native-file hadron{{ path.sep }}{{ properties.toolchain }}-{{ os.platform }}.ini --native-file {{ properties.buildFolderRelativePath }}/conan_meson_native.ini",
+      "commandConfigure": "meson configure {{ properties.buildFolderRelativePath }}",
+      "commandBuild": "{{ properties.commandConanBuildEnv[os.platform] }} meson compile -C {{ properties.buildFolderRelativePath }} -v",
+      "commandInstall": "meson install -C {{ properties.buildFolderRelativePath }}",
+      "commandClean": "{{properties.commandWipe[os.platform]}} {{ properties.buildFolderRelativePath }}",
+      "verbose": "{% if env.npm_config_loglevel %}--verbose{% endif %}",
+      "scriptInstall": "npx prebuild-install -d {{ properties.verbose }} || ( npx xpm install && xpm run prepare --config native && xpm run build --config native )"
+    },
+    "actions": {
+      "npm-install": [
+        "{% if env.npm_config_loglevel %}{{ properties.commandShowEnv[os.platform] }}{% endif %}",
+        "{% unless env.npm_config_skip_node_ffmpeg_binary %}{{ properties.scriptInstall }}{% endunless %}"
+      ],
+      "prepare": "npx xpm run prepare --config Release",
+      "configure": "{{ properties.commandConfigure }}",
+      "build": "npx xpm run build --config Release",
+      "clean": "{{ properties.commandClean }}",
+      "lock": "{{ properties.commandConanLock }}",
+      "python": "python",
+      "meson": "meson",
+      "conan": "conan"
+    },
+    "buildConfigurations": {
+      "Release": {
+        "properties": {
+          "buildType": "release"
+        },
+        "actions": {
+          "prepare": [
+            "{{ properties.commandConanDependencies }}",
+            "{{ properties.commandPrepare }}"
+          ],
+          "build": [
+            "{{ properties.commandBuild }}",
+            "{{ properties.commandInstall }}"
+          ]
+        }
+      },
+      "Debug": {
+        "inherit": [
+          "Release"
+        ],
+        "properties": {
+          "buildType": "debug"
+        }
+      },
+      "xpack": {
+        "properties": {
+          "buildType": "release",
+          "toolchain": "clang"
+        },
+        "actions": {
+          "prepare": [
+            "{{ properties.commandConanDependencies }}",
+            "{{ properties.commandPrepare }}"
+          ],
+          "build": [
+            "{{ properties.commandBuild }}",
+            "{{ properties.commandInstall }}"
+          ]
+        },
+        "devDependencies": {
+          "@xpack-dev-tools/clang": "17.0.6-1.1",
+          "@xpack-dev-tools/windows-build-tools": "4.4.1-2.1"
+        }
+      }
+    },
+    "devDependencies": {
+      "@mmomtchev/meson-xpack": {
+        "specifier": "1.5.1-2",
+        "local": "link",
+        "platforms": "all"
+      },
+      "@mmomtchev/python-xpack": {
+        "specifier": "3.10.14-5",
+        "local": "link",
+        "platforms": "all"
+      },
+      "@mmomtchev/conan-xpack": {
+        "specifier": "2.7.0-1",
+        "local": "link",
+        "platforms": "all"
+      },
+      "@xpack-dev-tools/cmake": {
+        "specifier": "3.27.9-1.2",
+        "local": "link",
+        "platforms": "all"
+      },
+      "@xpack-dev-tools/ninja-build": {
+        "specifier": "1.11.1-3.1",
+        "local": "link",
+        "platforms": "all"
+      }
+    }
   }
 }
