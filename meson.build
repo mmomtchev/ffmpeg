@@ -10,6 +10,9 @@ project(
 )
 module_name = 'node-ffmpeg'
 
+# ffmpeg expects the C99 macros to be available in C++
+add_project_arguments('-D__STDC_CONSTANT_MACROS', language : ['cpp'])
+
 # Parsing of the npm options happens at this point
 napi = import('node-api')
 
