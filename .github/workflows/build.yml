@@ -73,9 +73,11 @@ jobs:
       env:
         PKG_CONFIG_PATH:
 
-    - run: (ASAN) npx xpm run configure -- -Db_sanitize=address
+    - name: (ASAN) configure
+      run: npx xpm run configure -- -Db_sanitize=address
       if: inputs.asan
-    - run: (codecov) npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
+    - name: (codecov) configure
+      run: npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
       if: inputs.codecov
 
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
