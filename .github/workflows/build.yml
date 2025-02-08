@@ -19,8 +19,8 @@ on:
         default: false
         description: ASAN build
       publish:
-        type: boolean
-        default: false
+        type: string
+        default: ''
         description: publish the binaries to the current release
 
 
@@ -105,3 +105,9 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ${{ github.workspace }}/coverage
+
+    - name: Upload artifact ${{ inputs.publish }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.publish }}
+        path: lib/binding/*
