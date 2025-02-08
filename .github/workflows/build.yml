@@ -108,6 +108,7 @@ jobs:
         directory: ${{ github.workspace }}/coverage
 
     - name: Upload artifact ${{ inputs.publish }}
+      if: inputs.publish
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.publish }}
