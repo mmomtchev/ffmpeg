@@ -103,6 +103,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
+      if: inputs.codecov
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ${{ github.workspace }}/coverage
