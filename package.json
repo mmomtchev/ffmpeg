@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "install": "npx xpm install && npx xpm run prepare && npx xpm run build",
+    "install": "npx xpm run npm-install",
     "postinstall": "node scripts/motd",
     "test": "npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
