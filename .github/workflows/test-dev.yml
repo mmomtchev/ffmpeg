@@ -45,6 +45,7 @@ jobs:
       if: ${{ contains(matrix.platform, 'ubuntu') }}
     - run: npm install --ignore-scripts --production
     - run: npm install typescript
+    - run: npx xpm install
     - name: Get conan home
       shell: bash
       id: conan_home
@@ -57,7 +58,6 @@ jobs:
       with:
         path: ${{ steps.conan_home.outputs.path }}
         key: ${{ matrix.platform }}
-    - run: npx xpm install
     - run: npx xpm run prepare
       env:
         PKG_CONFIG_PATH:
