@@ -121,12 +121,9 @@
         "{% if env.npm_config_loglevel %}{{ properties.commandShowEnv[os.platform] }}{% endif %}",
         "{% unless env.npm_config_skip_native_example %}{{ properties.scriptInstallNative }}{% endunless %}"
       ],
-      "prepare": "npx xpm run prepare --config release",
+      "prepare": "npx xpm run prepare --config Release",
       "configure": "{{ properties.commandConfigure }}",
-      "build": [
-        "{{ properties.commandBuild }}",
-        "{{ properties.commandInstall }}"
-      ],
+      "build": "npx xpm run prepare --config Release",
       "clean": "{{ properties.commandClean }}",
       "lock": "{{ properties.commandConanLock }}",
       "python": "python",
@@ -142,6 +139,10 @@
           "prepare": [
             "{{ properties.commandConanDependencies }}",
             "{{ properties.commandPrepare }}"
+          ],
+          "build": [
+            "{{ properties.commandBuild }}",
+            "{{ properties.commandInstall }}"
           ]
         }
       },
