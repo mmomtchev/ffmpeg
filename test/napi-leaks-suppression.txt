@@ -9,6 +9,10 @@ leak:napi_register_module_v1
 leak:___kmp_allocate
 leak:FcStrBufString
 
+# Known leaks produced by SWIG Node-API in magickwand.js
+leak:GetMembers
+leak:Init
+
 # Known leaks in the Node.js runtime
 leak:node::builtins::BuiltinLoader::LoadBuiltinSource
 leak:ProcessWrap::OnExit
