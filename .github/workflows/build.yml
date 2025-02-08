@@ -97,7 +97,7 @@ jobs:
     - name: (codecov) npm test
       run: |
         npx c8 npm test
-        mkdir -p coverage && cd coverage && gcov -o ../build/node-ffmpeg.node.p/* ../src/binding/*
+        mkdir -p coverage && cd coverage && gcov -o ../build/node-ffmpeg.node.p/* ../src/binding/* && cd ..
         npx c8 report --reporter=text-lcov > coverage/tests.lcov
       if: inputs.codecov
 
