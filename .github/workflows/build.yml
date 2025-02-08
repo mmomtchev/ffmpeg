@@ -85,19 +85,19 @@ jobs:
     - run: npm test
       if: (!inputs.asan) && (inputs.codecov)
 
-    - name: (ASAN)
+    - name: (ASAN) Find library
       run: echo LD_PRELOAD=$(gcc -print-file-name=libasan.so) >> $GITHUB_ENV
       if: inputs.asan
-    - name: (ASAN)
+    - name: (ASAN) npm test
       run: node node_modules/mocha/lib/cli/cli.js
       if: inputs.asan
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
 
-    - name: (codecov)
+    - name: (codecov) npm test
       run: |
         npx c8 npm test
-        mkdir -p coverage && cd coverage && gcov -o ../build/Debug/obj.target/ffmpeg/src/binding ../src/binding/*
+        mkdir -p coverage && cd coverage && gcov -o ../build/node-ffmpeg.node.p/* ../src/binding/*
         npx c8 report --reporter=text-lcov > coverage/tests.lcov
       if: inputs.codecov
 
