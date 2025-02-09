@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [2.0.0]
+ - New [`hadron`](https://github.com/mmomtchev/hadron)-based build with Conan 2
+
 ### [1.0.1] 2025-01-15
  - Update ffmpeg to 6.1.1
  - Update avcpp to 2.4.1
