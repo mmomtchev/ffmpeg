@@ -5,6 +5,7 @@ build
 /stream.d.ts
 /lib/binding
 /coverage
+/xpacks
 
 /test/*.mp4
 /test/*.mkv
