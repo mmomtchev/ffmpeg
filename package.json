@@ -7,6 +7,7 @@
   "scripts": {
     "install": "npx xpm run npm-install",
     "postinstall": "node scripts/motd",
+    "build": "npx xpm install && npx xpm run prepare && npx xpm run build",
     "test": "npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
     "clean": "npx xpm run clean && tsc --build --clean",
