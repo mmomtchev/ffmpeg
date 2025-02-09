@@ -43,6 +43,9 @@ void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
 constexpr auto ReturnNullAsync = Nobind::ReturnAsync | Nobind::ReturnNullAccept;
 
+template <typename T> bool True(T &) { return true; }
+template <typename T> bool False(T &) { return false; }
+
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
@@ -139,6 +142,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&VideoDecoderContext::setBitRate>("setBitRate")
       .def<&VideoDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&VideoDecoderContext::setRefCountedFrames>("setRefCountedFrames")
+      .def<&VideoDecoderContext::stream>("stream")
       .def<&VideoDecoderContext::codec>("codec")
       .def<&VideoDecoderContext::isFlags>("isFlags")
       .def<&VideoDecoderContext::addFlags>("addFlags")
@@ -158,7 +162,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           &VideoDecoderContext::decode)>("decode")
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
                &VideoDecoderContext::decode),
-           Nobind::ReturnAsync>("decodeAsync");
+           Nobind::ReturnAsync>("decodeAsync")
+      .ext<False<VideoDecoderContext>>("isAudio")
+      .ext<True<VideoDecoderContext>>("isVideo");
 
   m.def<VideoEncoderContext>("VideoEncoderContext")
       .cons<>()
@@ -175,6 +181,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&VideoEncoderContext::setTimeBase>("setTimeBase")
       .def<&VideoEncoderContext::bitRate>("bitRate")
       .def<&VideoEncoderContext::setBitRate>("setBitRate")
+      .def<&VideoEncoderContext::stream>("stream")
       .def<&VideoEncoderContext::codec>("codec")
       .def<&VideoEncoderContext::isFlags>("isFlags")
       .def<&VideoEncoderContext::addFlags>("addFlags")
@@ -195,7 +202,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
            Nobind::ReturnAsync>("encodeAsync")
       .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>("finalize")
       .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode),
-           Nobind::ReturnAsync>("finalizeAsync");
+           Nobind::ReturnAsync>("finalizeAsync")
+      .ext<False<VideoEncoderContext>>("isAudio")
+      .ext<True<VideoEncoderContext>>("isVideo");
 
   m.def<AudioDecoderContext>("AudioDecoderContext")
       .cons<const Stream &>()
@@ -214,6 +223,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
       .def<&AudioDecoderContext::setRefCountedFrames>("setRefCountedFrames")
       .def<&AudioDecoderContext::codec>("codec")
+      .def<&AudioDecoderContext::stream>("stream")
       .def<&AudioDecoderContext::isFlags>("isFlags")
       .def<&AudioDecoderContext::addFlags>("addFlags")
       .def<&AudioDecoderContext::frameSize>("frameSize")
@@ -231,7 +241,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           &AudioDecoderContext::decode)>("decode")
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
                &AudioDecoderContext::decode),
-           Nobind::ReturnAsync>("decodeAsync");
+           Nobind::ReturnAsync>("decodeAsync")
+      .ext<True<AudioDecoderContext>>("isAudio")
+      .ext<False<AudioDecoderContext>>("isVideo");
 
   m.def<AudioEncoderContext>("AudioEncoderContext")
       .cons<>()
@@ -250,6 +262,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
           &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
       .def<&AudioEncoderContext::codec>("codec")
+      .def<&AudioEncoderContext::stream>("stream")
       .def<&AudioEncoderContext::isFlags>("isFlags")
       .def<&AudioEncoderContext::addFlags>("addFlags")
       .def<&AudioEncoderContext::frameSize>("frameSize")
@@ -270,7 +283,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
            Nobind::ReturnAsync>("encodeAsync")
       .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>("finalize")
       .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode),
-           Nobind::ReturnAsync>("finalizeAsync");
+           Nobind::ReturnAsync>("finalizeAsync")
+      .ext<True<AudioEncoderContext>>("isAudio")
+      .ext<False<AudioEncoderContext>>("isVideo");
 
   m.def<OutputFormat>("OutputFormat")
       .cons<>()
@@ -283,6 +298,13 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&InputFormat::isFlags>("isFlags");
 
   m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
+
+  m.def<CodecParametersView>("CodecParametersView")
+      .cons<>()
+      .def<&CodecParametersView::decodingCodec>("decodingCodec")
+      .def<&CodecParametersView::encodingCodec>("encodingCodec")
+      .def<static_cast<uint32_t (CodecParametersView::*)() const>(&CodecParametersView::codecTag)>("codecTag")
+      .def<static_cast<void (CodecParametersView::*)(uint32_t)>(&CodecParametersView::codecTag)>("setCodecTag");
 
   m.def<PixelFormat>("PixelFormat")
           .cons<const std::string &>()
@@ -329,7 +351,9 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&Stream::setFrameRate>("setFrameRate")
       .def<&Stream::timeBase>("timeBase")
       .def<&Stream::setTimeBase>("setTimeBase")
-      .def<&Stream::mediaType>("mediaType");
+      .def<&Stream::mediaType>("mediaType")
+      .def<&Stream::codecParameters>("codecParameters")
+      .def<&Stream::setCodecParameters>("setCodecParameters");
 
   m.def<Packet>("Packet")
       .def<&Packet::isNull>("isNull")

@@ -99,4 +99,8 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
   definition(): AudioStreamDefinition {
     return this.def;
   }
+
+  get _stream() {
+    return this.encoder;
+  }
 }
