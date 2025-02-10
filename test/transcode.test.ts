@@ -139,4 +139,29 @@ describe('transcode', () => {
       }
     });
   });
+
+  it('convert format without transcoding', (done) => {
+    // This requires that the output format supports the input codec
+    // and the output is seekable (ie a file)
+    const demuxer = new Demuxer({ inputFile: path.resolve(__dirname, 'data', 'launch.mp4') });
+
+    demuxer.on('error', done);
+    demuxer.on('ready', () => {
+      try {
+        assert.lengthOf(demuxer.streams, 2);
+        assert.lengthOf(demuxer.audio, 1);
+        assert.lengthOf(demuxer.video, 1);
+
+        const muxer = new Muxer({ outputFile: tempFile, streams: [demuxer.audio[0], demuxer.video[0]] });
+
+        muxer.on('finish', done);
+        muxer.on('error', done);
+
+        demuxer.video[0].pipe(muxer.video[0]);
+        demuxer.audio[0].pipe(muxer.audio[0]);
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
 });

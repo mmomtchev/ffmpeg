@@ -85,6 +85,16 @@ export class EncodedMediaReadable extends Readable {
     super(options);
     this._stream = options._stream;
   }
+
+  // EncodedMediaReadable is synchronously ready unlike
+  // its compatible cousins AudioEncoder and VideoEncoder
+  get ready(): boolean {
+    return true;
+  }
+
+  codec(): any {
+    return this._stream.codecParameters();
+  }
 }
 
 /**
