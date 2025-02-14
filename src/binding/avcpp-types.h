@@ -15,6 +15,8 @@ public:
     val_ = val.ToNumber().Int64Value();
   }
   inline T Get() { return static_cast<T>(val_); }
+
+  static const std::string TSType() { return "number"; };
 };
 
 template <typename T> class EnumToJS {
@@ -24,6 +26,8 @@ template <typename T> class EnumToJS {
 public:
   inline explicit EnumToJS(Napi::Env env, T val) : env_(env), val_(static_cast<int64_t>(val)) {}
   inline Napi::Value Get() { return Napi::Number::New(env_, val_); }
+
+  static const std::string TSType() { return "number"; };
 };
 
 namespace Nobind {
@@ -36,6 +40,8 @@ public:
   inline explicit FromJS(const Napi::Value &) {}
   inline av::OptionalErrorCode Get() { return av::throws(); }
   static const int Inputs = 0;
+
+  static const std::string TSType() { return ""; };
 };
 
 #define TYPEMAPS_FOR_ENUM(ENUM)                                                                                        \

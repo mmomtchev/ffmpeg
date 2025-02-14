@@ -1,2 +1,2 @@
-declare const ffmpeg: any;
+declare const ffmpeg: typeof import('./binding/index');
 export default ffmpeg;

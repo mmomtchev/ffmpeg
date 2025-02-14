@@ -47,6 +47,27 @@ template <typename T> bool True(T &) { return true; }
 template <typename T> bool False(T &) { return false; }
 
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
+  // Forward declarations for TypeScript support
+  m.decl<OutputFormat>("OutputFormat");
+  m.decl<Codec>("Codec");
+  m.decl<InputFormat>("InputFormat");
+  m.decl<Stream>("Stream");
+  m.decl<VideoEncoderContext>("VideoEncoderContext");
+  m.decl<AudioEncoderContext>("VideoDecoderContext");
+  m.decl<VideoDecoderContext>("AudioEncoderContext");
+  m.decl<AudioDecoderContext>("AudioDecoderContext");
+  m.decl<FilterContext>("FilterContext");
+  m.decl<FormatContext>("FormatContext");
+  m.decl<Packet>("Packet");
+  m.decl<PixelFormat>("PixelFormat");
+  m.decl<Rational>("Rational");
+  m.decl<VideoFrame>("VideoFrame");
+  m.decl<AudioSamples>("AudioSamples");
+  m.decl<SampleFormat>("SampleFormat");
+  m.decl<ChannelLayout>("ChannelLayout");
+  m.decl<ChannelLayoutView>("ChannelLayoutView");
+  m.decl<Timestamp>("Timestamp");
+
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
   m.def<std::error_code>("error_code").cons<>().def <
