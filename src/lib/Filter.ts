@@ -61,7 +61,7 @@ export class Filter extends EventEmitter {
       if (isAudioDefinition(def)) {
         filterDescriptor += `abuffer@${inp}=sample_rate=${def.sampleRate}:` +
           `channel_layout=${def.channelLayout.toString()}:` +
-          `sample_fmt=${def.sampleFormat.toString()}:time_base=${def.timeBase.toString()} [${inp}];  `;
+          `sample_fmt=${def.sampleFormat.toString()}${def.timeBase ? `:time_base=${def.timeBase.toString()}` : ''} [${inp}];  `;
       }
     }
     filterDescriptor += options.graph;

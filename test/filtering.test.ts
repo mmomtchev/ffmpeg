@@ -49,7 +49,7 @@ describe('filtering', () => {
     const textBlob = new Magick.Blob;
     textImage.write(textBlob);
     const textImagePixelFormat = new ffmpeg.PixelFormat(ffmpeg.AV_PIX_FMT_RGBA);
-    const textFrame = new ffmpeg.VideoFrame.create(Buffer.from(textBlob.data()), textImagePixelFormat, 500, 20);
+    const textFrame = ffmpeg.VideoFrame.create(Buffer.from(textBlob.data()), textImagePixelFormat, 500, 20);
 
     demuxer.on('error', done);
     demuxer.on('ready', () => {

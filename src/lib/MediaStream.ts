@@ -14,7 +14,7 @@ export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
   codec: number;
-  timeBase: number | ffmpeg.Rational;
+  timeBase?: ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
 
@@ -22,7 +22,7 @@ export interface VideoStreamDefinition extends MediaStreamDefinition {
   type: 'Video';
   width: number;
   height: number;
-  frameRate: number | ffmpeg.Rational;
+  frameRate: ffmpeg.Rational;
   pixelFormat: any;
   flags?: number;
 }
