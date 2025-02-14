@@ -41,17 +41,20 @@ binary = napi.extension_module(
 # --------------------
 # Produce the TypeScript definitions
 # --------------------
-node = find_program('node')
-custom_target(
-  'index.d.ts',
-  output: 'index.d.ts',
-  input: binary,
-  command: [
-    node,
-    '-e', 'fs.writeFileSync(process.argv[2], require(path.resolve(process.argv[1])).__typescript)',
-    '@INPUT@',
-    '@OUTPUT@',
-  ],
-  install: true,
-  install_dir: '',
-)
+if get_option('b_sanitize') == 'none'
+  # If ASAN is enabled, node won't be able to load the module without it
+  node = find_program('node')
+  custom_target(
+    'index.d.ts',
+    output: 'index.d.ts',
+    input: binary,
+    command: [
+      node,
+      '-e', 'fs.writeFileSync(process.argv[2], require(path.resolve(process.argv[1])).__typescript)',
+      '@INPUT@',
+      '@OUTPUT@',
+    ],
+    install: true,
+    install_dir: '',
+  )
+endif
