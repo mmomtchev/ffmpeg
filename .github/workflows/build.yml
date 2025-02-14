@@ -78,7 +78,12 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'Debug' || 'Release' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
+    - run: npm install --build-from-source
+      env:
+        PKG_CONFIG_PATH:
+
     - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      if: inputs.asan || inputs.codecov || inputs.debug
       env:
         PKG_CONFIG_PATH:
 
@@ -93,8 +98,7 @@ jobs:
       if: inputs.codecov
 
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
-
-    - run: npm run prepare
+      if: inputs.asan || inputs.codecov || inputs.debug
 
     - run: npm test
       if: (!inputs.asan) && (!inputs.codecov)
