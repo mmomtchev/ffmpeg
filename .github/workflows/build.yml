@@ -82,6 +82,9 @@ jobs:
       env:
         PKG_CONFIG_PATH:
 
+    - name: (ASAN) build the TS generator
+      run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      if: inputs.asan
     - name: (ASAN) configure
       run: npx xpm run configure -- -Db_sanitize=address
       if: inputs.asan
