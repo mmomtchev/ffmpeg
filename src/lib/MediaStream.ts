@@ -14,7 +14,7 @@ export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
   codec: number;
-  timeBase?: number | ffmpeg.Rational;
+  timeBase: number | ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
 
@@ -31,7 +31,7 @@ export interface AudioStreamDefinition extends MediaStreamDefinition {
   type: 'Audio';
   channelLayout: any;
   sampleFormat: any;
-  sampleRate: number | ffmpeg.Rational;
+  sampleRate: number;
   frameSize?: number;
 }
 
