@@ -115,7 +115,7 @@
       "commandInstall": "meson install -C {{ properties.buildFolderRelativePath }}",
       "commandClean": "{{properties.commandWipe[os.platform]}} {{ properties.buildFolderRelativePath }}",
       "verbose": "{% if env.npm_config_loglevel %}--verbose{% endif %}",
-      "scriptInstall": "npx prebuild-install -d {{ properties.verbose }} || ( npx xpm install && xpm run prepare --config native && xpm run build --config native )"
+      "scriptInstall": "npx prebuild-install -d {{ properties.verbose }} || ( npx xpm install && xpm run prepare --config Release && xpm run build --config Release )"
     },
     "actions": {
       "npm-install": [
