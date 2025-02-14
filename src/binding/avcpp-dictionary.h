@@ -34,6 +34,8 @@ public:
     }
   }
   inline av::Dictionary &Get() { return dict; }
+
+  static const std::string TSType() { return "Record<string, any>"; };
 };
 
 } // namespace Typemap
