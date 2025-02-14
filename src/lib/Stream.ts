@@ -1,3 +1,4 @@
+export * as ffmpeg from '../../lib/binding/index';
 export { AudioStreamDefinition, VideoStreamDefinition, MediaStream, MediaStreamDefinition, MediaTransform } from './MediaStream';
 export { Muxer } from './Muxer';
 export { Demuxer } from './Demuxer';
