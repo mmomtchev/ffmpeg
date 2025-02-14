@@ -82,7 +82,7 @@ jobs:
       env:
         PKG_CONFIG_PATH:
 
-    - name: (ASAN) build the TS generator
+    - name: (ASAN) build and run the TS generator
       run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
       if: inputs.asan
     - name: (ASAN) configure
@@ -93,6 +93,8 @@ jobs:
       if: inputs.codecov
 
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+
+    - run: npm run prepare
 
     - run: npm test
       if: (!inputs.asan) && (!inputs.codecov)
