@@ -1,4 +1,5 @@
 import { EventEmitter, Readable, ReadableOptions, Transform, TransformOptions, Writable } from 'node:stream';
+import * as ffmpeg from '../../lib/binding/index';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -13,7 +14,7 @@ export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
   codec: number;
-  timeBase?: any;
+  timeBase?: number | ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
 
@@ -21,7 +22,7 @@ export interface VideoStreamDefinition extends MediaStreamDefinition {
   type: 'Video';
   width: number;
   height: number;
-  frameRate: number;
+  frameRate: number | ffmpeg.Rational;
   pixelFormat: any;
   flags?: number;
 }
@@ -30,7 +31,7 @@ export interface AudioStreamDefinition extends MediaStreamDefinition {
   type: 'Audio';
   channelLayout: any;
   sampleFormat: any;
-  sampleRate: any;
+  sampleRate: number | ffmpeg.Rational;
   frameSize?: number;
 }
 
