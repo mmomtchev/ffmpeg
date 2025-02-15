@@ -68,7 +68,7 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'Debug' || 'Release' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
-    - run: npm install
+    - run: npm install magickwand.js
 
     - run: npm install --build-from-source --verbose --foreground-scripts
       env:
