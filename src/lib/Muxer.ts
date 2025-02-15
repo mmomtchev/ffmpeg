@@ -222,7 +222,7 @@ export class Muxer extends EventEmitter {
         } else {
           if (this.rawStreams[idx]._stream!.isVideo()) {
             stream = this.formatContext.addVideoStream(codec);
-            stream.setFrameRate(this.rawStreams[idx]._stream!.frameRate());
+            stream.setFrameRate(this.rawStreams[idx]._stream.stream().frameRate());
           } else if (this.rawStreams[idx]._stream!.isAudio()) {
             stream = this.formatContext.addAudioStream(codec);
           } else {
