@@ -318,7 +318,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat")
       .def<&InputFormat::isFlags>("isFlags");
 
-  m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
+  m.def<Codec>("Codec").cons<>().def<&Codec::name>("name").def<&Codec::id>("id");
 
   m.def<CodecParametersView>("CodecParametersView")
       .cons<>()

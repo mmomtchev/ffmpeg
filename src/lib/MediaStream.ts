@@ -1,5 +1,5 @@
 import { EventEmitter, Readable, ReadableOptions, Transform, TransformOptions, Writable } from 'node:stream';
-import * as ffmpeg from '../../lib/binding/index';
+import ffmpeg from '@mmomtchev/ffmpeg';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -13,7 +13,7 @@ export type StreamType = keyof typeof StreamTypes;
 export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
-  codec: number;
+  codec: number | ffmpeg.Codec;
   timeBase?: ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
@@ -23,14 +23,14 @@ export interface VideoStreamDefinition extends MediaStreamDefinition {
   width: number;
   height: number;
   frameRate: ffmpeg.Rational;
-  pixelFormat: any;
+  pixelFormat: ffmpeg.PixelFormat;
   flags?: number;
 }
 
 export interface AudioStreamDefinition extends MediaStreamDefinition {
   type: 'Audio';
-  channelLayout: any;
-  sampleFormat: any;
+  channelLayout: ffmpeg.ChannelLayout;
+  sampleFormat: ffmpeg.SampleFormat;
   sampleRate: number;
   frameSize?: number;
 }
@@ -68,11 +68,11 @@ export interface MediaStream extends EventEmitter {
  * A generic encoding MediaStream, has a codec.
  */
 export interface MediaEncoder extends MediaStream {
-  codec(): any;
+  codec(): ffmpeg.Codec;
 }
 
 export interface EncodedMediaReadableOptions extends ReadableOptions {
-  _stream?: any;
+  _stream?: ffmpeg.Stream;
 }
 
 
@@ -80,7 +80,7 @@ export interface EncodedMediaReadableOptions extends ReadableOptions {
  * A generic compressed media stream from a Demuxer.
  */
 export class EncodedMediaReadable extends Readable {
-  _stream: any;
+  _stream: ffmpeg.Stream | undefined;
 
   constructor(options: EncodedMediaReadableOptions) {
     super(options);
@@ -93,8 +93,8 @@ export class EncodedMediaReadable extends Readable {
     return true;
   }
 
-  codec(): any {
-    return this._stream.codecParameters();
+  codec(): ffmpeg.CodecParametersView | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext {
+    return this._stream!.codecParameters();
   }
 }
 

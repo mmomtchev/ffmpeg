@@ -51,7 +51,7 @@ export interface DemuxerOptions extends ReadableOptions {
 export class Demuxer extends EventEmitter {
   protected inputFile: string | undefined;
   protected highWaterMark: number;
-  protected formatContext: any;
+  protected formatContext: ffmpeg.FormatContext | undefined;
   protected rawStreams: any[];
   protected openOptions: Record<string, string>;
   streams: EncodedMediaReadable[];
@@ -126,7 +126,7 @@ export class Demuxer extends EventEmitter {
       verbose(`Demuxer: start of _read (called on stream ${idx} for ${size} packets`);
       let pkt;
       do {
-        pkt = await this.formatContext.readPacketAsync();
+        pkt = await this.formatContext!.readPacketAsync();
         verbose(`Demuxer: Read packet: pts=${pkt.pts()}, dts=${pkt.dts()} / ${pkt.pts().seconds()} / ${pkt.timeBase()} / stream ${pkt.streamIndex()}`);
         if (pkt.isNull()) {
           verbose('Demuxer: End of stream');
