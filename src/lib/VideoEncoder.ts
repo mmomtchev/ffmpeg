@@ -13,8 +13,8 @@ export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL
  */
 export class VideoEncoder extends MediaTransform implements MediaStream, EncodedMediaReadable {
   protected def: VideoStreamDefinition;
-  protected encoder: any;
-  protected codec_: any;
+  protected encoder: ffmpeg.VideoEncoderContext;
+  protected codec_: ffmpeg.Codec;
   protected busy: boolean;
   ready: boolean;
 
@@ -60,7 +60,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(frame: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('VideoEncoder: received frame');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     (async () => {

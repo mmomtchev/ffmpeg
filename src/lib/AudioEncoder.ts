@@ -56,7 +56,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  _transform(samples: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(samples: ffmpeg.AudioSamples, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('AudioEncoder: received samples');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     (async () => {
@@ -83,7 +83,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
   _flush(callback: TransformCallback): void {
     verbose('AudioEncoder: flushing');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
-    let packet: any;
+    let packet: ffmpeg.Packet;
     (async () => {
       do {
         packet = await this.encoder.finalizeAsync();
@@ -94,7 +94,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  codec(): any {
+  codec(): ffmpeg.AudioEncoderContext {
     return this.encoder;
   }
 

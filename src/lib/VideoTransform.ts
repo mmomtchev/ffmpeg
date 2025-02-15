@@ -13,7 +13,7 @@ export interface VideoTransformOptions extends MediaTransformOptions {
  * Must receive input from a VideoDecoder and must output to a VideoEncoder
  */
 export class VideoTransform extends MediaTransform {
-  protected rescaler: any;
+  protected rescaler: ffmpeg.VideoRescaler;
 
   constructor(options: VideoTransformOptions) {
     super(options);
@@ -24,7 +24,7 @@ export class VideoTransform extends MediaTransform {
     );
   }
 
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(chunk: ffmpeg.VideoFrame, encoding: BufferEncoding, callback: TransformCallback): void {
     try {
       this.rescaler.rescaleAsync(chunk)
         .then((frame: any) => {

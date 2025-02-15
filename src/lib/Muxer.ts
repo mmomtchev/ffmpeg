@@ -57,9 +57,9 @@ export class Muxer extends EventEmitter {
   protected highWaterMark: number;
   protected outputFormatName: string;
   protected outputFormatOptions: Record<string, string>;
-  protected outputFormat: any;
+  protected outputFormat: ffmpeg.OutputFormat;
   protected openOptions: Record<string, string>;
-  protected formatContext: any;
+  protected formatContext: ffmpeg.FormatContext;
   protected rawStreams: EncodedMediaReadable[];
   protected writing: boolean;
   protected primed: boolean;
@@ -221,10 +221,10 @@ export class Muxer extends EventEmitter {
           stream.setCodecParameters(codec);
         } else {
           if (this.rawStreams[idx]._stream!.isVideo()) {
-            stream = this.formatContext.addVideoStream(codec);
+            stream = this.formatContext.addVideoStream(codec as ffmpeg.VideoEncoderContext);
             stream.setFrameRate(this.rawStreams[idx]._stream.stream().frameRate());
           } else if (this.rawStreams[idx]._stream!.isAudio()) {
-            stream = this.formatContext.addAudioStream(codec);
+            stream = this.formatContext.addAudioStream(codec as ffmpeg.AudioEncoderContext);
           } else {
             throw new Error('Unsupported stream type');
           }
