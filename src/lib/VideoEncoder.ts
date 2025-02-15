@@ -21,7 +21,11 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
   constructor(def: VideoStreamDefinition) {
     super();
     this.def = { ...def };
-    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    if (this.def.codec instanceof ffmpeg.Codec) {
+      this.codec_ = ffmpeg.findDecodingCodec(this.def.codec.id());
+    } else {
+      this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    }
     verbose(`VideoEncoder: using ${this.codec_.name()}, ${this.def.width}x${this.def.height}, ` +
       `bitrate ${this.def.bitRate}, format ${this.def.pixelFormat}`);
     this.encoder = new VideoEncoderContext(this.codec_);

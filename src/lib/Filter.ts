@@ -12,7 +12,7 @@ export interface FilterOptions {
   // Graph string
   graph: string;
   // A filter must have a single time base
-  timeBase: any;
+  timeBase: ffmpeg.Rational;
 }
 
 /**

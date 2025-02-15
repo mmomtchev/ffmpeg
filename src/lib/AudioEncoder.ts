@@ -1,8 +1,6 @@
-import ffmpeg from '@mmomtchev/ffmpeg';
+import ffmpeg, { AudioEncoderContext, AudioSamples } from '@mmomtchev/ffmpeg';
 import { AudioStreamDefinition, MediaStream, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
-
-const { AudioEncoderContext, AudioSamples } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
@@ -13,15 +11,19 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
  */
 export class AudioEncoder extends MediaTransform implements MediaStream {
   protected def: AudioStreamDefinition;
-  protected encoder: any;
-  protected codec_: any;
+  protected encoder: ffmpeg.AudioEncoderContext;
+  protected codec_: ffmpeg.Codec;
   protected busy: boolean;
   ready: boolean;
 
   constructor(def: AudioStreamDefinition) {
     super();
     this.def = { ...def };
-    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    if (this.def.codec instanceof ffmpeg.Codec) {
+      this.codec_ = ffmpeg.findDecodingCodec(this.def.codec.id());
+    } else {
+      this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    }
     verbose(`AudioEncoder: using ${this.codec_.name()}`);
     this.encoder = new AudioEncoderContext(this.codec_);
     if (this.def.timeBase)
