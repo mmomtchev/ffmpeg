@@ -14,14 +14,14 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
   protected busy: boolean;
   ready: boolean;
 
-  constructor(options: { _stream: ffmpeg.Stream; }) {
+  constructor(options: { _stream?: ffmpeg.Stream; }) {
     super();
     this.decoder = null;
     if (!options._stream) {
       throw new Error('Input is not a demuxed stream');
     }
     if (!options._stream.isAudio()) {
-      throw new Error('Input is not video');
+      throw new Error('Input is not audio');
     }
     this.decoder = new AudioDecoderContext(options._stream);
     this.decoder.setRefCountedFrames(true);

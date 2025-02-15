@@ -94,7 +94,7 @@ describe('filtering', () => {
             // Overlay 'text_in' over 'video_in' at the specified offset to obtain 'out'
             `[video_in][text_in] overlay=x=20:y=${videoDefinition.height - 40} [out];  `,
           // A filter must have a single time base
-          timeBase: videoDefinition.timeBase
+          timeBase: videoDefinition.timeBase!
         });
         // These should be available based on the above configuration
         assert.instanceOf(filter.src['video_in'], Writable);
@@ -191,7 +191,7 @@ describe('filtering', () => {
             // Simply copy the audio through the filter
             '[audio_in] acopy [audio_out];  ',
           // A filter must have a single time base
-          timeBase: videoDefinition.timeBase
+          timeBase: videoDefinition.timeBase!
         });
         // These should be available based on the above configuration
         assert.instanceOf(filter.src['main_in'], Writable);
@@ -266,7 +266,7 @@ describe('filtering', () => {
             // The .GIF format is limited to 256 colors and requires special processing
             // in order to obtain a good palette
             '[in] split [a][b]; [a] palettegen [palette] ; [b][palette] paletteuse [out]; ',
-          timeBase: videoDefinition.timeBase
+          timeBase: videoDefinition.timeBase!
         });
         // These should be available based on the above configuration
         assert.instanceOf(filter.src['in'], Writable);
@@ -340,7 +340,7 @@ describe('filtering', () => {
             },
             graph:
               '[audio_in] acopy [video_out];  ',
-            timeBase: videoDefinition.timeBase
+            timeBase: videoDefinition.timeBase!
           });
 
           const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput, audioOutput] });
@@ -420,7 +420,7 @@ describe('filtering', () => {
             graph:
               '[video_in] copy [video_out];  ' +
               '[audio_in] acopy [audio_out];  ',
-            timeBase: videoDefinition.timeBase
+            timeBase: videoDefinition.timeBase!
           });
 
           const muxer = new Muxer({ outputFormat: 'matroska', streams: [videoOutput, audioOutput] });

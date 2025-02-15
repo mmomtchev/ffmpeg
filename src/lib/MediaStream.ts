@@ -72,7 +72,7 @@ export interface MediaEncoder extends MediaStream {
 }
 
 export interface EncodedMediaReadableOptions extends ReadableOptions {
-  _stream?: ffmpeg.Stream;
+  _stream?: ffmpeg.Stream | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext;
 }
 
 
@@ -80,7 +80,7 @@ export interface EncodedMediaReadableOptions extends ReadableOptions {
  * A generic compressed media stream from a Demuxer.
  */
 export class EncodedMediaReadable extends Readable {
-  _stream: ffmpeg.Stream | undefined;
+  _stream: any;
 
   constructor(options: EncodedMediaReadableOptions) {
     super(options);
@@ -94,7 +94,11 @@ export class EncodedMediaReadable extends Readable {
   }
 
   codec(): ffmpeg.CodecParametersView | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext {
-    return this._stream!.codecParameters();
+    if (this._stream instanceof ffmpeg.Stream) {
+      return this._stream!.codecParameters();
+    } else {
+      return this._stream!;
+    }
   }
 }
 
