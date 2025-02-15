@@ -21,7 +21,7 @@ it('extract a still', (done) => {
       const discarder = new Discarder();
       const videoInput = new VideoDecoder(input.video[0]);
 
-      const extract = (frame: any) => {
+      const extract = (frame: ffmpeg.VideoFrame) => {
         if (frame.pts().seconds() > 0.5) {
           videoInput.off('data', extract);
 
