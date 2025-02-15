@@ -13,7 +13,7 @@ export type StreamType = keyof typeof StreamTypes;
 export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
-  codec: number | ffmpeg.Codec;
+  codec: ffmpeg.AVCodecID | ffmpeg.Codec;
   timeBase?: ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }

@@ -82,6 +82,12 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           .def<&OptionalErrorCode::null, Nobind::ReturnShared>("null")
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
 
+  m.typescript_fragment("export type AVPictureType = " + Nobind::Typemap::FromJS<AVPictureType>::TSType() + ";\n");
+  m.typescript_fragment("export type AVCodecID = " + Nobind::Typemap::FromJS<AVCodecID>::TSType() + ";\n");
+  m.typescript_fragment("export type AVMediaType = " + Nobind::Typemap::FromJS<AVMediaType>::TSType() + ";\n");
+  m.typescript_fragment("export type AVPixelFormat = " + Nobind::Typemap::FromJS<AVPixelFormat>::TSType() + ";\n");
+  m.typescript_fragment("export type AVSampleFormat = " + Nobind::Typemap::FromJS<AVSampleFormat>::TSType() + ";\n");
+
 // Some important constants
 #include "constants"
 
