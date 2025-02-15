@@ -48,12 +48,12 @@ public:
   template <> class FromJS<ENUM> : public EnumFromJS<ENUM> {                                                           \
   public:                                                                                                              \
     using EnumFromJS<ENUM>::EnumFromJS;                                                                                \
-    static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "'; };"; }                 \
+    static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }"; }                   \
   };                                                                                                                   \
   template <> class ToJS<ENUM> : public EnumToJS<ENUM> {                                                               \
   public:                                                                                                              \
     using EnumToJS<ENUM>::EnumToJS;                                                                                    \
-    static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "'; };"; }                 \
+    static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }"; }                   \
   };
 
 // Create typemaps for all basic enums
