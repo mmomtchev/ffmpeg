@@ -26,7 +26,7 @@ export class AudioTransform extends MediaTransform {
     this.frameSize = options.output.frameSize ?? undefined;
   }
 
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(chunk: ffmpeg.AudioSamples, encoding: BufferEncoding, callback: TransformCallback): void {
     if (this.frameSize === undefined) {
       this.frameSize = chunk.samplesCount();
       verbose(`AudioTransform: auto-configured frame size to ${this.frameSize}`);

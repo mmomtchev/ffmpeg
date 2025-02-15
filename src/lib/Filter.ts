@@ -20,7 +20,7 @@ export interface FilterOptions {
  * Must receive raw decoded input and sends raw decoded output.
  */
 export class Filter extends EventEmitter {
-  protected filterGraph: any;
+  protected filterGraph: ffmpeg.FilterGraph;
   // The currently running filterGraph op, prevents reentering
   protected filterGraphOp: Promise<void> | false;
   protected bufferSrc: Record<string, {
@@ -37,11 +37,11 @@ export class Filter extends EventEmitter {
     busy: boolean;
     id: string;
   }>;
-  protected timeBase: any;
+  protected timeBase: ffmpeg.Rational;
   protected stillStreamingSources: number;
   protected destroyed: boolean;
-  src: Record<string, any>;
-  sink: Record<string, any>;
+  src: Record<string, Writable>;
+  sink: Record<string, Readable>;
 
   constructor(options: FilterOptions) {
     super();

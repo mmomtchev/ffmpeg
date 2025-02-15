@@ -56,8 +56,8 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   m.decl<InputFormat>("InputFormat");
   m.decl<Stream>("Stream");
   m.decl<VideoEncoderContext>("VideoEncoderContext");
-  m.decl<AudioEncoderContext>("VideoDecoderContext");
-  m.decl<VideoDecoderContext>("AudioEncoderContext");
+  m.decl<AudioEncoderContext>("AudioEncoderContext");
+  m.decl<VideoDecoderContext>("VideoDecoderContext");
   m.decl<AudioDecoderContext>("AudioDecoderContext");
   m.decl<FilterContext>("FilterContext");
   m.decl<FormatContext>("FormatContext");

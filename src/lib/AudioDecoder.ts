@@ -43,7 +43,7 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  _transform(packet: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(packet: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
     if (this.busy) return void callback(new Error('Decoder called while busy'));
     verbose('AudioDecoder: decoding chunk');
     (async () => {
