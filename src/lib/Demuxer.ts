@@ -1,8 +1,6 @@
 import { EventEmitter, ReadableOptions, Writable } from 'node:stream';
-import ffmpeg from '@mmomtchev/ffmpeg';
+import ffmpeg, { FormatContext } from '@mmomtchev/ffmpeg';
 import { EncodedMediaReadable } from './MediaStream';
-
-const { FormatContext } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 

@@ -23,8 +23,8 @@ using namespace av;
 
 // A define to register constants in the global namespace of the JS module
 // (these use an artificial type that holds an uint64_t and is converted to BigInt)
-#define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
-  constexpr static int64_t __const_##CONST{static_cast<int64_t>(CONST)};                                               \
+#define REGISTER_CONSTANT(TYPE, CONST, NAME)                                                                           \
+  constexpr static TYPE __const_##CONST{static_cast<TYPE>(CONST)};                                                     \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 #define REGISTER_ENUM(ENUM, ID)                                                                                        \
   constexpr static int64_t __const_##ID{static_cast<int64_t>(ENUM::ID)};                                               \
@@ -47,6 +47,9 @@ template <typename T> bool True(T &) { return true; }
 template <typename T> bool False(T &) { return false; }
 
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
+  // This trick allows to have distinct TS types that all resolve to number in JS
+  m.typescript_fragment("declare const __ffmpeg_tag_type : unique symbol;\n");
+
   // Forward declarations for TypeScript support
   m.decl<OutputFormat>("OutputFormat");
   m.decl<Codec>("Codec");
