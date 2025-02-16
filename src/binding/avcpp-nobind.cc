@@ -428,6 +428,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
+      .cons<>()
       .def<&AudioSamples::null>("null")
       .def<&CreateAudioSamples>("create")
       .def<&AudioSamples::isNull>("isNull")
