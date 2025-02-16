@@ -6,8 +6,6 @@ import { assert } from 'chai';
 import ffmpeg from '@mmomtchev/ffmpeg';
 import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder, AudioStreamDefinition } from '@mmomtchev/ffmpeg/stream';
 
-ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
-
 const tempFile = path.resolve(__dirname, 'resampled.mkv');
 
 describe('transcode', () => {

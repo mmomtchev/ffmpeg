@@ -7,8 +7,6 @@ import ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer, AudioDecoder, VideoDecoder } from '@mmomtchev/ffmpeg/stream';
 import { Writable } from 'node:stream';
 
-ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
-
 describe('Demuxer', () => {
   it('built-in I/O', (done) => {
     let audioFrames = 0, videoFrames = 0;
