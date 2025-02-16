@@ -55,6 +55,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   m.decl<Codec>("Codec");
   m.decl<InputFormat>("InputFormat");
   m.decl<Stream>("Stream");
+  m.def<CodecContext2>("CodecContext");
   m.decl<VideoEncoderContext>("VideoEncoderContext");
   m.decl<AudioEncoderContext>("AudioEncoderContext");
   m.decl<VideoDecoderContext>("VideoDecoderContext");
@@ -157,7 +158,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&FormatContext::writeTrailer>("writeTrailer")
       .def<&FormatContext::writeTrailer, Nobind::ReturnAsync>("writeTrailerAsync");
 
-  m.def<VideoDecoderContext>("VideoDecoderContext")
+  m.def<VideoDecoderContext, CodecContext2>("VideoDecoderContext")
       .cons<const Stream &>()
       .def<&VideoDecoderContext::codecType>("codecType")
       .def<&VideoDecoderContext::width>("width")
@@ -196,7 +197,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<False<VideoDecoderContext>>("isAudio")
       .ext<True<VideoDecoderContext>>("isVideo");
 
-  m.def<VideoEncoderContext>("VideoEncoderContext")
+  m.def<VideoEncoderContext, CodecContext2>("VideoEncoderContext")
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
@@ -236,7 +237,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<False<VideoEncoderContext>>("isAudio")
       .ext<True<VideoEncoderContext>>("isVideo");
 
-  m.def<AudioDecoderContext>("AudioDecoderContext")
+  m.def<AudioDecoderContext, CodecContext2>("AudioDecoderContext")
       .cons<const Stream &>()
       .def<&AudioDecoderContext::codecType>("codecType")
       .def<&AudioDecoderContext::sampleRate>("sampleRate")
@@ -275,7 +276,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<True<AudioDecoderContext>>("isAudio")
       .ext<False<AudioDecoderContext>>("isVideo");
 
-  m.def<AudioEncoderContext>("AudioEncoderContext")
+  m.def<AudioEncoderContext, CodecContext2>("AudioEncoderContext")
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
