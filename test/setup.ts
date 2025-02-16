@@ -1,4 +1,4 @@
-const ffmpeg = require('..');
+import ffmpeg from '@mmomtchev/ffmpeg';
 
 exports.mochaHooks = {
   afterEach: global.gc,
