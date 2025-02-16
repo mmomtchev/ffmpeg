@@ -5,8 +5,6 @@ import { Magick } from 'magickwand.js/native';
 import ffmpeg from '@mmomtchev/ffmpeg';
 import { VideoEncoder, Muxer } from '@mmomtchev/ffmpeg/stream';
 
-ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
-
 const width = 320;
 const height = 200;
 const ballRadius = 20;
