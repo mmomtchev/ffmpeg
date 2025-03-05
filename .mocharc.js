@@ -3,7 +3,7 @@ module.exports = {
   'require': [
     'ts-node/register',
     'tsconfig-paths/register',
-    './test/force-gc'
+    './test/setup.ts'
   ],
   'node-option': +process.versions.node.split('.')[0] >= 23 ? [
     'no-experimental-strip-types'

@@ -53,7 +53,6 @@ jobs:
     - name: (if on Ubuntu) install fonts
       run: sudo apt-get install -y fonts-ubuntu || true
       if: ${{ contains(inputs.platform, 'ubuntu') }}
-    - run: npm install --skip_node_ffmpeg_binary
     - run: npx xpm install
 
     - name: Get conan home
@@ -69,10 +68,20 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'Debug' || 'Release' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
-    - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
+    - run: npm install magickwand.js
+
+    - run: npm install --build-from-source --verbose --foreground-scripts
       env:
         PKG_CONFIG_PATH:
 
+    - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      if: inputs.asan || inputs.codecov || inputs.debug
+      env:
+        PKG_CONFIG_PATH:
+
+    - name: (ASAN) build and run the TS generator
+      run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      if: inputs.asan
     - name: (ASAN) configure
       run: npx xpm run configure -- -Db_sanitize=address
       if: inputs.asan
@@ -81,9 +90,10 @@ jobs:
       if: inputs.codecov
 
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      if: inputs.asan || inputs.codecov || inputs.debug
 
     - run: npm test
-      if: (!inputs.asan) && (inputs.codecov)
+      if: (!inputs.asan) && !(inputs.codecov)
 
     - name: (ASAN) Find library
       id: asan-lib

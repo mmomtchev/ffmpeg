@@ -142,6 +142,8 @@ public:
       throw Napi::Error::New(js_val.Env(), "Expected a CustomIO");
   }
   inline av::CustomIO *Get() { return object; }
+
+  static const std::string TSType() { return "CustomIO"; };
 };
 
 } // namespace Typemap
