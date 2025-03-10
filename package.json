@@ -67,7 +67,7 @@
     "globals": "^16.0.0",
     "magickwand.js": "^2.0.1",
     "mocha": "^11.0.1",
-    "nobind17": "^2.0.0-rc.0",
+    "nobind17": "^2.0.0-rc.1",
     "readable-stream-clone": "^1.0.0",
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",

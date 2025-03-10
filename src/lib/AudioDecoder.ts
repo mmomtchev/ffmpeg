@@ -11,7 +11,6 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
  */
 export class AudioDecoder extends MediaTransform implements MediaStream {
   protected decoder: ffmpeg.AudioDecoderContext | null;
-  protected busy: boolean;
   ready: boolean;
 
   constructor(options: { _stream?: ffmpeg.Stream; }) {
@@ -25,17 +24,14 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
     }
     this.decoder = new AudioDecoderContext(options._stream);
     this.decoder.setRefCountedFrames(true);
-    this.busy = false;
     this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
-      this.busy = true;
       verbose('AudioDecoder: priming the decoder');
       await this.decoder!.openCodecAsync(new Codec);
       verbose('AudioDecoder: decoder primed');
-      this.busy = false;
       callback();
       this.ready = true;
       this.emit('ready');
@@ -44,10 +40,8 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
   }
 
   _transform(packet: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
-    if (this.busy) return void callback(new Error('Decoder called while busy'));
     verbose('AudioDecoder: decoding chunk');
     (async () => {
-      this.busy = true;
       const samples = await this.decoder!.decodeAsync(packet);
       if (samples.isComplete()) {
         verbose(`AudioDecoder: Decoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
@@ -55,7 +49,6 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       } else {
         verbose('AudioDecoder: empty frame');
       }
-      this.busy = false;
       callback();
     })()
       .catch(callback);
