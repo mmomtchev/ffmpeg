@@ -224,9 +224,6 @@ export class Filter extends EventEmitter {
         callback(null);
         // Now that we pushed more data, try reading again if there were waiting reads
         for (const sink of Object.keys(this.bufferSink)) {
-          if (this.bufferSink[sink].busy) {
-            console.trace('Here we go');
-          }
           if (this.bufferSink[sink].waitingToRead && !this.bufferSink[sink].busy) {
             verbose(`Filter: write source [${id}]: wake up sink [${sink}]`);
             this.read(sink, 0);
@@ -247,7 +244,6 @@ export class Filter extends EventEmitter {
     verbose(`Filter: read sink [${id}] begin: received a request for data, busy: ${sink.busy}`);
     sink.waitingToRead += size;
     if (sink.busy) {
-      console.trace('Here we go');
       return;
     }
     sink.busy = true;
