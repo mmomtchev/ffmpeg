@@ -55,6 +55,8 @@ jobs:
       if: ${{ contains(inputs.platform, 'ubuntu') }}
     - run: npm install --skip_node_ffmpeg_binary
     - run: npx xpm install
+      env:
+        TSC_DEBUG: 1
 
     - name: Get conan home
       shell: bash
@@ -84,6 +86,9 @@ jobs:
 
     - run: npm test
       if: (!inputs.asan) && (!inputs.codecov)
+      env:
+        DEBUG_FFMPEG: 1
+        DEBUG_ALL: 1
 
     - name: (ASAN) Find library
       id: asan-lib
