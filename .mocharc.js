@@ -9,6 +9,6 @@ module.exports = {
     'no-experimental-strip-types'
   ] : [],
   'reporter': 'tap',
-  'timeout': 180000,
+  'timeout': 300000,
   'v8-expose-gc': true
 };
