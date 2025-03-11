@@ -15,6 +15,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
   protected def: VideoStreamDefinition;
   protected encoder: ffmpeg.VideoEncoderContext;
   protected codec_: ffmpeg.Codec;
+  protected busy: boolean;
   ready: boolean;
 
   constructor(def: VideoStreamDefinition) {
@@ -38,17 +39,20 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
     this.encoder.setPixelFormat(this.def.pixelFormat);
     if (def.flags)
       this.encoder.addFlags(def.flags);
+    this.busy = false;
     this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
+      this.busy = true;
       verbose('VideoEncoder: priming the encoder', this.def.codecOptions);
       await this.encoder.openCodecOptionsAsync(this.def.codecOptions ?? {}, this.codec_);
       verbose(`VideoEncoder: encoder primed, codec ${this.codec_.name()}, ` +
         `bitRate: ${this.encoder.bitRate()}, pixelFormat: ${this.encoder.pixelFormat()}, ` +
         `timeBase: ${this.encoder.timeBase()}, ${this.encoder.width()}x${this.encoder.height()}`
       );
+      this.busy = false;
       callback();
       this.ready = true;
       this.emit('ready');
@@ -58,7 +62,9 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
 
   _transform(frame: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('VideoEncoder: received frame');
+    if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     (async () => {
+      this.busy = true;
       if (!this.encoder) {
         return void callback(new Error('VideoEncoder is not primed'));
       }
@@ -75,6 +81,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
         `${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ` +
         `ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
       this.push(packet);
+      this.busy = false;
       callback();
     })()
       .catch(callback);
@@ -82,6 +89,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
 
   _flush(callback: TransformCallback): void {
     verbose('VideoEncoder: flushing');
+    if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     let packet: any;
     (async () => {
       do {

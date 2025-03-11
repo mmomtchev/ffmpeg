@@ -13,6 +13,7 @@ export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL
  */
 export class VideoDecoder extends MediaTransform implements MediaStream, EncodedMediaWritable {
   protected decoder: ffmpeg.VideoDecoderContext | null;
+  protected busy: boolean;
   protected stream: any;
   ready: boolean;
 
@@ -28,14 +29,17 @@ export class VideoDecoder extends MediaTransform implements MediaStream, Encoded
     this.stream = options._stream;
     this.decoder = new VideoDecoderContext(this.stream);
     this.decoder.setRefCountedFrames(true);
+    this.busy = false;
     this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
+      this.busy = true;
       verbose('VideoDecoder: priming the decoder');
       await this.decoder!.openCodecAsync(new Codec);
       verbose('VideoDecoder: decoder primed');
+      this.busy = false;
       callback();
       this.ready = true;
       this.emit('ready');
@@ -44,8 +48,10 @@ export class VideoDecoder extends MediaTransform implements MediaStream, Encoded
   }
 
   _transform(packet: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
+    if (this.busy) return void callback(new Error('Decoder called while busy'));
     verbose('VideoDecoder: decoding chunk');
     (async () => {
+      this.busy = true;
       const frame = await this.decoder!.decodeAsync(packet, true);
       if (frame.isComplete()) {
         verbose(`VideoDecoder: Decoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ref=${frame.isReferenced()}:${frame.refCount()} / type: ${frame.pictureType()} }`);
@@ -53,6 +59,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream, Encoded
       } else {
         verbose('VideoDecoder: empty frame');
       }
+      this.busy = false;
       callback();
     })()
       .catch(callback);

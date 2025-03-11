@@ -26,6 +26,7 @@ export class Filter extends EventEmitter {
   protected bufferSrc: Record<string, {
     type: 'Audio' | 'Video';
     buffer: any;
+    busy: boolean;
     nullFrame: any;
     id: string;
   }>;
@@ -33,6 +34,7 @@ export class Filter extends EventEmitter {
     type: 'Audio' | 'Video';
     buffer: any;
     waitingToRead: number;
+    busy: boolean;
     id: string;
   }>;
   protected timeBase: ffmpeg.Rational;
@@ -99,6 +101,7 @@ export class Filter extends EventEmitter {
         type,
         id,
         buffer: new ffmpeg.BufferSrcFilterContext(this.filterGraph.filter(id)),
+        busy: false,
         nullFrame
       };
       this.src[inp] = new Writable({
@@ -152,6 +155,7 @@ export class Filter extends EventEmitter {
         type,
         id,
         buffer: new ffmpeg.BufferSinkFilterContext(this.filterGraph.filter(id)),
+        busy: false,
         waitingToRead: 0
       };
       this.sink[outp] = new Readable({
@@ -184,6 +188,12 @@ export class Filter extends EventEmitter {
     if (!src) {
       return void callback(new Error(`Invalid buffer src [${id}]`));
     }
+    if (src.busy) {
+      // This is obviously a major malfunction and should never happen as long
+      // as the writer respects the stream semantics
+      return void callback(new Error(`Writing is not reentrant on [${id}]!`));
+    }
+    src.busy = true;
 
     verbose(`Filter: write source [${id}]: received data`);
 
@@ -209,11 +219,15 @@ export class Filter extends EventEmitter {
 
       (this.filterGraphOp as Promise<void>).then(() => {
         this.filterGraphOp = false;
+        src.busy = false;
         verbose(`Filter: write source [${id}]: wrote, pts=${frame.pts().toString()}`);
         callback(null);
         // Now that we pushed more data, try reading again if there were waiting reads
         for (const sink of Object.keys(this.bufferSink)) {
-          if (this.bufferSink[sink].waitingToRead) {
+          if (this.bufferSink[sink].busy) {
+            console.trace('Here we go');
+          }
+          if (this.bufferSink[sink].waitingToRead && !this.bufferSink[sink].busy) {
             verbose(`Filter: write source [${id}]: wake up sink [${sink}]`);
             this.read(sink, 0);
           }
@@ -230,8 +244,13 @@ export class Filter extends EventEmitter {
     if (!sink) {
       throw new Error(`Invalid buffer sink [${id}]`);
     }
-    verbose(`Filter: read sink [${id}] begin: received a request for data`);
+    verbose(`Filter: read sink [${id}] begin: received a request for data, busy: ${sink.busy}`);
     sink.waitingToRead += size;
+    if (sink.busy) {
+      console.trace('Here we go');
+      return;
+    }
+    sink.busy = true;
 
     let getFrame: () => Promise<any>;
     if (sink.type === 'Video') {
@@ -266,5 +285,6 @@ export class Filter extends EventEmitter {
       return;
     }
     verbose(`Filter: read sink [${id}]: cycle for [${id}] end, more: ${more}, last: ${frame && frame.pts().toString()}, waiting: ${sink.waitingToRead}`);
+    sink.busy = false;
   }
 }

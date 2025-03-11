@@ -13,6 +13,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
   protected def: AudioStreamDefinition;
   protected encoder: ffmpeg.AudioEncoderContext;
   protected codec_: ffmpeg.Codec;
+  protected busy: boolean;
   ready: boolean;
 
   constructor(def: AudioStreamDefinition) {
@@ -33,11 +34,13 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
     this.encoder.setChannelLayout(this.def.channelLayout);
     this.encoder.setSampleFormat(this.def.sampleFormat);
     this.encoder.setSampleRate(this.def.sampleRate);
+    this.busy = false;
     this.ready = false;
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
     (async () => {
+      this.busy = true;
       verbose('AudioEncoder: priming the encoder', this.def.codecOptions);
       await this.encoder.openCodecOptionsAsync(this.def.codecOptions ?? {}, this.codec_);
       verbose(`AudioEncoder: encoder primed, codec ${this.codec_.name()}, ` +
@@ -45,6 +48,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
         `timeBase: ${this.encoder.timeBase()}, frameSize: ${this.encoder.frameSize()}`
       );
       this.def.frameSize = this.encoder.frameSize();
+      this.busy = false;
       callback();
       this.ready = true;
       this.emit('ready');
@@ -54,7 +58,9 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
 
   _transform(samples: ffmpeg.AudioSamples, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('AudioEncoder: received samples');
+    if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     (async () => {
+      this.busy = true;
       if (!this.encoder) {
         return void callback(new Error('AudioEncoder is not primed'));
       }
@@ -68,6 +74,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
       const packet = await this.encoder.encodeAsync(samples);
       verbose(`AudioEncoder: Encoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
       this.push(packet);
+      this.busy = false;
       callback();
     })()
       .catch(callback);
@@ -75,6 +82,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
 
   _flush(callback: TransformCallback): void {
     verbose('AudioEncoder: flushing');
+    if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     let packet: ffmpeg.Packet;
     (async () => {
       do {
