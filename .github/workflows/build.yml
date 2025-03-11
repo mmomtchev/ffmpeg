@@ -83,7 +83,7 @@ jobs:
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
 
     - run: npm test
-      if: (!inputs.asan) && (inputs.codecov)
+      if: (!inputs.asan) && (!inputs.codecov)
 
     - name: (ASAN) Find library
       id: asan-lib
