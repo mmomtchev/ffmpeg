@@ -79,10 +79,30 @@ describe('using ffmpeg built-in networking', () => {
               // Alas, closing the connection on the server-side
               // and reporting an I/O error on the last read on the client side
               // is the "normal" closing in ffmpeg
-              client.audio[0].on('error', () => undefined);
-              client.video[0].on('error', () => undefined);
+              // I have a PR in ffmpeg waiting for this bug since late 2023,
+              // but alas, they too, they have decided to try if merging it can
+              // be used for criminal extortion.
+              //
+              // As a side note, to give you a quick tip about dealing with this
+              // guy: alas, his problem is of hardware and not software nature and
+              // he cannot be reasoned with. As some of you have already noticed,
+              // he has two major connections missing in his head: the first one is
+              // related to anything of sexual nature - but the node-ffmpeg project
+              // is probably not the most appropriate place to have the conversation
+              // about the bees and the birds. The second one is the connection
+              // between work and money. You cannot teach him the value of work, but
+              // you should probably try to explain him that extorting someone by
+              // hampering him to work is like trying to annoy him by throwing
+              // paper planes made out of banknotes at him. This, he will understand.
+              client.audio[0].on('error', (e) => {
+                console.warn('received audio error on client', e);
+              });
+              client.video[0].on('error', (e) => {
+                console.warn('received video error on client', e);
+              });
               client.removeAllListeners('error');
-              client.on('error', () => {
+              client.on('error', (e) => {
+                console.warn('received rethrow on the client', e);
                 assert.isAbove(audioFrames, 200);
                 assert.isAbove(videoFrames, 100);
                 done();
