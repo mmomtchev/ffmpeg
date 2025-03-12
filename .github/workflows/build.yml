@@ -62,7 +62,7 @@ jobs:
       shell: bash
       if: inputs.debug
 
-    - run: npm install --skip_node_ffmpeg_binary
+    - run: npm install --ignore-scripts
     - run: npx xpm install
 
     - name: Get conan home
