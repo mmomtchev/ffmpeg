@@ -90,7 +90,7 @@ describe('using ffmpeg built-in networking', () => {
                   assert.isAbove(audioFrames, 200);
                   assert.isAbove(videoFrames, 100);
                 } catch {
-                  console.warn('Very few frames received before TCP RESET' +
+                  console.warn('::notice title=RTMP connection reset::Very few frames received before TCP RESET, ' +
                     `audioFrames=${audioFrames}, videoFrames=${videoFrames}, ` +
                     'this is not unexpected in debug mode. ' +
                     'See https://trac.ffmpeg.org/ticket/10838');
