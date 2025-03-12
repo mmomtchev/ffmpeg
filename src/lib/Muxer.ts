@@ -255,7 +255,7 @@ export class Muxer extends EventEmitter {
       return void callback(this.delayedDestroy);
     }
     if (!packet.isComplete()) {
-      verbose('Muxer: skipping empty packet (codec is still priming)');
+      verbose('Muxer: skipping empty packet');
       callback();
       return;
     }
@@ -297,6 +297,7 @@ export class Muxer extends EventEmitter {
         }
       }
       this.writing = false;
+      verbose('Muxer: end of writing cycle');
     })();
   }
 }

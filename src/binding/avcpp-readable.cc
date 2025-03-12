@@ -60,7 +60,8 @@ Napi::Function ReadableCustomIO::GetClass(Napi::Env env) {
 }
 
 int ReadableCustomIO::write(const uint8_t *data, size_t size) {
-  verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu\n", size, queue_size);
+  verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu, %s\n", size, queue_size,
+          flowing ? "flowing" : "not flowing");
   if (std::this_thread::get_id() == instance_data->v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
 
@@ -74,13 +75,14 @@ int ReadableCustomIO::write(const uint8_t *data, size_t size) {
   queue.push(buffer);
   queue_size += size;
   lk.unlock();
+  verbose("ReadableCustomIO: Schedule JS read from write\n");
   uv_async_send(push_callback);
 
   return size;
 }
 
 int64_t ReadableCustomIO::seek(int64_t offset, int whence) {
-  verbose("ReadableCustomIO: seek %ld (%d)\n", offset, whence);
+  verbose("ReadableCustomIO: seek %lld (%d)\n", offset, whence);
   if (offset != 0) {
     fprintf(stderr, "ffmpeg tried to seek in a ReadStream\n");
     throw std::logic_error("ffmpeg tried to seek in a ReadStream");
@@ -105,6 +107,8 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
   }
   if (self->queue.empty()) {
     verbose("ReadableCustomIO: queue is empty\n");
+    // _read won't be called again until more data is pushed, the ball is in our court now
+    // next write() will schedule us again
     return;
   }
   do {

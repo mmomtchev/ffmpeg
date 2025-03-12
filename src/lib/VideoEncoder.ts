@@ -90,12 +90,14 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
   _flush(callback: TransformCallback): void {
     verbose('VideoEncoder: flushing');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
-    let packet: any;
+    let packet: ffmpeg.Packet;
     (async () => {
       do {
         packet = await this.encoder.finalizeAsync();
+        verbose(`Flushing packet, size=${packet.size()}, dts=${packet.dts().toString()}`);
         this.push(packet);
       } while (packet && packet.isComplete());
+      verbose('VideoEncoder flushed');
       callback();
     })()
       .catch(callback);
