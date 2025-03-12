@@ -57,10 +57,9 @@ jobs:
     - name: Enable verbose output in debug mode
       run: |
         echo "TSC_DEBUG=1" >> $GITHUB_ENV
-        #echo "DEBUG_FFMPEG=1" >> $GITHUB_ENV
-        #echo "DEBUG_ALL=1" >> $GITHUB_ENV
+        echo "DEBUG_FFMPEG=1" >> $GITHUB_ENV
+        echo "DEBUG_ALL=1" >> $GITHUB_ENV
       shell: bash
-      if: inputs.debug
 
     - run: npm install magickwand.js
     - run: npm install --ignore-scripts
