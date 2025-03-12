@@ -102,7 +102,7 @@ describe('using ffmpeg built-in networking', () => {
               });
               client.removeAllListeners('error');
               client.on('error', (e) => {
-                console.warn('received rethrow on the client', e);
+                console.warn('received rethrow on the client', audioFrames, videoFrames, e);
                 assert.isAbove(audioFrames, 200);
                 assert.isAbove(videoFrames, 100);
                 done();
