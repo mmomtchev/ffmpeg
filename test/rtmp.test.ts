@@ -79,6 +79,9 @@ describe('using ffmpeg built-in networking', () => {
               // Alas, closing the connection on the server-side
               // and reporting an I/O error on the last read on the client side
               // is the "normal" closing in ffmpeg
+              // I have a PR waiting since late 2023 for fixing it, but alas
+              // it is waiting for Godot like everything else related to my
+              // affair
               client.audio[0].on('error', () => undefined);
               client.video[0].on('error', () => undefined);
               client.removeAllListeners('error');
@@ -87,9 +90,10 @@ describe('using ffmpeg built-in networking', () => {
                   assert.isAbove(audioFrames, 200);
                   assert.isAbove(videoFrames, 100);
                 } catch {
-                  console.warn('Very few frames received before TCP RESET',
-                    `audioFrames=${audioFrames}, videoFrames=${videoFrames}, `,
-                    'this is not unexpected in debug mode');
+                  console.warn('Very few frames received before TCP RESET' +
+                    `audioFrames=${audioFrames}, videoFrames=${videoFrames}, ` +
+                    'this is not unexpected in debug mode. ' +
+                    'See https://trac.ffmpeg.org/ticket/10838');
                 }
                 done();
               });
