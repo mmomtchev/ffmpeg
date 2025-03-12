@@ -96,6 +96,8 @@ jobs:
 
     - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
 
+    - run: npx rollup -c rollup.config.js
+
     - run: npm test
       if: (!inputs.asan) && (!inputs.codecov)
 
