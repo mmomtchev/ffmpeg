@@ -12,7 +12,7 @@ export interface FilterOptions {
   // Graph string
   graph: string;
   // A filter must have a single time base
-  timeBase: any;
+  timeBase: ffmpeg.Rational;
 }
 
 /**
@@ -20,7 +20,7 @@ export interface FilterOptions {
  * Must receive raw decoded input and sends raw decoded output.
  */
 export class Filter extends EventEmitter {
-  protected filterGraph: any;
+  protected filterGraph: ffmpeg.FilterGraph;
   // The currently running filterGraph op, prevents reentering
   protected filterGraphOp: Promise<void> | false;
   protected bufferSrc: Record<string, {
@@ -37,11 +37,11 @@ export class Filter extends EventEmitter {
     busy: boolean;
     id: string;
   }>;
-  protected timeBase: any;
+  protected timeBase: ffmpeg.Rational;
   protected stillStreamingSources: number;
   protected destroyed: boolean;
-  src: Record<string, any>;
-  sink: Record<string, any>;
+  src: Record<string, Writable>;
+  sink: Record<string, Readable>;
 
   constructor(options: FilterOptions) {
     super();
@@ -61,7 +61,7 @@ export class Filter extends EventEmitter {
       if (isAudioDefinition(def)) {
         filterDescriptor += `abuffer@${inp}=sample_rate=${def.sampleRate}:` +
           `channel_layout=${def.channelLayout.toString()}:` +
-          `sample_fmt=${def.sampleFormat.toString()}:time_base=${def.timeBase.toString()} [${inp}];  `;
+          `sample_fmt=${def.sampleFormat.toString()}${def.timeBase ? `:time_base=${def.timeBase.toString()}` : ''} [${inp}];  `;
       }
     }
     filterDescriptor += options.graph;

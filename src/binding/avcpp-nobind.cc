@@ -23,8 +23,8 @@ using namespace av;
 
 // A define to register constants in the global namespace of the JS module
 // (these use an artificial type that holds an uint64_t and is converted to BigInt)
-#define REGISTER_CONSTANT(CONST, NAME)                                                                                 \
-  constexpr static int64_t __const_##CONST{static_cast<int64_t>(CONST)};                                               \
+#define REGISTER_CONSTANT(TYPE, CONST, NAME)                                                                           \
+  constexpr static TYPE __const_##CONST{static_cast<TYPE>(CONST)};                                                     \
   m.def<&__const_##CONST, Nobind::ReadOnly>(NAME);
 #define REGISTER_ENUM(ENUM, ID)                                                                                        \
   constexpr static int64_t __const_##ID{static_cast<int64_t>(ENUM::ID)};                                               \
@@ -47,6 +47,31 @@ template <typename T> bool True(T &) { return true; }
 template <typename T> bool False(T &) { return false; }
 
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
+  // This trick allows to have distinct TS types that all resolve to number in JS
+  m.typescript_fragment("declare const __ffmpeg_tag_type : unique symbol;\n");
+
+  // Forward declarations for TypeScript support
+  m.decl<OutputFormat>("OutputFormat");
+  m.decl<Codec>("Codec");
+  m.decl<InputFormat>("InputFormat");
+  m.decl<Stream>("Stream");
+  m.def<CodecContext2>("CodecContext");
+  m.decl<VideoEncoderContext>("VideoEncoderContext");
+  m.decl<AudioEncoderContext>("AudioEncoderContext");
+  m.decl<VideoDecoderContext>("VideoDecoderContext");
+  m.decl<AudioDecoderContext>("AudioDecoderContext");
+  m.decl<FilterContext>("FilterContext");
+  m.decl<FormatContext>("FormatContext");
+  m.decl<Packet>("Packet");
+  m.decl<PixelFormat>("PixelFormat");
+  m.decl<Rational>("Rational");
+  m.decl<VideoFrame>("VideoFrame");
+  m.decl<AudioSamples>("AudioSamples");
+  m.decl<SampleFormat>("SampleFormat");
+  m.decl<ChannelLayout>("ChannelLayout");
+  m.decl<ChannelLayoutView>("ChannelLayoutView");
+  m.decl<Timestamp>("Timestamp");
+
   // These two probably need better handling from JS
   // This a wrapper around std::error_code extensively used by avcpp
   m.def<std::error_code>("error_code").cons<>().def <
@@ -57,6 +82,12 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
           .cons<std::error_code &>()
           .def<&OptionalErrorCode::null, Nobind::ReturnShared>("null")
           .def < &OptionalErrorCode::operator bool>("notEmpty").def<&OptionalErrorCode::operator*>("code");
+
+  m.typescript_fragment("export type AVPictureType = " + Nobind::Typemap::FromJS<AVPictureType>::TSType() + ";\n");
+  m.typescript_fragment("export type AVCodecID = " + Nobind::Typemap::FromJS<AVCodecID>::TSType() + ";\n");
+  m.typescript_fragment("export type AVMediaType = " + Nobind::Typemap::FromJS<AVMediaType>::TSType() + ";\n");
+  m.typescript_fragment("export type AVPixelFormat = " + Nobind::Typemap::FromJS<AVPixelFormat>::TSType() + ";\n");
+  m.typescript_fragment("export type AVSampleFormat = " + Nobind::Typemap::FromJS<AVSampleFormat>::TSType() + ";\n");
 
 // Some important constants
 #include "constants"
@@ -127,7 +158,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&FormatContext::writeTrailer>("writeTrailer")
       .def<&FormatContext::writeTrailer, Nobind::ReturnAsync>("writeTrailerAsync");
 
-  m.def<VideoDecoderContext>("VideoDecoderContext")
+  m.def<VideoDecoderContext, CodecContext2>("VideoDecoderContext")
       .cons<const Stream &>()
       .def<&VideoDecoderContext::codecType>("codecType")
       .def<&VideoDecoderContext::width>("width")
@@ -166,7 +197,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<False<VideoDecoderContext>>("isAudio")
       .ext<True<VideoDecoderContext>>("isVideo");
 
-  m.def<VideoEncoderContext>("VideoEncoderContext")
+  m.def<VideoEncoderContext, CodecContext2>("VideoEncoderContext")
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
@@ -206,7 +237,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<False<VideoEncoderContext>>("isAudio")
       .ext<True<VideoEncoderContext>>("isVideo");
 
-  m.def<AudioDecoderContext>("AudioDecoderContext")
+  m.def<AudioDecoderContext, CodecContext2>("AudioDecoderContext")
       .cons<const Stream &>()
       .def<&AudioDecoderContext::codecType>("codecType")
       .def<&AudioDecoderContext::sampleRate>("sampleRate")
@@ -245,7 +276,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<True<AudioDecoderContext>>("isAudio")
       .ext<False<AudioDecoderContext>>("isVideo");
 
-  m.def<AudioEncoderContext>("AudioEncoderContext")
+  m.def<AudioEncoderContext, CodecContext2>("AudioEncoderContext")
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
@@ -297,7 +328,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat")
       .def<&InputFormat::isFlags>("isFlags");
 
-  m.def<Codec>("Codec").cons<>().def<&Codec::name>("name");
+  m.def<Codec>("Codec").cons<>().def<&Codec::name>("name").def<&Codec::id>("id");
 
   m.def<CodecParametersView>("CodecParametersView")
       .cons<>()
@@ -397,6 +428,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
+      .cons<>()
       .def<&AudioSamples::null>("null")
       .def<&CreateAudioSamples>("create")
       .def<&AudioSamples::isNull>("isNull")

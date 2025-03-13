@@ -1,8 +1,6 @@
 import { EventEmitter, ReadableOptions, Writable } from 'node:stream';
-import ffmpeg from '@mmomtchev/ffmpeg';
+import ffmpeg, { FormatContext } from '@mmomtchev/ffmpeg';
 import { EncodedMediaReadable } from './MediaStream';
-
-const { FormatContext } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
@@ -51,7 +49,7 @@ export interface DemuxerOptions extends ReadableOptions {
 export class Demuxer extends EventEmitter {
   protected inputFile: string | undefined;
   protected highWaterMark: number;
-  protected formatContext: any;
+  protected formatContext: ffmpeg.FormatContext | undefined;
   protected rawStreams: any[];
   protected openOptions: Record<string, string>;
   streams: EncodedMediaReadable[];
@@ -125,8 +123,9 @@ export class Demuxer extends EventEmitter {
       this.reading = true;
       verbose(`Demuxer: start of _read (called on stream ${idx} for ${size} packets`);
       let pkt;
+      let pktIsNull: boolean;
       do {
-        pkt = await this.formatContext.readPacketAsync();
+        pkt = await this.formatContext!.readPacketAsync();
         verbose(`Demuxer: Read packet: pts=${pkt.pts()}, dts=${pkt.dts()} / ${pkt.pts().seconds()} / ${pkt.timeBase()} / stream ${pkt.streamIndex()}`);
         if (pkt.isNull()) {
           verbose('Demuxer: End of stream');
@@ -141,9 +140,11 @@ export class Demuxer extends EventEmitter {
         }
         // Decrement only if this is going to the stream that requested data
         if (idx === pkt.streamIndex()) size--;
+        // pkt should not be accessed after being pushed for async handling
+        pktIsNull = pkt.isNull();
         // But always push to whoever the packet was for
         this.streams[pkt.streamIndex()].push(pkt);
-      } while (!pkt.isNull() && size > 0);
+      } while (!pktIsNull && size > 0);
       verbose('Demuxer: end of _read');
     })()
       .catch((err) => {

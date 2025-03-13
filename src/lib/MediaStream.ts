@@ -1,4 +1,5 @@
 import { EventEmitter, Readable, ReadableOptions, Transform, TransformOptions, Writable } from 'node:stream';
+import ffmpeg from '@mmomtchev/ffmpeg';
 
 export const StreamTypes = {
   'Audio': 'Audio',
@@ -12,8 +13,8 @@ export type StreamType = keyof typeof StreamTypes;
 export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
-  codec: number;
-  timeBase?: any;
+  codec: ffmpeg.AVCodecID | ffmpeg.Codec;
+  timeBase?: ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
 
@@ -21,16 +22,16 @@ export interface VideoStreamDefinition extends MediaStreamDefinition {
   type: 'Video';
   width: number;
   height: number;
-  frameRate: number;
-  pixelFormat: any;
+  frameRate: ffmpeg.Rational;
+  pixelFormat: ffmpeg.PixelFormat;
   flags?: number;
 }
 
 export interface AudioStreamDefinition extends MediaStreamDefinition {
   type: 'Audio';
-  channelLayout: any;
-  sampleFormat: any;
-  sampleRate: any;
+  channelLayout: ffmpeg.ChannelLayout;
+  sampleFormat: ffmpeg.SampleFormat;
+  sampleRate: number;
   frameSize?: number;
 }
 
@@ -67,11 +68,11 @@ export interface MediaStream extends EventEmitter {
  * A generic encoding MediaStream, has a codec.
  */
 export interface MediaEncoder extends MediaStream {
-  codec(): any;
+  codec(): ffmpeg.Codec;
 }
 
 export interface EncodedMediaReadableOptions extends ReadableOptions {
-  _stream?: any;
+  _stream?: ffmpeg.Stream | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext;
 }
 
 
@@ -92,8 +93,12 @@ export class EncodedMediaReadable extends Readable {
     return true;
   }
 
-  codec(): any {
-    return this._stream.codecParameters();
+  codec(): ffmpeg.CodecParametersView | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext {
+    if (this._stream instanceof ffmpeg.Stream) {
+      return this._stream!.codecParameters();
+    } else {
+      return this._stream!;
+    }
   }
 }
 
