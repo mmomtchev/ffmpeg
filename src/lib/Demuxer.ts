@@ -123,6 +123,7 @@ export class Demuxer extends EventEmitter {
       this.reading = true;
       verbose(`Demuxer: start of _read (called on stream ${idx} for ${size} packets`);
       let pkt;
+      let pktIsNull: boolean;
       do {
         pkt = await this.formatContext!.readPacketAsync();
         verbose(`Demuxer: Read packet: pts=${pkt.pts()}, dts=${pkt.dts()} / ${pkt.pts().seconds()} / ${pkt.timeBase()} / stream ${pkt.streamIndex()}`);
@@ -139,9 +140,11 @@ export class Demuxer extends EventEmitter {
         }
         // Decrement only if this is going to the stream that requested data
         if (idx === pkt.streamIndex()) size--;
+        // pkt should not be accessed after being pushed for async handling
+        pktIsNull = pkt.isNull();
         // But always push to whoever the packet was for
         this.streams[pkt.streamIndex()].push(pkt);
-      } while (!pkt.isNull() && size > 0);
+      } while (!pktIsNull && size > 0);
       verbose('Demuxer: end of _read');
     })()
       .catch((err) => {
