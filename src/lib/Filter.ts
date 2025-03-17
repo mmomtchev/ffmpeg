@@ -201,16 +201,16 @@ export class Filter extends EventEmitter {
       if (src.type === 'Video') {
         if (!(frame instanceof ffmpeg.VideoFrame))
           return void callback(new Error('Filter source video input must be a stream of VideoFrames'));
-        await frame.setPictureTypeAsync(ffmpeg.AV_PICTURE_TYPE_NONE);
-        await frame.setTimeBaseAsync(this.timeBase);
-        await frame.setStreamIndexAsync(0);
+        frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
+        frame.setTimeBase(this.timeBase);
+        frame.setStreamIndex(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeVideoFrameAsync(frame);
       } else if (src.type === 'Audio') {
         if (!(frame instanceof ffmpeg.AudioSamples))
           return void callback(new Error('Filter source audio input must be a stream of AudioSamples'));
-        await frame.setTimeBaseAsync(this.timeBase);
-        await frame.setStreamIndexAsync(0);
+        frame.setTimeBase(this.timeBase);
+        frame.setStreamIndex(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeAudioSamplesAsync(frame);
       } else {
