@@ -98,6 +98,9 @@
         "tsconfig-paths/register",
         "test/*.test.ts"
       ],
+      "env": {
+        "DEBUG_ALL": "1"
+      },
       "program": "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
     },
     {
