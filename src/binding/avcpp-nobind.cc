@@ -46,6 +46,9 @@ constexpr auto ReturnNullAsync = Nobind::ReturnAsync | Nobind::ReturnNullAccept;
 template <typename T> bool True(T &) { return true; }
 template <typename T> bool False(T &) { return false; }
 
+// A helper to create both sync and async versions of a method
+#define WASYNC(NAME) NAME, NAME "Async"
+
 NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   // This trick allows to have distinct TS types that all resolve to number in JS
   m.typescript_fragment("declare const __ffmpeg_tag_type : unique symbol;\n");
@@ -92,108 +95,79 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
 // Some important constants
 #include "constants"
 
-  m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>("findEncodingCodecFormat");
-  m.def<static_cast<Codec (*)(AVCodecID)>(&findEncodingCodec)>("findEncodingCodec");
-  m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>("findDecodingCodec");
+  m.def<static_cast<Codec (*)(const OutputFormat &, bool)>(&findEncodingCodec)>(WASYNC("findEncodingCodecFormat"));
+  m.def<static_cast<Codec (*)(AVCodecID)>(&findEncodingCodec)>(WASYNC("findEncodingCodec"));
+  m.def<static_cast<Codec (*)(AVCodecID)>(&findDecodingCodec)>(WASYNC("findDecodingCodec"));
 
   m.def<FormatContext>("FormatContext")
       .cons<>()
       // Overloaded methods must be cast to be resolved
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput)>(
-          "openInput")
-      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openInput),
-           Nobind::ReturnAsync>("openInputAsync")
+          WASYNC("openInput"))
       .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
-          &FormatContext::openInput)>("openInputOptions")
-      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
-               &FormatContext::openInput),
-           Nobind::ReturnAsync>("openInputOptionsAsync")
+          &FormatContext::openInput)>(WASYNC("openInputOptions"))
       .def<static_cast<void (FormatContext::*)(CustomIO *, InputFormat, OptionalErrorCode, size_t)>(
                &FormatContext::openInput),
            Nobind::ReturnAsync>("openWritableAsync")
-      .def<&FormatContext::close>("close")
-      .def<&FormatContext::close, Nobind::ReturnAsync>("closeAsync")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>("findStreamInfo")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo),
-           Nobind::ReturnAsync>("findStreamInfoAsync")
-      .def<&FormatContext::streamsCount>("streamsCount")
-      .def<static_cast<Stream (FormatContext::*)(size_t)>(&FormatContext::stream)>("stream")
+      .def<&FormatContext::close>(WASYNC("close"))
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::findStreamInfo)>(
+          WASYNC("findStreamInfo"))
+      .def<&FormatContext::streamsCount>(WASYNC("streamsCount"))
+      .def<static_cast<Stream (FormatContext::*)(size_t)>(&FormatContext::stream)>(WASYNC("stream"))
       // Typical example of registering two overloaded signatures with different names in JavaScript
-      .def<static_cast<void (FormatContext::*)(const InputFormat &)>(&FormatContext::setFormat)>("setInputFormat")
-      .def<static_cast<void (FormatContext::*)(const OutputFormat &)>(&FormatContext::setFormat)>("setOutputFormat")
+      .def<static_cast<void (FormatContext::*)(const InputFormat &)>(&FormatContext::setFormat)>(
+          WASYNC("setInputFormat"))
+      .def<static_cast<void (FormatContext::*)(const OutputFormat &)>(&FormatContext::setFormat)>(
+          WASYNC("setOutputFormat"))
       .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput)>(
-          "openOutput")
-      .def<static_cast<void (FormatContext::*)(const std::string &, OptionalErrorCode)>(&FormatContext::openOutput),
-           Nobind::ReturnAsync>("openOutputAsync")
+          WASYNC("openOutput"))
       .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
-          &FormatContext::openOutput)>("openOutputOptions")
-      .def<static_cast<void (FormatContext::*)(const std::string &, Dictionary &, OptionalErrorCode)>(
-               &FormatContext::openOutput),
-           Nobind::ReturnAsync>("openOutputOptionsAsync")
+          &FormatContext::openOutput)>(WASYNC("openOutputOptions"))
       .def<static_cast<void (FormatContext::*)(CustomIO *, OptionalErrorCode, size_t)>(&FormatContext::openOutput),
            Nobind::ReturnAsync>("openReadableAsync")
       .def<static_cast<Stream (FormatContext::*)(const VideoEncoderContext &, OptionalErrorCode)>(
-          &FormatContext::addStream)>("addVideoStream")
+          &FormatContext::addStream)>(WASYNC("addVideoStream"))
       .def<static_cast<Stream (FormatContext::*)(const AudioEncoderContext &, OptionalErrorCode)>(
-          &FormatContext::addStream)>("addAudioStream")
-      .def<static_cast<Stream (FormatContext::*)(OptionalErrorCode)>(&FormatContext::addStream)>("addStream")
-      .def<&FormatContext::dump>("dump")
-      .def<&FormatContext::dump, Nobind::ReturnAsync>("dumpAsync")
-      .def<&FormatContext::flush>("flush")
-      .def<&FormatContext::flush, Nobind::ReturnAsync>("flushAsync")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>("writeHeader")
-      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader), Nobind::ReturnAsync>(
-          "writeHeaderAsync")
+          &FormatContext::addStream)>(WASYNC("addAudioStream"))
+      .def<static_cast<Stream (FormatContext::*)(OptionalErrorCode)>(&FormatContext::addStream)>(WASYNC("addStream"))
+      .def<&FormatContext::dump>(WASYNC("dump"))
+      .def<&FormatContext::flush>(WASYNC("flush"))
+      .def<static_cast<void (FormatContext::*)(OptionalErrorCode)>(&FormatContext::writeHeader)>(WASYNC("writeHeader"))
       .def<static_cast<void (FormatContext::*)(av::Dictionary &, OptionalErrorCode)>(&FormatContext::writeHeader)>(
-          "writeHeaderOptions")
-      .def<static_cast<void (FormatContext::*)(av::Dictionary &, OptionalErrorCode)>(&FormatContext::writeHeader),
-           Nobind::ReturnAsync>("writeHeaderOptionsAsync")
-      .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>("readPacket")
-      .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket), Nobind::ReturnAsync>(
-          "readPacketAsync")
+          WASYNC("writeHeaderOptions"))
+      .def<static_cast<Packet (FormatContext::*)(OptionalErrorCode)>(&FormatContext::readPacket)>(WASYNC("readPacket"))
       .def<static_cast<void (FormatContext::*)(const Packet &, OptionalErrorCode)>(&FormatContext::writePacket)>(
-          "writePacket")
-      .def<static_cast<void (FormatContext::*)(const Packet &, OptionalErrorCode)>(&FormatContext::writePacket),
-           Nobind::ReturnAsync>("writePacketAsync")
-      .def<&FormatContext::writeTrailer>("writeTrailer")
-      .def<&FormatContext::writeTrailer, Nobind::ReturnAsync>("writeTrailerAsync");
+          WASYNC("writePacket"))
+      .def<&FormatContext::writeTrailer>(WASYNC("writeTrailer"));
 
   m.def<VideoDecoderContext, CodecContext2>("VideoDecoderContext")
       .cons<const Stream &>()
-      .def<&VideoDecoderContext::codecType>("codecType")
-      .def<&VideoDecoderContext::width>("width")
-      .def<&VideoDecoderContext::height>("height")
-      .def<&VideoDecoderContext::setWidth>("setWidth")
-      .def<&VideoDecoderContext::setHeight>("setHeight")
-      .def<&VideoDecoderContext::pixelFormat>("pixelFormat")
-      .def<&VideoDecoderContext::setPixelFormat>("setPixelFormat")
-      .def<&VideoDecoderContext::timeBase>("timeBase")
-      .def<&VideoDecoderContext::setTimeBase>("setTimeBase")
-      .def<&VideoDecoderContext::bitRate>("bitRate")
-      .def<&VideoDecoderContext::setBitRate>("setBitRate")
-      .def<&VideoDecoderContext::isRefCountedFrames>("isRefCountedFrames")
-      .def<&VideoDecoderContext::setRefCountedFrames>("setRefCountedFrames")
-      .def<&VideoDecoderContext::stream>("stream")
-      .def<&VideoDecoderContext::codec>("codec")
-      .def<&VideoDecoderContext::isFlags>("isFlags")
-      .def<&VideoDecoderContext::addFlags>("addFlags")
+      .def<&VideoDecoderContext::codecType>(WASYNC("codecType"))
+      .def<&VideoDecoderContext::width>(WASYNC("width"))
+      .def<&VideoDecoderContext::height>(WASYNC("height"))
+      .def<&VideoDecoderContext::setWidth>(WASYNC("setWidth"))
+      .def<&VideoDecoderContext::setHeight>(WASYNC("setHeight"))
+      .def<&VideoDecoderContext::pixelFormat>(WASYNC("pixelFormat"))
+      .def<&VideoDecoderContext::setPixelFormat>(WASYNC("setPixelFormat"))
+      .def<&VideoDecoderContext::timeBase>(WASYNC("timeBase"))
+      .def<&VideoDecoderContext::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&VideoDecoderContext::bitRate>(WASYNC("bitRate"))
+      .def<&VideoDecoderContext::setBitRate>(WASYNC("setBitRate"))
+      .def<&VideoDecoderContext::isRefCountedFrames>(WASYNC("isRefCountedFrames"))
+      .def<&VideoDecoderContext::setRefCountedFrames>(WASYNC("setRefCountedFrames"))
+      .def<&VideoDecoderContext::stream>(WASYNC("stream"))
+      .def<&VideoDecoderContext::codec>(WASYNC("codec"))
+      .def<&VideoDecoderContext::isFlags>(WASYNC("isFlags"))
+      .def<&VideoDecoderContext::addFlags>(WASYNC("addFlags"))
       // This an inherited overloaded method, it must be cast to its base class type
       // C++ does not allow to cast it to the inheriting class type
-      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>("open")
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoDecoderContext::open)>(WASYNC("open"))
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open)>(
-          "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
-           Nobind::ReturnAsync>("openCodecAsync")
+          WASYNC("openCodec"))
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-          &VideoDecoderContext::open)>("openCodecOptions")
-      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-               &VideoDecoderContext::open),
-           Nobind::ReturnAsync>("openCodecOptionsAsync")
+          &VideoDecoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
-          &VideoDecoderContext::decode)>("decode")
-      .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
-               &VideoDecoderContext::decode),
-           Nobind::ReturnAsync>("decodeAsync")
+          &VideoDecoderContext::decode)>(WASYNC("decode"))
       .ext<False<VideoDecoderContext>>("isAudio")
       .ext<True<VideoDecoderContext>>("isVideo");
 
@@ -201,78 +175,61 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
-      .def<&VideoEncoderContext::codecType>("codecType")
-      .def<&VideoEncoderContext::width>("width")
-      .def<&VideoEncoderContext::height>("height")
-      .def<&VideoEncoderContext::setWidth>("setWidth")
-      .def<&VideoEncoderContext::setHeight>("setHeight")
-      .def<&VideoEncoderContext::pixelFormat>("pixelFormat")
-      .def<&VideoEncoderContext::setPixelFormat>("setPixelFormat")
-      .def<&VideoEncoderContext::timeBase>("timeBase")
-      .def<&VideoEncoderContext::setTimeBase>("setTimeBase")
-      .def<&VideoEncoderContext::bitRate>("bitRate")
-      .def<&VideoEncoderContext::setBitRate>("setBitRate")
-      .def<&VideoEncoderContext::stream>("stream")
-      .def<&VideoEncoderContext::codec>("codec")
-      .def<&VideoEncoderContext::isFlags>("isFlags")
-      .def<&VideoEncoderContext::addFlags>("addFlags")
-      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>("open")
+      .def<&VideoEncoderContext::codecType>(WASYNC("codecType"))
+      .def<&VideoEncoderContext::width>(WASYNC("width"))
+      .def<&VideoEncoderContext::height>(WASYNC("height"))
+      .def<&VideoEncoderContext::setWidth>(WASYNC("setWidth"))
+      .def<&VideoEncoderContext::setHeight>(WASYNC("setHeight"))
+      .def<&VideoEncoderContext::pixelFormat>(WASYNC("pixelFormat"))
+      .def<&VideoEncoderContext::setPixelFormat>(WASYNC("setPixelFormat"))
+      .def<&VideoEncoderContext::timeBase>(WASYNC("timeBase"))
+      .def<&VideoEncoderContext::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&VideoEncoderContext::bitRate>(WASYNC("bitRate"))
+      .def<&VideoEncoderContext::setBitRate>(WASYNC("setBitRate"))
+      .def<&VideoEncoderContext::stream>(WASYNC("stream"))
+      .def<&VideoEncoderContext::codec>(WASYNC("codec"))
+      .def<&VideoEncoderContext::isFlags>(WASYNC("isFlags"))
+      .def<&VideoEncoderContext::addFlags>(WASYNC("addFlags"))
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&VideoEncoderContext::open)>(WASYNC("open"))
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open)>(
-          "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoEncoderContext::open),
-           Nobind::ReturnAsync>("openCodecAsync")
+          WASYNC("openCodec"))
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-          &VideoEncoderContext::open)>("openCodecOptions")
-      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-               &VideoEncoderContext::open),
-           Nobind::ReturnAsync>("openCodecOptionsAsync")
+          &VideoEncoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
-          &VideoEncoderContext::encode)>("encode")
-      .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
-               &VideoEncoderContext::encode),
-           Nobind::ReturnAsync>("encodeAsync")
-      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>("finalize")
-      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode),
-           Nobind::ReturnAsync>("finalizeAsync")
+          &VideoEncoderContext::encode)>(WASYNC("encode"))
+      .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>(
+          WASYNC("finalize"))
       .ext<False<VideoEncoderContext>>("isAudio")
       .ext<True<VideoEncoderContext>>("isVideo");
 
   m.def<AudioDecoderContext, CodecContext2>("AudioDecoderContext")
       .cons<const Stream &>()
-      .def<&AudioDecoderContext::codecType>("codecType")
-      .def<&AudioDecoderContext::sampleRate>("sampleRate")
-      .def<&AudioDecoderContext::setSampleRate>("setSampleRate")
-      .def<&AudioDecoderContext::timeBase>("timeBase")
-      .def<&AudioDecoderContext::setTimeBase>("setTimeBase")
-      .def<&AudioDecoderContext::bitRate>("bitRate")
-      .def<&AudioDecoderContext::setBitRate>("setBitRate")
-      .def<&AudioDecoderContext::sampleFormat>("sampleFormat")
-      .def<&AudioDecoderContext::setSampleFormat>("setSampleFormat")
-      .def<&AudioDecoderContext::channelLayout2>("channelLayout")
+      .def<&AudioDecoderContext::codecType>(WASYNC("codecType"))
+      .def<&AudioDecoderContext::sampleRate>(WASYNC("sampleRate"))
+      .def<&AudioDecoderContext::setSampleRate>(WASYNC("setSampleRate"))
+      .def<&AudioDecoderContext::timeBase>(WASYNC("timeBase"))
+      .def<&AudioDecoderContext::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&AudioDecoderContext::bitRate>(WASYNC("bitRate"))
+      .def<&AudioDecoderContext::setBitRate>(WASYNC("setBitRate"))
+      .def<&AudioDecoderContext::sampleFormat>(WASYNC("sampleFormat"))
+      .def<&AudioDecoderContext::setSampleFormat>(WASYNC("setSampleFormat"))
+      .def<&AudioDecoderContext::channelLayout2>(WASYNC("channelLayout"))
       .def<static_cast<void (av::AudioCodecContext<AudioDecoderContext, Direction::Decoding>::*)(ChannelLayout)>(
-          &AudioDecoderContext::setChannelLayout)>("setChannelLayout")
-      .def<&AudioDecoderContext::isRefCountedFrames>("isRefCountedFrames")
-      .def<&AudioDecoderContext::setRefCountedFrames>("setRefCountedFrames")
-      .def<&AudioDecoderContext::codec>("codec")
-      .def<&AudioDecoderContext::stream>("stream")
-      .def<&AudioDecoderContext::isFlags>("isFlags")
-      .def<&AudioDecoderContext::addFlags>("addFlags")
-      .def<&AudioDecoderContext::frameSize>("frameSize")
-      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>("open")
+          &AudioDecoderContext::setChannelLayout)>(WASYNC("setChannelLayout"))
+      .def<&AudioDecoderContext::isRefCountedFrames>(WASYNC("isRefCountedFrames"))
+      .def<&AudioDecoderContext::setRefCountedFrames>(WASYNC("setRefCountedFrames"))
+      .def<&AudioDecoderContext::codec>(WASYNC("codec"))
+      .def<&AudioDecoderContext::stream>(WASYNC("stream"))
+      .def<&AudioDecoderContext::isFlags>(WASYNC("isFlags"))
+      .def<&AudioDecoderContext::addFlags>(WASYNC("addFlags"))
+      .def<&AudioDecoderContext::frameSize>(WASYNC("frameSize"))
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioDecoderContext::open)>(WASYNC("open"))
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioDecoderContext::open)>(
-          "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&VideoDecoderContext::open),
-           Nobind::ReturnAsync>("openCodecAsync")
+          WASYNC("openCodec"))
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-          &AudioDecoderContext::open)>("openCodecOptions")
-      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-               &AudioDecoderContext::open),
-           Nobind::ReturnAsync>("openCodecOptionsAsync")
+          &AudioDecoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
-          &AudioDecoderContext::decode)>("decode")
-      .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
-               &AudioDecoderContext::decode),
-           Nobind::ReturnAsync>("decodeAsync")
+          &AudioDecoderContext::decode)>(WASYNC("decode"))
       .ext<True<AudioDecoderContext>>("isAudio")
       .ext<False<AudioDecoderContext>>("isVideo");
 
@@ -280,228 +237,217 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .cons<>()
       .cons<const Stream &>()
       .cons<const Codec &>()
-      .def<&AudioEncoderContext::codecType>("codecType")
-      .def<&AudioEncoderContext::sampleRate>("sampleRate")
-      .def<&AudioEncoderContext::setSampleRate>("setSampleRate")
-      .def<&AudioEncoderContext::timeBase>("timeBase")
-      .def<&AudioEncoderContext::setTimeBase>("setTimeBase")
-      .def<&AudioEncoderContext::bitRate>("bitRate")
-      .def<&AudioEncoderContext::setBitRate>("setBitRate")
-      .def<&AudioEncoderContext::sampleFormat>("sampleFormat")
-      .def<&AudioEncoderContext::setSampleFormat>("setSampleFormat")
-      .def<&AudioEncoderContext::channelLayout2>("channelLayout")
+      .def<&AudioEncoderContext::codecType>(WASYNC("codecType"))
+      .def<&AudioEncoderContext::sampleRate>(WASYNC("sampleRate"))
+      .def<&AudioEncoderContext::setSampleRate>(WASYNC("setSampleRate"))
+      .def<&AudioEncoderContext::timeBase>(WASYNC("timeBase"))
+      .def<&AudioEncoderContext::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&AudioEncoderContext::bitRate>(WASYNC("bitRate"))
+      .def<&AudioEncoderContext::setBitRate>(WASYNC("setBitRate"))
+      .def<&AudioEncoderContext::sampleFormat>(WASYNC("sampleFormat"))
+      .def<&AudioEncoderContext::setSampleFormat>(WASYNC("setSampleFormat"))
+      .def<&AudioEncoderContext::channelLayout2>(WASYNC("channelLayout"))
       .def<static_cast<void (av::AudioCodecContext<AudioEncoderContext, Direction::Encoding>::*)(ChannelLayout)>(
-          &AudioEncoderContext::setChannelLayout)>("setChannelLayout")
-      .def<&AudioEncoderContext::codec>("codec")
-      .def<&AudioEncoderContext::stream>("stream")
-      .def<&AudioEncoderContext::isFlags>("isFlags")
-      .def<&AudioEncoderContext::addFlags>("addFlags")
-      .def<&AudioEncoderContext::frameSize>("frameSize")
-      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>("open")
+          &AudioEncoderContext::setChannelLayout)>(WASYNC("setChannelLayout"))
+      .def<&AudioEncoderContext::codec>(WASYNC("codec"))
+      .def<&AudioEncoderContext::stream>(WASYNC("stream"))
+      .def<&AudioEncoderContext::isFlags>(WASYNC("isFlags"))
+      .def<&AudioEncoderContext::addFlags>(WASYNC("addFlags"))
+      .def<&AudioEncoderContext::frameSize>(WASYNC("frameSize"))
+      .def<static_cast<void (av::CodecContext2::*)(OptionalErrorCode)>(&AudioEncoderContext::open)>(WASYNC("open"))
       .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open)>(
-          "openCodec")
-      .def<static_cast<void (av::CodecContext2::*)(const Codec &, OptionalErrorCode)>(&AudioEncoderContext::open),
-           Nobind::ReturnAsync>("openCodecAsync")
+          WASYNC("openCodec"))
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-          &AudioEncoderContext::open)>("openCodecOptions")
-      .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
-               &AudioEncoderContext::open),
-           Nobind::ReturnAsync>("openCodecOptionsAsync")
+          &AudioEncoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
-          &AudioEncoderContext::encode)>("encode")
-      .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
-               &AudioEncoderContext::encode),
-           Nobind::ReturnAsync>("encodeAsync")
-      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>("finalize")
-      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode),
-           Nobind::ReturnAsync>("finalizeAsync")
+          &AudioEncoderContext::encode)>(WASYNC("encode"))
+      .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>(
+          WASYNC("finalize"))
       .ext<True<AudioEncoderContext>>("isAudio")
       .ext<False<AudioEncoderContext>>("isVideo");
 
   m.def<OutputFormat>("OutputFormat")
       .cons<>()
       .def<static_cast<bool (OutputFormat::*)(const std::string &, const std::string &, const std::string &)>(
-          &OutputFormat::setFormat)>("setFormat")
-      .def<&OutputFormat::isFlags>("isFlags");
+          &OutputFormat::setFormat)>(WASYNC("setFormat"))
+      .def<&OutputFormat::isFlags>(WASYNC("isFlags"));
   m.def<InputFormat>("InputFormat")
       .cons<>()
-      .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>("setFormat")
-      .def<&InputFormat::isFlags>("isFlags");
+      .def<static_cast<bool (InputFormat::*)(const std::string &)>(&InputFormat::setFormat)>(WASYNC("setFormat"))
+      .def<&InputFormat::isFlags>(WASYNC("isFlags"));
 
-  m.def<Codec>("Codec").cons<>().def<&Codec::name>("name").def<&Codec::id>("id");
+  m.def<Codec>("Codec").cons<>().def<&Codec::name>(WASYNC("name")).def<&Codec::id>(WASYNC("id"));
 
   m.def<CodecParametersView>("CodecParametersView")
       .cons<>()
-      .def<&CodecParametersView::decodingCodec>("decodingCodec")
-      .def<&CodecParametersView::encodingCodec>("encodingCodec")
-      .def<static_cast<uint32_t (CodecParametersView::*)() const>(&CodecParametersView::codecTag)>("codecTag")
-      .def<static_cast<void (CodecParametersView::*)(uint32_t)>(&CodecParametersView::codecTag)>("setCodecTag");
+      .def<&CodecParametersView::decodingCodec>(WASYNC("decodingCodec"))
+      .def<&CodecParametersView::encodingCodec>(WASYNC("encodingCodec"))
+      .def<static_cast<uint32_t (CodecParametersView::*)() const>(&CodecParametersView::codecTag)>(WASYNC("codecTag"))
+      .def<static_cast<void (CodecParametersView::*)(uint32_t)>(&CodecParametersView::codecTag)>(WASYNC("setCodecTag"));
 
   m.def<PixelFormat>("PixelFormat")
           .cons<const std::string &>()
           .cons<AVPixelFormat>()
-          .def<&PixelFormat::name>("name")
-          .def<&PixelFormat::planesCount>("planesCount")
-          .def<&PixelFormat::bitsPerPixel>("bitsPerPixel")
+          .def<&PixelFormat::name>(WASYNC("name"))
+          .def<&PixelFormat::planesCount>(WASYNC("planesCount"))
+          .def<&PixelFormat::bitsPerPixel>(WASYNC("bitsPerPixel"))
           // The static cast is needed to help MSVC with the template argument deduction
           // .ext() uses three-stage deduction with an auto argument in the first stage
           // MSVC picks a function reference instead of a function pointer during this stage
           // and is unable to backtrack when it cannot deduce the second stage
           .ext<static_cast<ToString_t<PixelFormat>>(&ToString<PixelFormat>)>("toString")
-          .def < &PixelFormat::operator AVPixelFormat>("get");
+          .def < &PixelFormat::operator AVPixelFormat>(WASYNC("get"));
 
   m.def<SampleFormat>("SampleFormat")
           .cons<const std::string &>()
           .cons<AVSampleFormat>()
-          .def<&SampleFormat::name>("name")
-          .def<&SampleFormat::bytesPerSample>("bytesPerSample")
-          .def<&SampleFormat::bitsPerSample>("bitsPerSample")
+          .def<&SampleFormat::name>(WASYNC("name"))
+          .def<&SampleFormat::bytesPerSample>(WASYNC("bytesPerSample"))
+          .def<&SampleFormat::bitsPerSample>(WASYNC("bitsPerSample"))
           .ext<static_cast<ToString_t<SampleFormat>>(&ToString<SampleFormat>)>("toString")
-          .def < &SampleFormat::operator AVSampleFormat>("get");
+          .def < &SampleFormat::operator AVSampleFormat>(WASYNC("get"));
 
   m.def<ChannelLayout>("ChannelLayout")
       .cons<std::bitset<64>>()
       .cons<const char *>()
       .cons<const ChannelLayoutView &>()
-      .def<&ChannelLayout::channels>("channels")
-      .def<&ChannelLayout::layout>("layout")
-      .def<&ChannelLayout::isValid>("isValid")
-      .def<static_cast<std::string (ChannelLayoutView::*)() const>(&ChannelLayoutView::describe)>("toString");
+      .def<&ChannelLayout::channels>(WASYNC("channels"))
+      .def<&ChannelLayout::layout>(WASYNC("layout"))
+      .def<&ChannelLayout::isValid>(WASYNC("isValid"))
+      .def<static_cast<std::string (ChannelLayoutView::*)() const>(&ChannelLayoutView::describe)>(WASYNC("toString"));
 
   m.def<ChannelLayoutView>("ChannelLayoutView");
 
   m.def<Stream>("Stream")
-      .def<&Stream::isNull>("isNull")
-      .def<&Stream::isValid>("isValid")
-      .def<&Stream::isVideo>("isVideo")
-      .def<&Stream::isAudio>("isAudio")
-      .def<&Stream::isSubtitle>("isSubtitle")
-      .def<&Stream::isData>("isData")
-      .def<&Stream::duration>("duration")
-      .def<&Stream::frameRate>("frameRate")
-      .def<&Stream::setFrameRate>("setFrameRate")
-      .def<&Stream::timeBase>("timeBase")
-      .def<&Stream::setTimeBase>("setTimeBase")
-      .def<&Stream::mediaType>("mediaType")
-      .def<&Stream::codecParameters>("codecParameters")
-      .def<&Stream::setCodecParameters>("setCodecParameters");
+      .def<&Stream::isNull>(WASYNC("isNull"))
+      .def<&Stream::isValid>(WASYNC("isValid"))
+      .def<&Stream::isVideo>(WASYNC("isVideo"))
+      .def<&Stream::isAudio>(WASYNC("isAudio"))
+      .def<&Stream::isSubtitle>(WASYNC("isSubtitle"))
+      .def<&Stream::isData>(WASYNC("isData"))
+      .def<&Stream::duration>(WASYNC("duration"))
+      .def<&Stream::frameRate>(WASYNC("frameRate"))
+      .def<&Stream::setFrameRate>(WASYNC("setFrameRate"))
+      .def<&Stream::timeBase>(WASYNC("timeBase"))
+      .def<&Stream::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&Stream::mediaType>(WASYNC("mediaType"))
+      .def<&Stream::codecParameters>(WASYNC("codecParameters"))
+      .def<&Stream::setCodecParameters>(WASYNC("setCodecParameters"));
 
   m.def<Packet>("Packet")
-      .def<&Packet::isNull>("isNull")
-      .def<&Packet::isComplete>("isComplete")
-      .def<&Packet::streamIndex>("streamIndex")
-      .def<&Packet::setStreamIndex>("setStreamIndex")
-      .def<&Packet::size>("size")
-      .def<&Packet::pts>("pts")
-      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setPts)>("setPts")
-      .def<&Packet::dts>("dts")
-      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setDts)>("setDts")
-      .def<&Packet::timeBase, Nobind::ReturnNested>("timeBase");
+      .def<&Packet::isNull>(WASYNC("isNull"))
+      .def<&Packet::isComplete>(WASYNC("isComplete"))
+      .def<&Packet::streamIndex>(WASYNC("streamIndex"))
+      .def<&Packet::setStreamIndex>(WASYNC("setStreamIndex"))
+      .def<&Packet::size>(WASYNC("size"))
+      .def<&Packet::pts>(WASYNC("pts"))
+      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setPts)>(WASYNC("setPts"))
+      .def<&Packet::dts>(WASYNC("dts"))
+      .def<static_cast<void (Packet::*)(const Timestamp &)>(&Packet::setDts)>(WASYNC("setDts"))
+      .def<&Packet::timeBase, Nobind::ReturnNested>(WASYNC("timeBase"));
 
   m.def<VideoFrame>("VideoFrame")
       .cons()
       .def<&VideoFrame::null>("null")
       // Every global function can also be registered as a static class method
-      .def<&CreateVideoFrame>("create")
-      .def<&VideoFrame::isNull>("isNull")
-      .def<&VideoFrame::isComplete>("isComplete")
-      .def<&VideoFrame::setComplete>("setComplete")
-      .def<&VideoFrame::pts>("pts")
-      .def<static_cast<void (av::Frame<av::VideoFrame>::*)(const Timestamp &)>(&VideoFrame::setPts)>("setPts")
-      .def<&VideoFrame::timeBase>("timeBase")
-      .def<&VideoFrame::setTimeBase>("setTimeBase")
-      .def<&VideoFrame::width>("width")
-      .def<&VideoFrame::height>("height")
-      .def<&VideoFrame::isValid>("isValid")
-      .def<&VideoFrame::pixelFormat>("pixelFormat")
-      .def<static_cast<size_t (av::Frame<av::VideoFrame>::*)() const>(&VideoFrame::size)>("size")
-      .def<&VideoFrame::isReferenced>("isReferenced")
-      .def<&VideoFrame::isKeyFrame>("isKeyFrame")
-      .def<&VideoFrame::setKeyFrame>("setKeyFrame")
-      .def<&VideoFrame::refCount>("refCount")
-      .def<&VideoFrame::pictureType>("pictureType")
-      .def<&VideoFrame::setPictureType>("setPictureType")
-      .def<&VideoFrame::setQuality>("setQuality")
-      .def<&VideoFrame::streamIndex>("streamIndex")
-      .def<&VideoFrame::setStreamIndex>("setStreamIndex")
+      .def<&CreateVideoFrame>(WASYNC("create"))
+      .def<&VideoFrame::isNull>(WASYNC("isNull"))
+      .def<&VideoFrame::isComplete>(WASYNC("isComplete"))
+      .def<&VideoFrame::setComplete>(WASYNC("setComplete"))
+      .def<&VideoFrame::pts>(WASYNC("pts"))
+      .def<static_cast<void (av::Frame<av::VideoFrame>::*)(const Timestamp &)>(&VideoFrame::setPts)>(WASYNC("setPts"))
+      .def<&VideoFrame::timeBase>(WASYNC("timeBase"))
+      .def<&VideoFrame::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&VideoFrame::width>(WASYNC("width"))
+      .def<&VideoFrame::height>(WASYNC("height"))
+      .def<&VideoFrame::isValid>(WASYNC("isValid"))
+      .def<&VideoFrame::pixelFormat>(WASYNC("pixelFormat"))
+      .def<static_cast<size_t (av::Frame<av::VideoFrame>::*)() const>(&VideoFrame::size)>(WASYNC("size"))
+      .def<&VideoFrame::isReferenced>(WASYNC("isReferenced"))
+      .def<&VideoFrame::isKeyFrame>(WASYNC("isKeyFrame"))
+      .def<&VideoFrame::setKeyFrame>(WASYNC("setKeyFrame"))
+      .def<&VideoFrame::refCount>(WASYNC("refCount"))
+      .def<&VideoFrame::pictureType>(WASYNC("pictureType"))
+      .def<&VideoFrame::setPictureType>(WASYNC("setPictureType"))
+      .def<&VideoFrame::setQuality>(WASYNC("setQuality"))
+      .def<&VideoFrame::streamIndex>(WASYNC("streamIndex"))
+      .def<&VideoFrame::setStreamIndex>(WASYNC("setStreamIndex"))
       .ext<&CopyFrameToBuffer>("data")
       .ext<static_cast<ToString_t<VideoFrame>>(&ToString<VideoFrame>)>("toString");
 
   m.def<AudioSamples>("AudioSamples")
       .cons<>()
       .def<&AudioSamples::null>("null")
-      .def<&CreateAudioSamples>("create")
-      .def<&AudioSamples::isNull>("isNull")
-      .def<&AudioSamples::isComplete>("isComplete")
-      .def<&AudioSamples::pts>("pts")
-      .def<static_cast<void (av::Frame<av::AudioSamples>::*)(const Timestamp &)>(&AudioSamples::setPts)>("setPts")
-      .def<&AudioSamples::samplesCount>("samplesCount")
-      .def<&AudioSamples::timeBase>("timeBase")
-      .def<&AudioSamples::setTimeBase>("setTimeBase")
-      .def<&AudioSamples::sampleRate>("sampleRate")
-      .def<&AudioSamples::sampleBitDepth>("sampleBitDepth")
-      .def<&AudioSamples::isValid>("isValid")
-      .def<&AudioSamples::sampleFormat>("sampleFormat")
-      .def<&AudioSamples::channelsCount>("channelsCount")
-      .def<&AudioSamples::channelsLayout>("channelsLayout")
-      .def<&AudioSamples::channelsLayoutString>("channelsLayoutString")
-      .def<static_cast<size_t (av::Frame<av::AudioSamples>::*)() const>(&AudioSamples::size)>("size")
-      .def<&AudioSamples::isReferenced>("isReferenced")
-      .def<&AudioSamples::refCount>("refCount")
-      .def<&AudioSamples::streamIndex>("streamIndex")
-      .def<&AudioSamples::setStreamIndex>("setStreamIndex")
+      .def<&CreateAudioSamples>(WASYNC("create"))
+      .def<&AudioSamples::isNull>(WASYNC("isNull"))
+      .def<&AudioSamples::isComplete>(WASYNC("isComplete"))
+      .def<&AudioSamples::pts>(WASYNC("pts"))
+      .def<static_cast<void (av::Frame<av::AudioSamples>::*)(const Timestamp &)>(&AudioSamples::setPts)>(
+          WASYNC("setPts"))
+      .def<&AudioSamples::samplesCount>(WASYNC("samplesCount"))
+      .def<&AudioSamples::timeBase>(WASYNC("timeBase"))
+      .def<&AudioSamples::setTimeBase>(WASYNC("setTimeBase"))
+      .def<&AudioSamples::sampleRate>(WASYNC("sampleRate"))
+      .def<&AudioSamples::sampleBitDepth>(WASYNC("sampleBitDepth"))
+      .def<&AudioSamples::isValid>(WASYNC("isValid"))
+      .def<&AudioSamples::sampleFormat>(WASYNC("sampleFormat"))
+      .def<&AudioSamples::channelsCount>(WASYNC("channelsCount"))
+      .def<&AudioSamples::channelsLayout>(WASYNC("channelsLayout"))
+      .def<&AudioSamples::channelsLayoutString>(WASYNC("channelsLayoutString"))
+      .def<static_cast<size_t (av::Frame<av::AudioSamples>::*)() const>(&AudioSamples::size)>(WASYNC("size"))
+      .def<&AudioSamples::isReferenced>(WASYNC("isReferenced"))
+      .def<&AudioSamples::refCount>(WASYNC("refCount"))
+      .def<&AudioSamples::streamIndex>(WASYNC("streamIndex"))
+      .def<&AudioSamples::setStreamIndex>(WASYNC("setStreamIndex"))
       .ext<static_cast<Nobind::Typemap::Buffer (*)(AudioSamples &, size_t)>(&ReturnBufferPlane<AudioSamples>)>("data")
       .ext<static_cast<ToString_t<AudioSamples>>(&ToString<AudioSamples>)>("toString");
 
   m.def<Timestamp>("Timestamp")
       .cons<int64_t, const Rational &>()
-      .def<&Timestamp::seconds>("seconds")
-      .def<&Timestamp::isNoPts>("isNoPts")
-      .def<&Timestamp::isValid>("isValid")
-      .def<&Timestamp::operator+= >("addTo")
-      .def<&Timestamp::operator-= >("subFrom")
-      .def<&Timestamp::timebase>("timebase")
+      .def<&Timestamp::seconds>(WASYNC("seconds"))
+      .def<&Timestamp::isNoPts>(WASYNC("isNoPts"))
+      .def<&Timestamp::isValid>(WASYNC("isValid"))
+      .def<&Timestamp::operator+= >(WASYNC("addTo"))
+      .def<&Timestamp::operator-= >(WASYNC("subFrom"))
+      .def<&Timestamp::timebase>(WASYNC("timebase"))
       .ext<static_cast<ToString_t<Timestamp>>(&ToString<Timestamp>)>("toString");
 
   m.def<Rational>("Rational").cons<int, int>().ext<static_cast<ToString_t<Rational>>(&ToString<Rational>)>("toString");
 
   m.def<VideoRescaler>("VideoRescaler")
       .cons<int, int, PixelFormat, int, int, PixelFormat, int>()
-      .def<&VideoRescaler::srcWidth>("srcWidth")
-      .def<&VideoRescaler::srcHeight>("srcHeight")
-      .def<&VideoRescaler::srcPixelFormat>("srcPixelFormat")
-      .def<&VideoRescaler::dstWidth>("dstWidth")
-      .def<&VideoRescaler::dstHeight>("dstHeight")
-      .def<&VideoRescaler::dstPixelFormat>("dstPixelFormat")
+      .def<&VideoRescaler::srcWidth>(WASYNC("srcWidth"))
+      .def<&VideoRescaler::srcHeight>(WASYNC("srcHeight"))
+      .def<&VideoRescaler::srcPixelFormat>(WASYNC("srcPixelFormat"))
+      .def<&VideoRescaler::dstWidth>(WASYNC("dstWidth"))
+      .def<&VideoRescaler::dstHeight>(WASYNC("dstHeight"))
+      .def<&VideoRescaler::dstPixelFormat>(WASYNC("dstPixelFormat"))
       .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale)>(
-          "rescale")
-      .def<static_cast<VideoFrame (VideoRescaler::*)(const VideoFrame &, OptionalErrorCode)>(&VideoRescaler::rescale),
-           Nobind::ReturnAsync>("rescaleAsync");
+          WASYNC("rescale"));
 
   m.def<AudioResampler>("AudioResampler")
       .cons<uint64_t, int, SampleFormat, uint64_t, int, SampleFormat>()
-      .def<&AudioResampler::dstChannelLayout>("dstChannelLayout")
-      .def<&AudioResampler::dstChannels>("dstChannels")
-      .def<&AudioResampler::dstSampleRate>("dstSampleRate")
-      .def<&AudioResampler::srcSampleFormat>("srcSampleFormat")
-      .def<&AudioResampler::srcChannelLayout>("srcChannelLayout")
-      .def<&AudioResampler::srcChannels>("srcChannels")
-      .def<&AudioResampler::srcSampleRate>("srcSampleRate")
-      .def<&AudioResampler::push>("push")
-      .def<&AudioResampler::push, Nobind::ReturnAsync>("pushAsync")
-      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>("pop")
-      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop),
-           Nobind::ReturnAsync>("popAsync");
+      .def<&AudioResampler::dstChannelLayout>(WASYNC("dstChannelLayout"))
+      .def<&AudioResampler::dstChannels>(WASYNC("dstChannels"))
+      .def<&AudioResampler::dstSampleRate>(WASYNC("dstSampleRate"))
+      .def<&AudioResampler::srcSampleFormat>(WASYNC("srcSampleFormat"))
+      .def<&AudioResampler::srcChannelLayout>(WASYNC("srcChannelLayout"))
+      .def<&AudioResampler::srcChannels>(WASYNC("srcChannels"))
+      .def<&AudioResampler::srcSampleRate>(WASYNC("srcSampleRate"))
+      .def<&AudioResampler::push>(WASYNC("push"))
+      .def<static_cast<AudioSamples (AudioResampler::*)(size_t, OptionalErrorCode)>(&AudioResampler::pop)>(
+          WASYNC("pop"));
 
   m.def<Filter>("Filter").cons<const char *>();
 
   m.def<FilterGraph>("FilterGraph")
       .cons<>()
-      .def<&FilterGraph::createFilter>("createFilter")
-      .def<static_cast<void (FilterGraph::*)(const std::string &, OptionalErrorCode)>(&FilterGraph::parse)>("parse")
-      .def<&FilterGraph::config>("config")
+      .def<&FilterGraph::createFilter>(WASYNC("createFilter"))
+      .def<static_cast<void (FilterGraph::*)(const std::string &, OptionalErrorCode)>(&FilterGraph::parse)>(
+          WASYNC("parse"))
+      .def<&FilterGraph::config>(WASYNC("config"))
       .def<static_cast<FilterContext (FilterGraph::*)(const std::string &, OptionalErrorCode)>(&FilterGraph::filter)>(
-          "filter");
+          WASYNC("filter"));
 
   m.def<FilterContext>("FilterContext");
 
@@ -509,24 +455,22 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   m.def<BufferSrcFilterContext>("BufferSrcFilterContext")
       .cons<FilterContext &>()
       .def<static_cast<void (BufferSrcFilterContext::*)(const VideoFrame &, OptionalErrorCode)>(
-          &BufferSrcFilterContext::writeVideoFrame)>("writeVideoFrame")
+          &BufferSrcFilterContext::writeVideoFrame)>(WASYNC("writeVideoFrame"))
       .def<static_cast<void (BufferSrcFilterContext::*)(const AudioSamples &, OptionalErrorCode)>(
-          &BufferSrcFilterContext::writeAudioSamples)>("writeAudioSamples")
+          &BufferSrcFilterContext::writeAudioSamples)>(WASYNC("writeAudioSamples"))
       .def<static_cast<void (BufferSrcFilterContext::*)(const VideoFrame &, OptionalErrorCode)>(
-               &BufferSrcFilterContext::writeVideoFrame),
-           Nobind::ReturnAsync>("writeVideoFrameAsync")
+          &BufferSrcFilterContext::writeVideoFrame)>(WASYNC("writeVideoFrame"))
       .def<static_cast<void (BufferSrcFilterContext::*)(const AudioSamples &, OptionalErrorCode)>(
-               &BufferSrcFilterContext::writeAudioSamples),
-           Nobind::ReturnAsync>("writeAudioSamplesAsync")
-      .def<&BufferSrcFilterContext::checkFilter>("checkFilter");
+          &BufferSrcFilterContext::writeAudioSamples)>(WASYNC("writeAudioSamples"))
+      .def<&BufferSrcFilterContext::checkFilter>(WASYNC("checkFilter"));
 
   m.def<BufferSinkFilterContext>("BufferSinkFilterContext")
       .cons<FilterContext &>()
       .ext<&GetVideoFrame, Nobind::ReturnNullAccept>("getVideoFrame")
       .ext<&GetAudioFrame, Nobind::ReturnNullAccept>("getAudioFrame")
-      .def<&BufferSinkFilterContext::setFrameSize>("setFrameSize")
-      .def<&BufferSinkFilterContext::frameRate>("frameRate")
-      .def<&BufferSinkFilterContext::checkFilter>("checkFilter");
+      .def<&BufferSinkFilterContext::setFrameSize>(WASYNC("setFrameSize"))
+      .def<&BufferSinkFilterContext::frameRate>(WASYNC("frameRate"))
+      .def<&BufferSinkFilterContext::checkFilter>(WASYNC("checkFilter"));
   // These are the async versions of the BufferSink functions
   // which are global because of the limitations of Nobind
   // we patch them at runtime in JS

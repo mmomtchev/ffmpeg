@@ -175,7 +175,6 @@ export class Muxer extends EventEmitter {
   protected async destroy(e: Error) {
     if (this.writing) {
       // Delayed destroy
-      // This kludge is needed because nobind17 does not support locking atm
       verbose('Muxer: delaying destroy');
       this.delayedDestroy = e;
       return;
@@ -221,10 +220,11 @@ export class Muxer extends EventEmitter {
           stream.setCodecParameters(codec);
         } else {
           if (this.rawStreams[idx]._stream!.isVideo()) {
-            stream = this.formatContext.addVideoStream(codec as ffmpeg.VideoEncoderContext);
-            stream.setFrameRate(this.rawStreams[idx]._stream.stream().frameRate());
+            stream = await this.formatContext.addVideoStreamAsync(codec as ffmpeg.VideoEncoderContext);
+            const fr = await this.rawStreams[idx]._stream.stream().frameRateAsync();
+            stream.setFrameRate(fr);
           } else if (this.rawStreams[idx]._stream!.isAudio()) {
-            stream = this.formatContext.addAudioStream(codec as ffmpeg.AudioEncoderContext);
+            stream = await this.formatContext.addAudioStreamAsync(codec as ffmpeg.AudioEncoderContext);
           } else {
             throw new Error('Unsupported stream type');
           }

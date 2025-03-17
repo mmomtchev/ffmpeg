@@ -14,6 +14,19 @@
             "cppStandard": "c++17"
         },
         {
+            "name": "macOS",
+            "includePath": [
+                "${env:HOME}/.conan/data/ffmpeg/**",
+                "${workspaceFolder}/deps/avcpp/src",
+                "/usr/local/include/node",
+                "${workspaceFolder}/node_modules/node-addon-api",
+                "${workspaceFolder}/node_modules/nobind17/include"
+            ],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        },
+        {
             "name": "Windows",
             "includePath": [
                 "${env:USERPROFILE}/.conan/data/ffmpeg/**",

@@ -19,7 +19,7 @@ public:
   static const std::string TSType() { return "number"; };
 };
 
-template <typename T> class EnumToJS {
+template <typename T, const Nobind::ReturnAttribute &RET> class EnumToJS {
   Napi::Env env_;
   int64_t val_;
 
@@ -27,7 +27,12 @@ public:
   inline explicit EnumToJS(Napi::Env env, T val) : env_(env), val_(static_cast<int64_t>(val)) {}
   inline Napi::Value Get() { return Napi::Number::New(env_, val_); }
 
-  static const std::string TSType() { return "number"; };
+  static const std::string TSType() {
+    if constexpr (RET.isAsync())
+      return "Promise<number>";
+    else
+      return "number";
+  };
 };
 
 namespace Nobind {
@@ -50,10 +55,15 @@ public:
     using EnumFromJS<ENUM>::EnumFromJS;                                                                                \
     static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }"; }                   \
   };                                                                                                                   \
-  template <> class ToJS<ENUM> : public EnumToJS<ENUM> {                                                               \
+  template <const Nobind::ReturnAttribute &RET> class ToJS<ENUM, RET> : public EnumToJS<ENUM, RET> {                   \
   public:                                                                                                              \
-    using EnumToJS<ENUM>::EnumToJS;                                                                                    \
-    static std::string TSType() { return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }"; }                   \
+    using EnumToJS<ENUM, RET>::EnumToJS;                                                                               \
+    static std::string TSType() {                                                                                      \
+      if constexpr (RET.isAsync())                                                                                     \
+        return "Promise<number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }>";                                      \
+      else                                                                                                             \
+        return "number & { readonly [__ffmpeg_tag_type]: '" #ENUM "' }";                                               \
+    }                                                                                                                  \
   };
 
 // Create typemaps for all basic enums

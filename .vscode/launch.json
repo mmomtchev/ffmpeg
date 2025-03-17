@@ -57,6 +57,29 @@
       ]
     },
     {
+      "name": "(lldb) Launch mocha",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/local/bin/node",
+      "args": [
+        "node_modules/mocha/lib/cli/cli.js",
+        "--timeout",
+        "0"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      "name": "(lldb) Attach",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "/usr/local/bin/node",
+      "MIMode": "lldb"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "(node) Launch mocha",

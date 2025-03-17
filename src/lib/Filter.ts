@@ -201,16 +201,16 @@ export class Filter extends EventEmitter {
       if (src.type === 'Video') {
         if (!(frame instanceof ffmpeg.VideoFrame))
           return void callback(new Error('Filter source video input must be a stream of VideoFrames'));
-        frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
-        frame.setTimeBase(this.timeBase);
-        frame.setStreamIndex(0);
+        await frame.setPictureTypeAsync(ffmpeg.AV_PICTURE_TYPE_NONE);
+        await frame.setTimeBaseAsync(this.timeBase);
+        await frame.setStreamIndexAsync(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeVideoFrameAsync(frame);
       } else if (src.type === 'Audio') {
         if (!(frame instanceof ffmpeg.AudioSamples))
-          return void callback(new Error('Filter source video input must be a stream of AudioSamples'));
-        frame.setTimeBase(this.timeBase);
-        frame.setStreamIndex(0);
+          return void callback(new Error('Filter source audio input must be a stream of AudioSamples'));
+        await frame.setTimeBaseAsync(this.timeBase);
+        await frame.setStreamIndexAsync(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeAudioSamplesAsync(frame);
       } else {
@@ -272,6 +272,8 @@ export class Filter extends EventEmitter {
         frame.setStreamIndex(0);
         more = this.sink[id].push(frame);
         sink.waitingToRead++;
+      } else {
+        verbose(`Filter: read sink [${id}]: no more frames available`);
       }
     } while (frame && sink.waitingToRead > 0 && more);
 

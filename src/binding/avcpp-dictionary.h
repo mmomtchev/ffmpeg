@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <dictionary.h>
 #include <napi.h>
 #include <nooverrides.h>

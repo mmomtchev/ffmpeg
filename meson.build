@@ -35,7 +35,7 @@ binary = napi.extension_module(
   include_directories: ['src', 'node_modules/nobind17/include'],
   install: true,
   dependencies: [avcpp_dep],
-  cpp_args: ['-DNOBIND_TYPESCRIPT_GENERATOR'],
+  cpp_args: ['-DNOBIND_WARN_ON_EVENT_LOOP_BLOCK'],
 )
 
 # --------------------

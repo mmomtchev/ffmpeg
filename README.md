@@ -32,6 +32,14 @@ The current goal of `node-ffmpeg` is to simply be able to guarantee that a ***co
 
 The goal of the streams API is to make writing such correct code trivially simple and intuitive.
 
+## Asynchronous locking
+
+`node-ffmpeg@2.0` features asynchronous locking which means that all methods are safe to use from async contexts. This however has some caveats - if you mix synchronous and asynchronous calls on the same objects, synchronous calls risk to block the event loop if they have to access an object for which an asynchronous operation is running in the background. `node-ffmpeg` will print a warning to the console in this case.
+
+When mixing synchronous and asynchronous low-level calls on the same objects with the Streams API, this can potentially lead to a deadlock - if an asynchronous operation that involves the Streams API is running in the background, then referencing synchronously an object that is locked can lead to a deadlock, since the blocked event loop will prevent the Streams API from running. Alas, this is difficult to avoid without losing the flow control which ensures that complex filters will use multiple CPU cores.
+
+Look carefully at the console messages if you intend to mix synchronous and asynchronous calls on the same objects. Going fully asynchronous not only is *the Node.js way*, it will also completely solve this problem and it is the recommended way to use this API.
+
 ## Performance
 
 All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools and using built-in filters. Background processing is provided via the `libuv` thread pool of Node.js - which means that when processing a stream, it is possible to automatically run each stage of the pipeline - demuxing, video decoding, audio decoding, filtering, video encoding, audio encoding and muxing on a separate physical processor core independently of V8/JavaScript.
