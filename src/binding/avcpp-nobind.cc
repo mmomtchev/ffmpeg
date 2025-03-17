@@ -43,9 +43,6 @@ void SetLogLevel(int64_t loglevel) { av::setFFmpegLoggingLevel(loglevel); }
 
 constexpr auto ReturnNullAsync = Nobind::ReturnAsync | Nobind::ReturnNullAccept;
 
-template <typename T> bool True(T &) { return true; }
-template <typename T> bool False(T &) { return false; }
-
 // A helper to create both sync and async versions of a method
 #define WASYNC(NAME) NAME, NAME "Async"
 
@@ -167,9 +164,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
           &VideoDecoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<VideoFrame (VideoDecoderContext::*)(const Packet &, OptionalErrorCode, bool)>(
-          &VideoDecoderContext::decode)>(WASYNC("decode"))
-      .ext<False<VideoDecoderContext>>("isAudio")
-      .ext<True<VideoDecoderContext>>("isVideo");
+          &VideoDecoderContext::decode)>(WASYNC("decode"));
 
   m.def<VideoEncoderContext, CodecContext2>("VideoEncoderContext")
       .cons<>()
@@ -198,9 +193,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<Packet (VideoEncoderContext::*)(const VideoFrame &, OptionalErrorCode)>(
           &VideoEncoderContext::encode)>(WASYNC("encode"))
       .def<static_cast<Packet (VideoEncoderContext::*)(OptionalErrorCode)>(&VideoEncoderContext::encode)>(
-          WASYNC("finalize"))
-      .ext<False<VideoEncoderContext>>("isAudio")
-      .ext<True<VideoEncoderContext>>("isVideo");
+          WASYNC("finalize"));
 
   m.def<AudioDecoderContext, CodecContext2>("AudioDecoderContext")
       .cons<const Stream &>()
@@ -229,9 +222,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<void (av::CodecContext2::*)(Dictionary &, const Codec &, OptionalErrorCode)>(
           &AudioDecoderContext::open)>(WASYNC("openCodecOptions"))
       .def<static_cast<AudioSamples (AudioDecoderContext::*)(const Packet &, OptionalErrorCode)>(
-          &AudioDecoderContext::decode)>(WASYNC("decode"))
-      .ext<True<AudioDecoderContext>>("isAudio")
-      .ext<False<AudioDecoderContext>>("isVideo");
+          &AudioDecoderContext::decode)>(WASYNC("decode"));
 
   m.def<AudioEncoderContext, CodecContext2>("AudioEncoderContext")
       .cons<>()
@@ -262,9 +253,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<static_cast<Packet (AudioEncoderContext::*)(const AudioSamples &, OptionalErrorCode)>(
           &AudioEncoderContext::encode)>(WASYNC("encode"))
       .def<static_cast<Packet (AudioEncoderContext::*)(OptionalErrorCode)>(&AudioEncoderContext::encode)>(
-          WASYNC("finalize"))
-      .ext<True<AudioEncoderContext>>("isAudio")
-      .ext<False<AudioEncoderContext>>("isVideo");
+          WASYNC("finalize"));
 
   m.def<OutputFormat>("OutputFormat")
       .cons<>()

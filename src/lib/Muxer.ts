@@ -160,11 +160,10 @@ export class Muxer extends EventEmitter {
       });
       writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
-      const stream = this.rawStreams[idx]._stream;
 
-      if (stream!.isVideo()) {
+      if (this.rawStreams[idx].isVideo()) {
         this.video.push(writable);
-      } else if (stream!.isAudio()) {
+      } else if (this.rawStreams[idx].isAudio()) {
         this.audio.push(writable);
       } else {
         throw new Error('Unsupported stream type');
@@ -219,11 +218,11 @@ export class Muxer extends EventEmitter {
           codec.setCodecTag(0);
           stream.setCodecParameters(codec);
         } else {
-          if (this.rawStreams[idx]._stream!.isVideo()) {
+          if (this.rawStreams[idx].isVideo()) {
             stream = await this.formatContext.addVideoStreamAsync(codec as ffmpeg.VideoEncoderContext);
-            const fr = await this.rawStreams[idx]._stream.stream().frameRateAsync();
+            const fr = await (await this.rawStreams[idx]._stream.streamAsync()).frameRateAsync();
             stream.setFrameRate(fr);
-          } else if (this.rawStreams[idx]._stream!.isAudio()) {
+          } else if (this.rawStreams[idx].isAudio()) {
             stream = await this.formatContext.addAudioStreamAsync(codec as ffmpeg.AudioEncoderContext);
           } else {
             throw new Error('Unsupported stream type');

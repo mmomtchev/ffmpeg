@@ -14,6 +14,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
   protected encoder: ffmpeg.AudioEncoderContext;
   protected codec_: ffmpeg.Codec;
   protected busy: boolean;
+  type = 'Audio' as const;
   ready: boolean;
 
   constructor(def: AudioStreamDefinition) {
@@ -104,5 +105,13 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
 
   get _stream(): any {
     return this.encoder;
+  }
+
+  isAudio(): boolean {
+    return true;
+  }
+
+  isVideo(): boolean {
+    return false;
   }
 }

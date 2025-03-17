@@ -81,10 +81,17 @@ export interface EncodedMediaReadableOptions extends ReadableOptions {
  */
 export class EncodedMediaReadable extends Readable {
   _stream: any;
+  type: 'Audio' | 'Video';
 
   constructor(options: EncodedMediaReadableOptions) {
     super(options);
     this._stream = options._stream;
+    if (this._stream.isAudio())
+      this.type = 'Audio';
+    else if (this._stream.isVideo())
+      this.type = 'Video';
+    else
+      throw new Error(('Only Audio or Video streams supported'));
   }
 
   // EncodedMediaReadable is synchronously ready unlike
@@ -99,6 +106,14 @@ export class EncodedMediaReadable extends Readable {
     } else {
       return this._stream!;
     }
+  }
+
+  isAudio(): boolean {
+    return this.type == 'Audio';
+  }
+
+  isVideo(): boolean {
+    return this.type == 'Video';
   }
 }
 

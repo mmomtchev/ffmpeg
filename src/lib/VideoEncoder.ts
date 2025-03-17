@@ -16,6 +16,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
   protected encoder: ffmpeg.VideoEncoderContext;
   protected codec_: ffmpeg.Codec;
   protected busy: boolean;
+  type = 'Video' as const;
   ready: boolean;
 
   constructor(def: VideoStreamDefinition) {
@@ -116,5 +117,13 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
 
   get _stream() {
     return this.encoder;
+  }
+
+  isAudio(): boolean {
+    return false;
+  }
+
+  isVideo(): boolean {
+    return true;
   }
 }
