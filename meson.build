@@ -22,6 +22,11 @@ sources = [
   'src/binding/avcpp-readable.cc',
   'src/binding/avcpp-writable.cc',
 ]
+cpp_args = get_option('cpp_args')
+cpp_args += '-DNOBIND_WARN_ON_EVENT_LOOP_BLOCK'
+if host_machine.system() == 'windows'
+  cpp_args += '/bigobj'
+endif
 
 avcpp_proj = subproject('avcpp', default_options: ['default_library=static'])
 avcpp_dep = avcpp_proj.get_variable('avcpp_dep')
@@ -35,7 +40,7 @@ binary = napi.extension_module(
   include_directories: ['src', 'node_modules/nobind17/include'],
   install: true,
   dependencies: [avcpp_dep],
-  cpp_args: ['-DNOBIND_WARN_ON_EVENT_LOOP_BLOCK'],
+  cpp_args: cpp_args,
 )
 
 # --------------------
