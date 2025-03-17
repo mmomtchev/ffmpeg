@@ -40,7 +40,12 @@
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
-      "environment": [],
+      "environment": [
+        {
+          "name": "DEBUG_ALL",
+          "value": "1"
+        }
+      ],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
@@ -68,7 +73,12 @@
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
-      "environment": [],
+      "environment": [
+        {
+          "name": "DEBUG_ALL",
+          "value": "1"
+        }
+      ],
       "externalConsole": false,
       "MIMode": "lldb"
     },

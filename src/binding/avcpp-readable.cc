@@ -99,7 +99,7 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
 
   verbose("ReadableCustomIO %p: push pending data\n", self);
   Napi::Function push = self->Value().Get("push").As<Napi::Function>();
-  Napi::Value more;
+  bool more;
   std::unique_lock lk{self->lock};
   if (!self->flowing) {
     verbose("ReadableCustomIO: not flowing\n");
@@ -143,15 +143,19 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
     napi_value js_buffer =
         Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
 #endif
-    verbose("ReadableCustomIO: pushed Buffer length %lu\n", buf->length);
+    verbose("ReadableCustomIO: will push Buffer length %lu\n", buf->length);
     // MakeCallBack runs the microtasks queue, this means that everything
     // in this class must be reentrable as this will potentially call another _read
     lk.unlock();
-    more = push.MakeCallback(self->Value(), 1, &js_buffer, self->async_context);
+    more = push.MakeCallback(self->Value(), 1, &js_buffer, self->async_context).ToBoolean().Value();
     lk.lock();
     delete buf;
-  } while (!self->queue.empty() && more.ToBoolean().Value());
-  if (more.ToBoolean().Value() == false) {
+    verbose("ReadableCustomIO: pushed Buffer length %lu\n", buf->length);
+  } while (!self->queue.empty() && more);
+  if (self->queue.empty()) {
+    verbose("ReadableCustomIO: queue is empty\n");
+  }
+  if (!more) {
     verbose("ReadableCustomIO: pipe is full, stop flowing\n");
     uv_unref(reinterpret_cast<uv_handle_t *>(self->push_callback));
     self->flowing = false;
