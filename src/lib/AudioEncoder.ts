@@ -85,11 +85,14 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
     verbose('AudioEncoder: flushing');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     let packet: ffmpeg.Packet;
+    let packetIsComplete: boolean = false;
     (async () => {
       do {
         packet = await this.encoder.finalizeAsync();
+        // Don't touch packet after pushing for async handling
+        packetIsComplete = !!packet && packet.isComplete();
         this.push(packet);
-      } while (packet && packet.isComplete());
+      } while (packetIsComplete);
       callback();
     })()
       .catch(callback);
