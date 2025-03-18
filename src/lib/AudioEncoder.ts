@@ -71,7 +71,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
       if (!samples.isComplete()) {
         return void callback(new Error('Received incomplete frame'));
       }
-      samples.setTimeBase(this.encoder.timeBase());
+      await samples.setTimeBaseAsync(await this.encoder.timeBaseAsync());
       const packet = await this.encoder.encodeAsync(samples);
       verbose(`AudioEncoder: Encoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
       this.push(packet);
