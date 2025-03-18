@@ -40,6 +40,8 @@ When mixing synchronous and asynchronous low-level calls on the same objects wit
 
 Look carefully at the console messages if you intend to mix synchronous and asynchronous calls on the same objects. Going fully asynchronous not only is *the Node.js way*, it will also completely solve this problem and it is the recommended way to use this API.
 
+Note: A notable exception are the `BufferSinkFilterContext` and `BufferSrcFilterContext` `avcpp` classes. These are not completely reentrant on the `avcpp`/`ffmpeg` side, as they rely on shared internal buffers. Currently, it is not possible to read concurrently the audio and the video streams in multiple threads. The Streams API implementation has a reentrancy guard around these.
+
 ## Performance
 
 All the underlying heavy-lifting is performed by the `ffmpeg` C code - which means that unless you access and process the raw video and audio data, the performance will be nearly identical to that of `ffmpeg` when used from the command-line. This includes rescaling and resampling via the provided tools and using built-in filters. Background processing is provided via the `libuv` thread pool of Node.js - which means that when processing a stream, it is possible to automatically run each stage of the pipeline - demuxing, video decoding, audio decoding, filtering, video encoding, audio encoding and muxing on a separate physical processor core independently of V8/JavaScript.

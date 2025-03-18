@@ -27,7 +27,7 @@ ReadableCustomIO::~ReadableCustomIO() {
   uv_close(reinterpret_cast<uv_handle_t *>(push_callback),
            [](uv_handle_t *async) { delete (reinterpret_cast<uv_async_t *>(async)); });
   if (flowing) {
-    verbose("ReadableCustomIO: destroyed a flowing stream");
+    verbose("ReadableCustomIO: destroyed a flowing stream\n");
   }
   while (!queue.empty()) {
     auto buf = queue.front();
@@ -149,8 +149,8 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
     lk.unlock();
     more = push.MakeCallback(self->Value(), 1, &js_buffer, self->async_context).ToBoolean().Value();
     lk.lock();
-    delete buf;
     verbose("ReadableCustomIO: pushed Buffer length %lu\n", buf->length);
+    delete buf;
   } while (!self->queue.empty() && more);
   if (self->queue.empty()) {
     verbose("ReadableCustomIO: queue is empty\n");
