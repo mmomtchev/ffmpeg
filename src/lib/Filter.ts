@@ -12,7 +12,7 @@ export interface FilterOptions {
   // Graph string
   graph: string;
   // A filter must have a single time base
-  timeBase: any;
+  timeBase: ffmpeg.Rational;
 }
 
 /**
@@ -20,7 +20,7 @@ export interface FilterOptions {
  * Must receive raw decoded input and sends raw decoded output.
  */
 export class Filter extends EventEmitter {
-  protected filterGraph: any;
+  protected filterGraph: ffmpeg.FilterGraph;
   // The currently running filterGraph op, prevents reentering
   protected filterGraphOp: Promise<void> | false;
   protected bufferSrc: Record<string, {
@@ -37,11 +37,11 @@ export class Filter extends EventEmitter {
     busy: boolean;
     id: string;
   }>;
-  protected timeBase: any;
+  protected timeBase: ffmpeg.Rational;
   protected stillStreamingSources: number;
   protected destroyed: boolean;
-  src: Record<string, any>;
-  sink: Record<string, any>;
+  src: Record<string, Writable>;
+  sink: Record<string, Readable>;
 
   constructor(options: FilterOptions) {
     super();
@@ -61,7 +61,7 @@ export class Filter extends EventEmitter {
       if (isAudioDefinition(def)) {
         filterDescriptor += `abuffer@${inp}=sample_rate=${def.sampleRate}:` +
           `channel_layout=${def.channelLayout.toString()}:` +
-          `sample_fmt=${def.sampleFormat.toString()}:time_base=${def.timeBase.toString()} [${inp}];  `;
+          `sample_fmt=${def.sampleFormat.toString()}${def.timeBase ? `:time_base=${def.timeBase.toString()}` : ''} [${inp}];  `;
       }
     }
     filterDescriptor += options.graph;
@@ -201,27 +201,28 @@ export class Filter extends EventEmitter {
       if (src.type === 'Video') {
         if (!(frame instanceof ffmpeg.VideoFrame))
           return void callback(new Error('Filter source video input must be a stream of VideoFrames'));
-        frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
-        frame.setTimeBase(this.timeBase);
-        frame.setStreamIndex(0);
+        await frame.setPictureTypeAsync(ffmpeg.AV_PICTURE_TYPE_NONE);
+        await frame.setTimeBaseAsync(this.timeBase);
+        await frame.setStreamIndexAsync(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeVideoFrameAsync(frame);
       } else if (src.type === 'Audio') {
         if (!(frame instanceof ffmpeg.AudioSamples))
-          return void callback(new Error('Filter source video input must be a stream of AudioSamples'));
-        frame.setTimeBase(this.timeBase);
-        frame.setStreamIndex(0);
+          return void callback(new Error('Filter source audio input must be a stream of AudioSamples'));
+        await frame.setTimeBaseAsync(this.timeBase);
+        await frame.setStreamIndexAsync(0);
         while (this.filterGraphOp) await this.filterGraphOp;
         this.filterGraphOp = src.buffer.writeAudioSamplesAsync(frame);
       } else {
         return void callback(new Error('Only Video and Audio filtering is supported'));
       }
 
-      (this.filterGraphOp as Promise<void>).then(() => {
+      try {
+        await this.filterGraphOp;
         this.filterGraphOp = false;
+
         src.busy = false;
         verbose(`Filter: write source [${id}]: wrote, pts=${frame.pts().toString()}`);
-        callback(null);
         // Now that we pushed more data, try reading again if there were waiting reads
         for (const sink of Object.keys(this.bufferSink)) {
           if (this.bufferSink[sink].waitingToRead && !this.bufferSink[sink].busy) {
@@ -229,8 +230,10 @@ export class Filter extends EventEmitter {
             this.read(sink, 0);
           }
         }
-      })
-        .catch(callback);
+        callback(null);
+      } catch (err) {
+        callback(err as Error);
+      }
     } catch (err) {
       callback(err as Error);
     }
@@ -238,6 +241,11 @@ export class Filter extends EventEmitter {
 
   protected async read(id: string, size: number) {
     const sink = this.bufferSink[id];
+    // We may stop streaming exactly during the getFrame()
+    // in which case we may get an extra null frame
+    // We stop when we stillStreaming is false before getFrame()
+    // and we get the last null frame
+    const stillStreaming = !!this.stillStreamingSources;
     if (!sink) {
       throw new Error(`Invalid buffer sink [${id}]`);
     }
@@ -272,10 +280,12 @@ export class Filter extends EventEmitter {
         frame.setStreamIndex(0);
         more = this.sink[id].push(frame);
         sink.waitingToRead++;
+      } else {
+        verbose(`Filter: read sink [${id}]: no more frames available`);
       }
     } while (frame && sink.waitingToRead > 0 && more);
 
-    if (this.stillStreamingSources === 0 && frame === null) {
+    if (!stillStreaming && frame === null) {
       verbose(`Filter: read sink [${id}]: sending null for EOF`);
       this.sink[id].push(null);
       return;

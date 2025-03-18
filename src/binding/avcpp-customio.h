@@ -34,7 +34,7 @@ struct BufferWritableItem {
 //
 // It inherits both from the JS Readable and the C++ av::CustomIO.
 //
-// As it must bridge between the sync IO of ffmpeg/avcpp an async IO of Node.js,
+// As it must bridge between the sync IO of ffmpeg/avcpp and async IO of Node.js,
 // it is compatible only with async mode. Its C++ read may be called only from a background
 // thread in which case it will block until the main JS thread has delivered more data.
 //
@@ -142,6 +142,8 @@ public:
       throw Napi::Error::New(js_val.Env(), "Expected a CustomIO");
   }
   inline av::CustomIO *Get() { return object; }
+
+  static const std::string TSType() { return "CustomIO"; };
 };
 
 } // namespace Typemap

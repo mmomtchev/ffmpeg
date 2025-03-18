@@ -13,15 +13,20 @@ export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL
  */
 export class VideoEncoder extends MediaTransform implements MediaStream, EncodedMediaReadable {
   protected def: VideoStreamDefinition;
-  protected encoder: any;
-  protected codec_: any;
+  protected encoder: ffmpeg.VideoEncoderContext;
+  protected codec_: ffmpeg.Codec;
   protected busy: boolean;
+  type = 'Video' as const;
   ready: boolean;
 
   constructor(def: VideoStreamDefinition) {
     super();
     this.def = { ...def };
-    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    if (this.def.codec instanceof ffmpeg.Codec) {
+      this.codec_ = ffmpeg.findDecodingCodec(this.def.codec.id());
+    } else {
+      this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    }
     verbose(`VideoEncoder: using ${this.codec_.name()}, ${this.def.width}x${this.def.height}, ` +
       `bitrate ${this.def.bitRate}, format ${this.def.pixelFormat}`);
     this.encoder = new VideoEncoderContext(this.codec_);
@@ -56,7 +61,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  _transform(frame: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(frame: ffmpeg.Packet, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('VideoEncoder: received frame');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
     (async () => {
@@ -71,7 +76,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
         return void callback(new Error('Received invalid frame'));
       }
       frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
-      frame.setTimeBase(this.encoder.timeBase());
+      frame.setTimeBase(await this.encoder.timeBaseAsync());
       const packet = await this.encoder.encodeAsync(frame);
       verbose(`VideoEncoder: encoded frame: pts=${frame.pts()} / ${frame.pts().seconds()} / ` +
         `${frame.timeBase()} / ${frame.width()}x${frame.height()}, size=${frame.size()}, ` +
@@ -86,12 +91,17 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
   _flush(callback: TransformCallback): void {
     verbose('VideoEncoder: flushing');
     if (this.busy) return void callback(new Error('VideoEncoder called while busy, use proper writing semantics'));
-    let packet: any;
+    let packet: ffmpeg.Packet;
+    let packetIsComplete: boolean;
     (async () => {
       do {
         packet = await this.encoder.finalizeAsync();
+        verbose(`Flushing packet, size=${packet.size()}, dts=${packet.dts().toString()}`);
+        // don't touch packet after pushing for async handling
+        packetIsComplete = packet != null && packet.isComplete();
         this.push(packet);
-      } while (packet && packet.isComplete());
+      } while (packetIsComplete);
+      verbose('VideoEncoder flushed');
       callback();
     })()
       .catch(callback);
@@ -107,5 +117,13 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
 
   get _stream() {
     return this.encoder;
+  }
+
+  isAudio(): boolean {
+    return false;
+  }
+
+  isVideo(): boolean {
+    return true;
   }
 }

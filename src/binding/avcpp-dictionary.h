@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include <dictionary.h>
 #include <napi.h>
 #include <nooverrides.h>
@@ -34,6 +33,8 @@ public:
     }
   }
   inline av::Dictionary &Get() { return dict; }
+
+  static const std::string TSType() { return "Record<string, any>"; };
 };
 
 } // namespace Typemap

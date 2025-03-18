@@ -7,8 +7,6 @@ import { assert } from 'chai';
 import ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer, VideoDecoder, Discarder } from '@mmomtchev/ffmpeg/stream';
 
-ffmpeg.setLogLevel(process.env.DEBUG_FFMPEG ? ffmpeg.AV_LOG_DEBUG : ffmpeg.AV_LOG_ERROR);
-
 
 it('extract a still', (done) => {
   const tmpFile = path.resolve(__dirname, 'output.jpeg');
@@ -21,7 +19,7 @@ it('extract a still', (done) => {
       const discarder = new Discarder();
       const videoInput = new VideoDecoder(input.video[0]);
 
-      const extract = (frame: any) => {
+      const extract = (frame: ffmpeg.VideoFrame) => {
         if (frame.pts().seconds() > 0.5) {
           videoInput.off('data', extract);
 

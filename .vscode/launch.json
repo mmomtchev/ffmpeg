@@ -16,16 +16,16 @@
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
-          {
-              "description": "Enable pretty-printing for gdb",
-              "text": "-enable-pretty-printing",
-              "ignoreFailures": true
-          },
-          {
-              "description": "Set Disassembly Flavor to Intel",
-              "text": "-gdb-set disassembly-flavor intel",
-              "ignoreFailures": true
-          }
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
       ]
     },
     {
@@ -35,11 +35,17 @@
       "program": "/usr/bin/node",
       "args": [
         "node_modules/mocha/lib/cli/cli.js",
-        "--timeout", "0"
+        "--timeout",
+        "0"
       ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
-      "environment": [],
+      "environment": [
+        {
+          "name": "DEBUG_ALL",
+          "value": "1"
+        }
+      ],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
@@ -56,21 +62,71 @@
       ]
     },
     {
+      "name": "(lldb) Launch mocha",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/local/bin/node",
+      "args": [
+        "node_modules/mocha/lib/cli/cli.js",
+        "--timeout",
+        "0"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "DEBUG_ALL",
+          "value": "1"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
+    {
+      "name": "(lldb) Attach",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "/usr/local/bin/node",
+      "MIMode": "lldb"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "(node) Launch mocha",
       "skipFiles": [
-          "<node_internals>/**"
+        "<node_internals>/**"
       ],
       "args": [
-          "-R", "tap",
-          "--timeout", "0",
-          "--v8-expose-gc",
-          "--require", "ts-node/register",
-          "--require", "tsconfig-paths/register",
-          "test/*.test.ts"
+        "-R",
+        "tap",
+        "--timeout",
+        "0",
+        "--v8-expose-gc",
+        "--require",
+        "ts-node/register",
+        "--require",
+        "tsconfig-paths/register",
+        "test/*.test.ts"
       ],
+      "env": {
+        "DEBUG_ALL": "1"
+      },
       "program": "${workspaceFolder}/node_modules/mocha/lib/cli/cli.js"
-    }
+    },
+    {
+      "name": "(lldb) TypeScript generator",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "/usr/local/bin/node",
+      "args": [
+        "-p",
+        "require('./build/node-ffmpeg.node').__typescript"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb"
+    },
   ]
 }

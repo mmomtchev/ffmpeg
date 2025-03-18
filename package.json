@@ -49,7 +49,8 @@
   },
   "homepage": "https://github.com/mmomtchev/ffmpeg#readme",
   "dependencies": {
-    "nobind17": "^1.2.0",
+    "@mmomtchev/prebuild-install": "^1.0.2",
+    "nobind17": "^2.0.0-rc.2",
     "node-addon-api": "^8.0.0"
   },
   "devDependencies": {
@@ -65,7 +66,7 @@
     "chai": "^4.3.10",
     "eslint-plugin-mocha": "^10.2.0",
     "globals": "^16.0.0",
-    "magickwand.js": "^2.0.0",
+    "magickwand.js": "^2.0.1",
     "mocha": "^11.0.1",
     "readable-stream-clone": "^1.0.0",
     "rollup": "^4.9.4",
@@ -115,13 +116,14 @@
       "commandInstall": "meson install -C {{ properties.buildFolderRelativePath }}",
       "commandClean": "{{properties.commandWipe[os.platform]}} {{ properties.buildFolderRelativePath }}",
       "verbose": "{% if env.npm_config_loglevel %}--verbose{% endif %}",
-      "scriptInstall": "npx prebuild-install -d {{ properties.verbose }} || ( npx xpm install && xpm run prepare --config native && xpm run build --config native )"
+      "scriptInstall": "npx prebuild-install -d {{ properties.verbose }} || ( npx xpm install && xpm run prepare --config Release && xpm run build --config Release )"
     },
     "actions": {
       "npm-install": [
         "{% if env.npm_config_loglevel %}{{ properties.commandShowEnv[os.platform] }}{% endif %}",
         "{% unless env.npm_config_skip_node_ffmpeg_binary %}{{ properties.scriptInstall }}{% endunless %}"
       ],
+      "env": "{{ properties.commandShowEnv[os.platform] }}",
       "prepare": "npx xpm run prepare --config Release",
       "configure": "{{ properties.commandConfigure }}",
       "build": "npx xpm run build --config Release",

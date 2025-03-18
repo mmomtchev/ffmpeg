@@ -27,7 +27,7 @@ ReadableCustomIO::~ReadableCustomIO() {
   uv_close(reinterpret_cast<uv_handle_t *>(push_callback),
            [](uv_handle_t *async) { delete (reinterpret_cast<uv_async_t *>(async)); });
   if (flowing) {
-    verbose("ReadableCustomIO: destroyed a flowing stream");
+    verbose("ReadableCustomIO: destroyed a flowing stream\n");
   }
   while (!queue.empty()) {
     auto buf = queue.front();
@@ -60,7 +60,8 @@ Napi::Function ReadableCustomIO::GetClass(Napi::Env env) {
 }
 
 int ReadableCustomIO::write(const uint8_t *data, size_t size) {
-  verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu\n", size, queue_size);
+  verbose("ReadableCustomIO: ffmpeg wrote data %lu, queue_size is %lu, %s\n", size, queue_size,
+          flowing ? "flowing" : "not flowing");
   if (std::this_thread::get_id() == instance_data->v8_main_thread)
     throw std::logic_error{"This function cannot be called in sync mode"};
 
@@ -74,13 +75,14 @@ int ReadableCustomIO::write(const uint8_t *data, size_t size) {
   queue.push(buffer);
   queue_size += size;
   lk.unlock();
+  verbose("ReadableCustomIO: Schedule JS read from write\n");
   uv_async_send(push_callback);
 
   return size;
 }
 
 int64_t ReadableCustomIO::seek(int64_t offset, int whence) {
-  verbose("ReadableCustomIO: seek %ld (%d)\n", offset, whence);
+  verbose("ReadableCustomIO: seek %lld (%d)\n", offset, whence);
   if (offset != 0) {
     fprintf(stderr, "ffmpeg tried to seek in a ReadStream\n");
     throw std::logic_error("ffmpeg tried to seek in a ReadStream");
@@ -97,7 +99,7 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
 
   verbose("ReadableCustomIO %p: push pending data\n", self);
   Napi::Function push = self->Value().Get("push").As<Napi::Function>();
-  Napi::Value more;
+  bool more;
   std::unique_lock lk{self->lock};
   if (!self->flowing) {
     verbose("ReadableCustomIO: not flowing\n");
@@ -105,6 +107,8 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
   }
   if (self->queue.empty()) {
     verbose("ReadableCustomIO: queue is empty\n");
+    // _read won't be called again until more data is pushed, the ball is in our court now
+    // next write() will schedule us again
     return;
   }
   do {
@@ -139,15 +143,19 @@ void ReadableCustomIO::PushPendingData(uv_async_t *async) {
     napi_value js_buffer =
         Napi::Buffer<uint8_t>::New(env, buf->data, buf->length, [](Napi::Env, uint8_t *buffer) { delete[] buffer; });
 #endif
-    verbose("ReadableCustomIO: pushed Buffer length %lu\n", buf->length);
+    verbose("ReadableCustomIO: will push Buffer length %lu\n", buf->length);
     // MakeCallBack runs the microtasks queue, this means that everything
     // in this class must be reentrable as this will potentially call another _read
     lk.unlock();
-    more = push.MakeCallback(self->Value(), 1, &js_buffer, self->async_context);
+    more = push.MakeCallback(self->Value(), 1, &js_buffer, self->async_context).ToBoolean().Value();
     lk.lock();
+    verbose("ReadableCustomIO: pushed Buffer length %lu\n", buf->length);
     delete buf;
-  } while (!self->queue.empty() && more.ToBoolean().Value());
-  if (more.ToBoolean().Value() == false) {
+  } while (!self->queue.empty() && more);
+  if (self->queue.empty()) {
+    verbose("ReadableCustomIO: queue is empty\n");
+  }
+  if (!more) {
     verbose("ReadableCustomIO: pipe is full, stop flowing\n");
     uv_unref(reinterpret_cast<uv_handle_t *>(self->push_callback));
     self->flowing = false;

@@ -1,8 +1,6 @@
-import ffmpeg from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, MediaStream, MediaTransform } from './MediaStream';
+import ffmpeg, { AudioEncoderContext, AudioSamples } from '@mmomtchev/ffmpeg';
+import { AudioStreamDefinition, EncodedMediaReadable, MediaStream, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
-
-const { AudioEncoderContext, AudioSamples } = ffmpeg;
 
 export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
@@ -11,17 +9,22 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
  * and write encoded audio data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class AudioEncoder extends MediaTransform implements MediaStream {
+export class AudioEncoder extends MediaTransform implements MediaStream, EncodedMediaReadable {
   protected def: AudioStreamDefinition;
-  protected encoder: any;
-  protected codec_: any;
+  protected encoder: ffmpeg.AudioEncoderContext;
+  protected codec_: ffmpeg.Codec;
   protected busy: boolean;
+  type = 'Audio' as const;
   ready: boolean;
 
   constructor(def: AudioStreamDefinition) {
     super();
     this.def = { ...def };
-    this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    if (this.def.codec instanceof ffmpeg.Codec) {
+      this.codec_ = ffmpeg.findDecodingCodec(this.def.codec.id());
+    } else {
+      this.codec_ = ffmpeg.findEncodingCodec(this.def.codec);
+    }
     verbose(`AudioEncoder: using ${this.codec_.name()}`);
     this.encoder = new AudioEncoderContext(this.codec_);
     if (this.def.timeBase)
@@ -54,7 +57,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  _transform(samples: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(samples: ffmpeg.AudioSamples, encoding: BufferEncoding, callback: TransformCallback): void {
     verbose('AudioEncoder: received samples');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
     (async () => {
@@ -68,7 +71,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
       if (!samples.isComplete()) {
         return void callback(new Error('Received incomplete frame'));
       }
-      samples.setTimeBase(this.encoder.timeBase());
+      await samples.setTimeBaseAsync(await this.encoder.timeBaseAsync());
       const packet = await this.encoder.encodeAsync(samples);
       verbose(`AudioEncoder: Encoded samples: pts=${samples.pts()} / ${samples.pts().seconds()} / ${samples.timeBase()} / ${samples.sampleFormat()}@${samples.sampleRate()}, size=${samples.size()}, ref=${samples.isReferenced()}:${samples.refCount()} / layout: ${samples.channelsLayoutString()} }`);
       this.push(packet);
@@ -81,18 +84,21 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
   _flush(callback: TransformCallback): void {
     verbose('AudioEncoder: flushing');
     if (this.busy) return void callback(new Error('AudioEncoder called while busy, use proper writing semantics'));
-    let packet: any;
+    let packet: ffmpeg.Packet;
+    let packetIsComplete: boolean = false;
     (async () => {
       do {
         packet = await this.encoder.finalizeAsync();
+        // Don't touch packet after pushing for async handling
+        packetIsComplete = !!packet && packet.isComplete();
         this.push(packet);
-      } while (packet && packet.isComplete());
+      } while (packetIsComplete);
       callback();
     })()
       .catch(callback);
   }
 
-  codec(): any {
+  codec(): ffmpeg.AudioEncoderContext {
     return this.encoder;
   }
 
@@ -100,7 +106,15 @@ export class AudioEncoder extends MediaTransform implements MediaStream {
     return this.def;
   }
 
-  get _stream() {
+  get _stream(): any {
     return this.encoder;
+  }
+
+  isAudio(): boolean {
+    return true;
+  }
+
+  isVideo(): boolean {
+    return false;
   }
 }

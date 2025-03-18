@@ -14,7 +14,7 @@ export interface AudioTransformOptions extends MediaTransformOptions {
  * Must receive input from a AudioDecoder and must output to a AudioEncoder
  */
 export class AudioTransform extends MediaTransform {
-  protected resampler: any;
+  protected resampler: ffmpeg.AudioResampler;
   protected frameSize: number | undefined;
 
   constructor(options: AudioTransformOptions) {
@@ -26,7 +26,7 @@ export class AudioTransform extends MediaTransform {
     this.frameSize = options.output.frameSize ?? undefined;
   }
 
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback): void {
+  _transform(chunk: ffmpeg.AudioSamples, encoding: BufferEncoding, callback: TransformCallback): void {
     if (this.frameSize === undefined) {
       this.frameSize = chunk.samplesCount();
       verbose(`AudioTransform: auto-configured frame size to ${this.frameSize}`);
@@ -37,7 +37,7 @@ export class AudioTransform extends MediaTransform {
       // At each tick we are sending X samples and we are getting X*dstSampleRate/srcSampleRate samples
       // However the frame size must remain constant as it is a property of the codec
       // audioResampler has an internal buffer that does the necessary queuing automatically
-      while (!(samples = await this.resampler.popAsync(this.frameSize)).isNull()) {
+      while (!(samples = await this.resampler.popAsync(this.frameSize!)).isNull()) {
         this.push(samples);
       }
       callback();

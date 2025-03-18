@@ -57,9 +57,9 @@ export class Muxer extends EventEmitter {
   protected highWaterMark: number;
   protected outputFormatName: string;
   protected outputFormatOptions: Record<string, string>;
-  protected outputFormat: any;
+  protected outputFormat: ffmpeg.OutputFormat;
   protected openOptions: Record<string, string>;
-  protected formatContext: any;
+  protected formatContext: ffmpeg.FormatContext;
   protected rawStreams: EncodedMediaReadable[];
   protected writing: boolean;
   protected primed: boolean;
@@ -112,8 +112,9 @@ export class Muxer extends EventEmitter {
       }
       this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
-        if (this.rawStreams[idx].codec().addFlags)
-          this.rawStreams[idx].codec().addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
+        const codec = this.rawStreams[idx].codec();
+        if (!(codec instanceof ffmpeg.CodecParametersView))
+          codec.addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
 
       const writable = new EncodedMediaWritable({
@@ -159,11 +160,10 @@ export class Muxer extends EventEmitter {
       });
       writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
-      const stream = this.rawStreams[idx]._stream;
 
-      if (stream.isVideo()) {
+      if (this.rawStreams[idx].isVideo()) {
         this.video.push(writable);
-      } else if (stream.isAudio()) {
+      } else if (this.rawStreams[idx].isAudio()) {
         this.audio.push(writable);
       } else {
         throw new Error('Unsupported stream type');
@@ -174,7 +174,6 @@ export class Muxer extends EventEmitter {
   protected async destroy(e: Error) {
     if (this.writing) {
       // Delayed destroy
-      // This kludge is needed because nobind17 does not support locking atm
       verbose('Muxer: delaying destroy');
       this.delayedDestroy = e;
       return;
@@ -214,16 +213,17 @@ export class Muxer extends EventEmitter {
         // - this is an encoding codec and we are working with an actual codec context
         // - this is simply a codec definition and we receiving pre-encoded data
         const codec = this.rawStreams[idx].codec();
-        if (codec.decodingCodec) {
+        if (codec instanceof ffmpeg.CodecParametersView) {
           stream = this.formatContext.addStream();
           codec.setCodecTag(0);
           stream.setCodecParameters(codec);
         } else {
-          if (this.rawStreams[idx]._stream.isVideo()) {
-            stream = this.formatContext.addVideoStream(codec);
-            stream.setFrameRate(this.rawStreams[idx]._stream.stream().frameRate());
-          } else if (this.rawStreams[idx]._stream.isAudio()) {
-            stream = this.formatContext.addAudioStream(codec);
+          if (this.rawStreams[idx].isVideo()) {
+            stream = await this.formatContext.addVideoStreamAsync(codec as ffmpeg.VideoEncoderContext);
+            const fr = await (await this.rawStreams[idx]._stream.streamAsync()).frameRateAsync();
+            stream.setFrameRate(fr);
+          } else if (this.rawStreams[idx].isAudio()) {
+            stream = await this.formatContext.addAudioStreamAsync(codec as ffmpeg.AudioEncoderContext);
           } else {
             throw new Error('Unsupported stream type');
           }
@@ -254,7 +254,7 @@ export class Muxer extends EventEmitter {
       return void callback(this.delayedDestroy);
     }
     if (!packet.isComplete()) {
-      verbose('Muxer: skipping empty packet (codec is still priming)');
+      verbose('Muxer: skipping empty packet');
       callback();
       return;
     }
@@ -296,6 +296,7 @@ export class Muxer extends EventEmitter {
         }
       }
       this.writing = false;
+      verbose('Muxer: end of writing cycle');
     })();
   }
 }
