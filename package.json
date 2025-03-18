@@ -50,6 +50,7 @@
   "homepage": "https://github.com/mmomtchev/ffmpeg#readme",
   "dependencies": {
     "@mmomtchev/prebuild-install": "^1.0.2",
+    "nobind17": "^2.0.0-rc.2",
     "node-addon-api": "^8.0.0"
   },
   "devDependencies": {
@@ -67,7 +68,6 @@
     "globals": "^16.0.0",
     "magickwand.js": "^2.0.1",
     "mocha": "^11.0.1",
-    "nobind17": "^2.0.0-rc.2",
     "readable-stream-clone": "^1.0.0",
     "rollup": "^4.9.4",
     "rollup-plugin-dts": "^6.1.0",
