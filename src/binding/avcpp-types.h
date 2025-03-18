@@ -25,7 +25,9 @@ template <typename T, const Nobind::ReturnAttribute &RET> class EnumToJS {
 
 public:
   inline explicit EnumToJS(Napi::Env env, T val) : env_(env), val_(static_cast<int64_t>(val)) {}
-  inline Napi::Value Get() { return Napi::Number::New(env_, val_); }
+  // JS at its finest - 64 bit integers are treated as double
+  // The eventual loss of precision is part of the language specifications
+  inline Napi::Value Get() { return Napi::Number::New(env_, static_cast<double>(val_)); }
 
   static const std::string TSType() {
     if constexpr (RET.isAsync())
