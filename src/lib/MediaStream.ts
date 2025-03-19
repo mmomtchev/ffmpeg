@@ -133,7 +133,7 @@ export class EncodedMediaReadable extends Readable {
  */
 export interface EncodedAudioReadable extends EncodedMediaReadable {
   type: 'Audio';
-  push(chunk: ffmpeg.Packet, encoding?: unknown): boolean;
+  push(chunk: ffmpeg.Packet, encoding?: BufferEncoding): boolean;
 }
 
 /**
@@ -141,7 +141,7 @@ export interface EncodedAudioReadable extends EncodedMediaReadable {
  */
 export interface EncodedVideoReadable extends EncodedMediaReadable {
   type: 'Video';
-  push(chunk: ffmpeg.Packet, encoding?: unknown): boolean;
+  push(chunk: ffmpeg.Packet, encoding?: BufferEncoding): boolean;
 }
 
 /**
@@ -177,19 +177,19 @@ export interface AudioWritable extends MediaWritable {
  * A raw media stream
  */
 export interface MediaReadable extends Readable {
-  push(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding?: unknown): boolean;
+  push(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding?: BufferEncoding): boolean;
 }
 
 /**
  * A video media stream
  */
 export interface VideoReadable extends MediaReadable {
-  push(chunk: ffmpeg.VideoFrame, encoding?: unknown): boolean;
+  push(chunk: ffmpeg.VideoFrame, encoding?: BufferEncoding): boolean;
 }
 
 /**
  * An audio media stream
  */
 export interface AudioReadable extends MediaReadable {
-  push(chunk: ffmpeg.AudioSamples, encoding?: unknown): boolean;
+  push(chunk: ffmpeg.AudioSamples, encoding?: BufferEncoding): boolean;
 }
