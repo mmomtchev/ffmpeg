@@ -27,7 +27,7 @@ export class VideoTransform extends MediaTransform {
   _transform(chunk: ffmpeg.VideoFrame, encoding: BufferEncoding, callback: TransformCallback): void {
     try {
       this.rescaler.rescaleAsync(chunk)
-        .then((frame: any) => {
+        .then((frame: ffmpeg.VideoFrame) => {
           this.push(frame);
           callback();
         }).catch(callback);

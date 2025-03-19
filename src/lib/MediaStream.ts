@@ -71,41 +71,54 @@ export interface MediaEncoder extends MediaStream {
   codec(): ffmpeg.Codec;
 }
 
+/**
+ * A generic decoding MediaStream, has a codec.
+ */
+export interface MediaDecoder extends MediaStream {
+  codec(): ffmpeg.Codec;
+}
+
 export interface EncodedMediaReadableOptions extends ReadableOptions {
-  _stream?: ffmpeg.Stream | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext;
+  stream: ffmpeg.Stream;
 }
 
 
 /**
- * A generic compressed media stream from a Demuxer.
+ * A generic encoded media stream
  */
 export class EncodedMediaReadable extends Readable {
-  _stream: any;
+  stream_: ffmpeg.Stream;
   type: 'Audio' | 'Video';
 
   constructor(options: EncodedMediaReadableOptions) {
     super(options);
-    this._stream = options._stream;
-    if (this._stream.isAudio())
+    this.stream_ = options.stream;
+    if (this.stream_.isAudio())
       this.type = 'Audio';
-    else if (this._stream.isVideo())
+    else if (this.stream_.isVideo())
       this.type = 'Video';
     else
       throw new Error(('Only Audio or Video streams supported'));
   }
 
-  // EncodedMediaReadable is synchronously ready unlike
-  // its compatible cousins AudioEncoder and VideoEncoder
   get ready(): boolean {
     return true;
   }
 
-  codec(): ffmpeg.CodecParametersView | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext {
-    if (this._stream instanceof ffmpeg.Stream) {
-      return this._stream!.codecParameters();
-    } else {
-      return this._stream!;
-    }
+  get stream(): ffmpeg.Stream {
+    return this.stream_;
+  }
+
+  codec(): ffmpeg.Codec {
+    return this.stream_.codecParameters().encodingCodec();
+  }
+
+  codecParameters(): ffmpeg.CodecParametersView {
+    return this.stream_.codecParameters();
+  }
+
+  context(): ffmpeg.AudioEncoderContext | ffmpeg.VideoEncoderContext | null {
+    return null;
   }
 
   isAudio(): boolean {
@@ -118,6 +131,20 @@ export class EncodedMediaReadable extends Readable {
 }
 
 /**
- * A generic compressed media stream to a Muxer.
+ * A generic compressed media stream
  */
 export class EncodedMediaWritable extends Writable { }
+
+/**
+ * Encoded audio stream
+ */
+export class EncodedAudioReadable extends EncodedMediaReadable {
+  type = 'Audio' as const;
+}
+
+/**
+ * Encoded video stream
+ */
+export class EncodedVideoReadable extends EncodedMediaReadable {
+  type = 'Video' as const;
+}
