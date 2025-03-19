@@ -10,13 +10,12 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
  * Its parameters are inherited from the Demuxer.
  */
 export class AudioDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable {
-  protected decoder: ffmpeg.AudioDecoderContext | null;
+  protected decoder: ffmpeg.AudioDecoderContext;
   protected busy: boolean;
   ready: boolean;
 
   constructor(options: { stream?: ffmpeg.Stream; }) {
     super();
-    this.decoder = null;
     if (!options.stream) {
       throw new Error('Input is not a demuxed stream');
     }
@@ -66,7 +65,7 @@ export class AudioDecoder extends MediaTransform implements MediaDecoder, Encode
   }
 
   codec() {
-    return this.decoder!.codec()!;
+    return this.decoder.codec();
   }
 
   definition(): AudioStreamDefinition {

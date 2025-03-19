@@ -12,14 +12,13 @@ export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL
  * Its parameters are inherited from the Demuxer.
  */
 export class VideoDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable {
-  protected decoder: ffmpeg.VideoDecoderContext | null;
+  protected decoder: ffmpeg.VideoDecoderContext;
   protected busy: boolean;
   protected stream: ffmpeg.Stream;
   ready: boolean;
 
   constructor(options: { stream: ffmpeg.Stream; }) {
     super();
-    this.decoder = null;
     if (!options.stream) {
       throw new Error('Input is not a demuxed stream');
     }
@@ -66,7 +65,7 @@ export class VideoDecoder extends MediaTransform implements MediaDecoder, Encode
   }
 
   codec() {
-    return this.decoder!.codec()!;
+    return this.decoder.codec()!;
   }
 
   definition(): VideoStreamDefinition {
