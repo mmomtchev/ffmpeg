@@ -40,7 +40,7 @@ When mixing synchronous and asynchronous low-level calls on the same objects wit
 
 Look carefully at the console messages if you intend to mix synchronous and asynchronous calls on the same objects. Going fully asynchronous not only is *the Node.js way*, it will also completely solve this problem and it is the recommended way to use this API.
 
-Note: A notable exception are the `BufferSinkFilterContext` and `BufferSrcFilterContext` `avcpp` classes. These are not completely reentrant on the `avcpp`/`ffmpeg` side, as they rely on shared internal buffers. Currently, it is not possible to read concurrently the audio and the video streams in multiple threads. The Streams API implementation has a reentrancy guard around these.
+Note: A notable exception are the `BufferSinkFilterContext` and `BufferSrcFilterContext` `avcpp` classes. Distinct instances linked to the same underlying `FilterContext` are not completely reentrant on the `avcpp`/`ffmpeg` side, as they rely on shared internal buffers. Currently, it is not possible to read concurrently the audio and the video streams in multiple threads. The Streams API implementation has a reentrancy guard around these. A future version might implement correct locking of the parent `FilterContext` when accessing those.
 
 ## Performance
 
