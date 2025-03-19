@@ -1,5 +1,5 @@
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { VideoStreamDefinition, MediaTransform, EncodedMediaWritable, MediaDecoder } from './MediaStream';
+import { VideoStreamDefinition, MediaTransform, EncodedMediaWritable, MediaDecoder, VideoReadable } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { VideoDecoderContext, Codec } = ffmpeg;
@@ -11,7 +11,7 @@ export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded video frames.
  * Its parameters are inherited from the Demuxer.
  */
-export class VideoDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable {
+export class VideoDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable, VideoReadable {
   protected decoder: ffmpeg.VideoDecoderContext;
   protected busy: boolean;
   protected stream: ffmpeg.Stream;

@@ -1,5 +1,5 @@
 import ffmpeg, { AudioDecoderContext, Codec } from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, EncodedMediaWritable, MediaDecoder, MediaTransform } from './MediaStream';
+import { AudioReadable, AudioStreamDefinition, EncodedMediaWritable, MediaDecoder, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
@@ -9,7 +9,7 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded audio samples
  * Its parameters are inherited from the Demuxer.
  */
-export class AudioDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable {
+export class AudioDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable, AudioReadable {
   protected decoder: ffmpeg.AudioDecoderContext;
   protected busy: boolean;
   ready: boolean;

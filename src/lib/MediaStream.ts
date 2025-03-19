@@ -62,26 +62,24 @@ export class MediaTransform extends Transform {
 export interface MediaStream extends EventEmitter {
   ready: boolean;
   definition(): MediaStreamDefinition;
-}
-
-/**
- * A generic encoding MediaStream, has a codec.
- */
-export interface MediaEncoder extends MediaStream {
   codec(): ffmpeg.Codec;
 }
 
 /**
- * A generic decoding MediaStream, has a codec.
+ * A generic encoding MediaStream
  */
-export interface MediaDecoder extends MediaStream {
-  codec(): ffmpeg.Codec;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface MediaEncoder extends MediaStream { }
+
+/**
+ * A generic decoding MediaStream
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface MediaDecoder extends MediaStream { }
 
 export interface EncodedMediaReadableOptions extends ReadableOptions {
   stream: ffmpeg.Stream;
 }
-
 
 /**
  * A generic encoded media stream
@@ -131,20 +129,67 @@ export class EncodedMediaReadable extends Readable {
 }
 
 /**
- * A generic compressed media stream
- */
-export class EncodedMediaWritable extends Writable { }
-
-/**
  * Encoded audio stream
  */
-export class EncodedAudioReadable extends EncodedMediaReadable {
-  type = 'Audio' as const;
+export interface EncodedAudioReadable extends EncodedMediaReadable {
+  type: 'Audio';
+  push(chunk: ffmpeg.Packet, encoding?: unknown): boolean;
 }
 
 /**
  * Encoded video stream
  */
-export class EncodedVideoReadable extends EncodedMediaReadable {
-  type = 'Video' as const;
+export interface EncodedVideoReadable extends EncodedMediaReadable {
+  type: 'Video';
+  push(chunk: ffmpeg.Packet, encoding?: unknown): boolean;
+}
+
+/**
+ * A generic encoded media stream
+ */
+export interface EncodedMediaWritable extends Writable {
+  _write(chunk: ffmpeg.Packet, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * A raw media stream
+ */
+export interface MediaWritable extends Writable {
+  _write(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+
+/**
+ * A video media stream
+ */
+export interface VideoWritable extends MediaWritable {
+  _write(chunk: ffmpeg.VideoFrame, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * An audio media stream
+ */
+export interface AudioWritable extends MediaWritable {
+  _write(chunk: ffmpeg.AudioSamples, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * A raw media stream
+ */
+export interface MediaReadable extends Readable {
+  push(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding?: unknown): boolean;
+}
+
+/**
+ * A video media stream
+ */
+export interface VideoReadable extends MediaReadable {
+  push(chunk: ffmpeg.VideoFrame, encoding?: unknown): boolean;
+}
+
+/**
+ * An audio media stream
+ */
+export interface AudioReadable extends MediaReadable {
+  push(chunk: ffmpeg.AudioSamples, encoding?: unknown): boolean;
 }

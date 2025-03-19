@@ -1,5 +1,5 @@
 import ffmpeg, { AudioEncoderContext, AudioSamples } from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, EncodedAudioReadable, MediaEncoder, MediaTransform } from './MediaStream';
+import { AudioStreamDefinition, AudioWritable, EncodedAudioReadable, MediaEncoder, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
@@ -9,7 +9,7 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
  * and write encoded audio data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class AudioEncoder extends MediaTransform implements MediaEncoder, EncodedAudioReadable {
+export class AudioEncoder extends MediaTransform implements MediaEncoder, EncodedAudioReadable, AudioWritable {
   protected def: AudioStreamDefinition;
   protected encoder: ffmpeg.AudioEncoderContext;
   protected codec_: ffmpeg.Codec;

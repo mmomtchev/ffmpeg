@@ -1,4 +1,4 @@
-import { EventEmitter, Readable, WritableOptions } from 'node:stream';
+import { EventEmitter, Readable, Writable, WritableOptions } from 'node:stream';
 import { EncodedMediaReadable, EncodedMediaWritable } from './MediaStream';
 import ffmpeg from '@mmomtchev/ffmpeg';
 
@@ -117,9 +117,9 @@ export class Muxer extends EventEmitter {
           context.addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
 
-      const writable = new EncodedMediaWritable({
+      const writable = new Writable({
         objectMode: true,
-        write: (chunk: ffmpeg.Packet, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
+        write: (chunk: ffmpeg.Packet, encoding: BufferEncoding, callback: (error?: Error | null) => void) => {
           this.write(+idx, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
@@ -157,7 +157,7 @@ export class Muxer extends EventEmitter {
             callback(null);
           }
         },
-      });
+      }) as EncodedMediaWritable;
       writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
 
