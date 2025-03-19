@@ -89,7 +89,7 @@ export class EncodedMediaReadable extends Readable {
   type: 'Audio' | 'Video';
 
   constructor(options: EncodedMediaReadableOptions) {
-    super(options);
+    super({ ...options, objectMode: true });
     this.stream_ = options.stream;
     if (this.stream_.isAudio())
       this.type = 'Audio';
