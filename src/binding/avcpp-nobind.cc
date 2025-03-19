@@ -460,11 +460,11 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&BufferSinkFilterContext::setFrameSize>(WASYNC("setFrameSize"))
       .def<&BufferSinkFilterContext::frameRate>(WASYNC("frameRate"))
       .def<&BufferSinkFilterContext::checkFilter>(WASYNC("checkFilter"))
+      // These are the async versions of the BufferSink functions
+      // which are global because of the limitations of Nobind
+      // we patch them at runtime in JS
       .typescript_fragment("  getAudioFrameAsync(): Promise<AudioSamples | null>;\n")
       .typescript_fragment("  getVideoFrameAsync(): Promise<VideoFrame | null>;\n");
-  // These are the async versions of the BufferSink functions
-  // which are global because of the limitations of Nobind
-  // we patch them at runtime in JS
   m.def<&GetAudioFrame, ReturnNullAsync>("_getAudioFrameAsync");
   m.def<&GetVideoFrame, ReturnNullAsync>("_getVideoFrameAsync");
 
