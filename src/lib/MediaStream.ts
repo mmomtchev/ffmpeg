@@ -47,6 +47,11 @@ export interface MediaTransformOptions extends TransformOptions {
   objectMode?: never;
 }
 
+// Alas, for truly typed object-mode streams
+// (TypedReadable<T>) we will have to wait for
+// the Node.js team to finish their lavish meals
+// (or for another hungry engineer to pop out)
+
 /**
  * A generic user-definable MediaTransform, uses object mode.
  */
