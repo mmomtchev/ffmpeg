@@ -50,7 +50,7 @@ export class Demuxer extends EventEmitter {
   protected inputFile: string | undefined;
   protected highWaterMark: number;
   protected formatContext: ffmpeg.FormatContext | undefined;
-  protected rawStreams: any[];
+  protected rawStreams: ffmpeg.Stream[];
   protected openOptions: Record<string, string>;
   streams: EncodedMediaReadable[];
   video: EncodedMediaReadable[];
@@ -99,7 +99,7 @@ export class Demuxer extends EventEmitter {
           read: (size: number) => {
             this.read(i, size);
           },
-          _stream: stream
+          stream: stream
         });
         this.rawStreams[i] = stream;
         if (stream.isVideo()) this.video.push(this.streams[i]);

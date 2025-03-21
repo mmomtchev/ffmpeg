@@ -1,4 +1,4 @@
-import { EventEmitter, Readable, WritableOptions } from 'node:stream';
+import { EventEmitter, Readable, Writable, WritableOptions } from 'node:stream';
 import { EncodedMediaReadable, EncodedMediaWritable } from './MediaStream';
 import ffmpeg from '@mmomtchev/ffmpeg';
 
@@ -64,7 +64,7 @@ export class Muxer extends EventEmitter {
   protected writing: boolean;
   protected primed: boolean;
   protected ended: number;
-  protected writingQueue: { idx: number, packet: any, callback: (error?: Error | null | undefined) => void; }[];
+  protected writingQueue: { idx: number, packet: ffmpeg.Packet, callback: (error?: Error | null | undefined) => void; }[];
   protected ready: Promise<void>[];
   protected delayedDestroy: Error | null;
   streams: EncodedMediaWritable[];
@@ -112,14 +112,14 @@ export class Muxer extends EventEmitter {
       }
       this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
-        const codec = this.rawStreams[idx].codec();
-        if (!(codec instanceof ffmpeg.CodecParametersView))
-          codec.addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
+        const context = this.rawStreams[idx].context();
+        if (context)
+          context.addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
       }
 
-      const writable = new EncodedMediaWritable({
+      const writable = new Writable({
         objectMode: true,
-        write: (chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
+        write: (chunk: ffmpeg.Packet, encoding: BufferEncoding, callback: (error?: Error | null) => void) => {
           this.write(+idx, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
@@ -157,7 +157,7 @@ export class Muxer extends EventEmitter {
             callback(null);
           }
         },
-      });
+      }) as EncodedMediaWritable;
       writable.on('error', this.destroy.bind(this));
       this.streams[+idx] = writable;
 
@@ -212,18 +212,19 @@ export class Muxer extends EventEmitter {
         // Two options:
         // - this is an encoding codec and we are working with an actual codec context
         // - this is simply a codec definition and we receiving pre-encoded data
-        const codec = this.rawStreams[idx].codec();
-        if (codec instanceof ffmpeg.CodecParametersView) {
+        const context = this.rawStreams[idx].context();
+        if (!context) {
           stream = this.formatContext.addStream();
-          codec.setCodecTag(0);
-          stream.setCodecParameters(codec);
+          const cp = this.rawStreams[idx].codecParameters();
+          cp.setCodecTag(0);
+          stream.setCodecParameters(cp);
         } else {
           if (this.rawStreams[idx].isVideo()) {
-            stream = await this.formatContext.addVideoStreamAsync(codec as ffmpeg.VideoEncoderContext);
-            const fr = await (await this.rawStreams[idx]._stream.streamAsync()).frameRateAsync();
+            stream = await this.formatContext.addVideoStreamAsync(context as ffmpeg.VideoEncoderContext);
+            const fr = await this.rawStreams[idx].stream_.frameRateAsync();
             stream.setFrameRate(fr);
           } else if (this.rawStreams[idx].isAudio()) {
-            stream = await this.formatContext.addAudioStreamAsync(codec as ffmpeg.AudioEncoderContext);
+            stream = await this.formatContext.addAudioStreamAsync(context as ffmpeg.AudioEncoderContext);
           } else {
             throw new Error('Unsupported stream type');
           }
@@ -248,7 +249,7 @@ export class Muxer extends EventEmitter {
     }
   }
 
-  protected write(idx: number, packet: any, callback: (error?: Error | null | undefined) => void): void {
+  protected write(idx: number, packet: ffmpeg.Packet, callback: (error?: Error | null | undefined) => void): void {
     if (this.delayedDestroy || this.destroyed) {
       verbose('Muxer: already destroyed');
       return void callback(this.delayedDestroy);

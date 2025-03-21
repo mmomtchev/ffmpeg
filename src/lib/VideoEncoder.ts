@@ -1,5 +1,5 @@
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { VideoStreamDefinition, MediaStream, MediaTransform, EncodedMediaReadable } from './MediaStream';
+import { VideoStreamDefinition, MediaTransform, MediaEncoder, EncodedVideoReadable, VideoWritable } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { VideoEncoderContext, VideoFrame } = ffmpeg;
@@ -11,11 +11,12 @@ export const verbose = (process.env.DEBUG_VIDEO_ENCODER || process.env.DEBUG_ALL
  * and write encoded video data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class VideoEncoder extends MediaTransform implements MediaStream, EncodedMediaReadable {
+export class VideoEncoder extends MediaTransform implements MediaEncoder, EncodedVideoReadable, VideoWritable {
   protected def: VideoStreamDefinition;
   protected encoder: ffmpeg.VideoEncoderContext;
   protected codec_: ffmpeg.Codec;
   protected busy: boolean;
+  stream_: ffmpeg.Stream;
   type = 'Video' as const;
   ready: boolean;
 
@@ -42,6 +43,7 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
       this.encoder.addFlags(def.flags);
     this.busy = false;
     this.ready = false;
+    this.stream_ = this.encoder.stream();
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -107,15 +109,23 @@ export class VideoEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  codec(): any {
-    return this.encoder;
+  get stream(): ffmpeg.Stream {
+    return this.stream_;
+  }
+
+  codec(): ffmpeg.Codec {
+    return this.encoder.codec();
+  }
+
+  codecParameters(): ffmpeg.CodecParametersView {
+    return this.stream_.codecParameters();
   }
 
   definition(): VideoStreamDefinition {
     return this.def;
   }
 
-  get _stream() {
+  context(): ffmpeg.VideoEncoderContext {
     return this.encoder;
   }
 

@@ -1,5 +1,5 @@
 import ffmpeg from '@mmomtchev/ffmpeg';
-import { VideoStreamDefinition, MediaStream, MediaTransform, EncodedMediaWritable } from './MediaStream';
+import { VideoStreamDefinition, MediaTransform, EncodedMediaWritable, MediaDecoder, VideoReadable } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 const { VideoDecoderContext, Codec } = ffmpeg;
@@ -11,22 +11,21 @@ export const verbose = (process.env.DEBUG_VIDEO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded video frames.
  * Its parameters are inherited from the Demuxer.
  */
-export class VideoDecoder extends MediaTransform implements MediaStream, EncodedMediaWritable {
-  protected decoder: ffmpeg.VideoDecoderContext | null;
+export class VideoDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable, VideoReadable {
+  protected decoder: ffmpeg.VideoDecoderContext;
   protected busy: boolean;
-  protected stream: any;
+  protected stream: ffmpeg.Stream;
   ready: boolean;
 
-  constructor(options: { _stream: any; }) {
+  constructor(options: { stream: ffmpeg.Stream; }) {
     super();
-    this.decoder = null;
-    if (!options._stream) {
+    if (!options.stream) {
       throw new Error('Input is not a demuxed stream');
     }
-    if (!options._stream.isVideo()) {
+    if (!options.stream.isVideo()) {
       throw new Error('Input is not video');
     }
-    this.stream = options._stream;
+    this.stream = options.stream;
     this.decoder = new VideoDecoderContext(this.stream);
     this.decoder.setRefCountedFrames(true);
     this.busy = false;
@@ -66,7 +65,7 @@ export class VideoDecoder extends MediaTransform implements MediaStream, Encoded
   }
 
   codec() {
-    return this.decoder;
+    return this.decoder.codec()!;
   }
 
   definition(): VideoStreamDefinition {

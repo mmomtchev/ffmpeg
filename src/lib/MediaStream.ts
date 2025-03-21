@@ -47,6 +47,11 @@ export interface MediaTransformOptions extends TransformOptions {
   objectMode?: never;
 }
 
+// Alas, for truly typed object-mode streams
+// (TypedReadable<T>) we will have to wait for
+// the Node.js team to finish their lavish meals
+// (or for another hungry engineer to pop out)
+
 /**
  * A generic user-definable MediaTransform, uses object mode.
  */
@@ -62,50 +67,61 @@ export class MediaTransform extends Transform {
 export interface MediaStream extends EventEmitter {
   ready: boolean;
   definition(): MediaStreamDefinition;
-}
-
-/**
- * A generic encoding MediaStream, has a codec.
- */
-export interface MediaEncoder extends MediaStream {
   codec(): ffmpeg.Codec;
 }
 
-export interface EncodedMediaReadableOptions extends ReadableOptions {
-  _stream?: ffmpeg.Stream | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext;
-}
-
+/**
+ * A generic encoding MediaStream
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface MediaEncoder extends MediaStream { }
 
 /**
- * A generic compressed media stream from a Demuxer.
+ * A generic decoding MediaStream
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface MediaDecoder extends MediaStream { }
+
+export interface EncodedMediaReadableOptions extends ReadableOptions {
+  stream: ffmpeg.Stream;
+}
+
+/**
+ * A generic encoded media stream
  */
 export class EncodedMediaReadable extends Readable {
-  _stream: any;
+  stream_: ffmpeg.Stream;
   type: 'Audio' | 'Video';
 
   constructor(options: EncodedMediaReadableOptions) {
-    super(options);
-    this._stream = options._stream;
-    if (this._stream.isAudio())
+    super({ ...options, objectMode: true });
+    this.stream_ = options.stream;
+    if (this.stream_.isAudio())
       this.type = 'Audio';
-    else if (this._stream.isVideo())
+    else if (this.stream_.isVideo())
       this.type = 'Video';
     else
       throw new Error(('Only Audio or Video streams supported'));
   }
 
-  // EncodedMediaReadable is synchronously ready unlike
-  // its compatible cousins AudioEncoder and VideoEncoder
   get ready(): boolean {
     return true;
   }
 
-  codec(): ffmpeg.CodecParametersView | ffmpeg.AudioDecoderContext | ffmpeg.AudioEncoderContext | ffmpeg.VideoDecoderContext | ffmpeg.VideoEncoderContext {
-    if (this._stream instanceof ffmpeg.Stream) {
-      return this._stream!.codecParameters();
-    } else {
-      return this._stream!;
-    }
+  get stream(): ffmpeg.Stream {
+    return this.stream_;
+  }
+
+  codec(): ffmpeg.Codec {
+    return this.stream_.codecParameters().encodingCodec();
+  }
+
+  codecParameters(): ffmpeg.CodecParametersView {
+    return this.stream_.codecParameters();
+  }
+
+  context(): ffmpeg.AudioEncoderContext | ffmpeg.VideoEncoderContext | null {
+    return null;
   }
 
   isAudio(): boolean {
@@ -118,6 +134,67 @@ export class EncodedMediaReadable extends Readable {
 }
 
 /**
- * A generic compressed media stream to a Muxer.
+ * Encoded audio stream
  */
-export class EncodedMediaWritable extends Writable { }
+export interface EncodedAudioReadable extends EncodedMediaReadable {
+  type: 'Audio';
+  push(chunk: ffmpeg.Packet, encoding?: BufferEncoding): boolean;
+}
+
+/**
+ * Encoded video stream
+ */
+export interface EncodedVideoReadable extends EncodedMediaReadable {
+  type: 'Video';
+  push(chunk: ffmpeg.Packet, encoding?: BufferEncoding): boolean;
+}
+
+/**
+ * A generic encoded media stream
+ */
+export interface EncodedMediaWritable extends Writable {
+  _write(chunk: ffmpeg.Packet, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * A raw media stream
+ */
+export interface MediaWritable extends Writable {
+  _write(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+
+/**
+ * A video media stream
+ */
+export interface VideoWritable extends MediaWritable {
+  _write(chunk: ffmpeg.VideoFrame, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * An audio media stream
+ */
+export interface AudioWritable extends MediaWritable {
+  _write(chunk: ffmpeg.AudioSamples, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): void;
+}
+
+/**
+ * A raw media stream
+ */
+export interface MediaReadable extends Readable {
+  push(chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding?: BufferEncoding): boolean;
+}
+
+/**
+ * A video media stream
+ */
+export interface VideoReadable extends MediaReadable {
+  push(chunk: ffmpeg.VideoFrame, encoding?: BufferEncoding): boolean;
+}
+
+/**
+ * An audio media stream
+ */
+export interface AudioReadable extends MediaReadable {
+  push(chunk: ffmpeg.AudioSamples, encoding?: BufferEncoding): boolean;
+}
