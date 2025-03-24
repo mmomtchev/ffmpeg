@@ -22,17 +22,17 @@ export interface FilterOptions {
 export class Filter extends EventEmitter {
   protected filterGraph: ffmpeg.FilterGraph;
   // The currently running filterGraph op, prevents reentering
-  protected filterGraphOp: Promise<void> | false;
+  protected filterGraphOp: Promise<unknown> | false;
   protected bufferSrc: Record<string, {
     type: 'Audio' | 'Video';
-    buffer: any;
+    buffer: ffmpeg.BufferSrcFilterContext;
     busy: boolean;
-    nullFrame: any;
+    nullFrame: ffmpeg.VideoFrame | ffmpeg.AudioSamples;
     id: string;
   }>;
   protected bufferSink: Record<string, {
     type: 'Audio' | 'Video';
-    buffer: any;
+    buffer: ffmpeg.BufferSinkFilterContext;
     waitingToRead: number;
     busy: boolean;
     id: string;
@@ -83,7 +83,7 @@ export class Filter extends EventEmitter {
     this.bufferSrc = {};
     for (const inp of Object.keys(options.inputs)) {
       const def = options.inputs[inp];
-      let nullFrame: any;
+      let nullFrame: ffmpeg.VideoFrame | ffmpeg.AudioSamples;
       let id: string;
       let type: 'Audio' | 'Video';
       if (isVideoDefinition(def)) {
@@ -106,7 +106,7 @@ export class Filter extends EventEmitter {
       };
       this.src[inp] = new Writable({
         objectMode: true,
-        write: (chunk: any, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
+        write: (chunk: ffmpeg.VideoFrame | ffmpeg.AudioSamples, encoding: BufferEncoding, callback: (error?: Error | null | undefined) => void) => {
           this.write(inp, chunk, callback);
         },
         destroy: (error: Error | null, callback: (error: Error | null) => void): void => {
@@ -183,7 +183,7 @@ export class Filter extends EventEmitter {
     this.emit('error', error);
   }
 
-  protected async write(id: string, frame: any, callback: (error?: Error | null | undefined) => void) {
+  protected async write(id: string, frame: ffmpeg.VideoFrame | ffmpeg.AudioSamples, callback: (error?: Error | null | undefined) => void) {
     const src = this.bufferSrc[id];
     if (!src) {
       return void callback(new Error(`Invalid buffer src [${id}]`));
@@ -256,7 +256,7 @@ export class Filter extends EventEmitter {
     }
     sink.busy = true;
 
-    let getFrame: () => Promise<any>;
+    let getFrame: () => Promise<ffmpeg.VideoFrame | ffmpeg.AudioSamples | null>;
     if (sink.type === 'Video') {
       getFrame = sink.buffer.getVideoFrameAsync.bind(sink.buffer);
     } else if (sink.type === 'Audio') {
@@ -264,17 +264,17 @@ export class Filter extends EventEmitter {
     } else {
       throw new Error('Only Video and Audio filtering is supported');
     }
-    let frame: any;
+    let frame: ffmpeg.VideoFrame | ffmpeg.AudioSamples;
     let more = true;
     do {
       while (this.filterGraphOp) await this.filterGraphOp;
       this.filterGraphOp = getFrame();
-      frame = await this.filterGraphOp;
+      frame = await this.filterGraphOp as ffmpeg.VideoFrame | ffmpeg.AudioSamples;
       this.filterGraphOp = false;
       if (frame) {
         verbose(`Filter: read sink [${id}] received: data, pts=${frame.pts().toString()}`);
         if (sink.type === 'Video') {
-          frame.setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
+          (frame as ffmpeg.VideoFrame).setPictureType(ffmpeg.AV_PICTURE_TYPE_NONE);
         }
         frame.setTimeBase(this.timeBase);
         frame.setStreamIndex(0);

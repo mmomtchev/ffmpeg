@@ -1,5 +1,5 @@
 import ffmpeg, { AudioDecoderContext, Codec } from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, MediaStream, MediaTransform } from './MediaStream';
+import { AudioReadable, AudioStreamDefinition, EncodedMediaWritable, MediaDecoder, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
@@ -9,21 +9,20 @@ export const verbose = (process.env.DEBUG_AUDIO_DECODER || process.env.DEBUG_ALL
  * from a Demuxer and write decoded audio samples
  * Its parameters are inherited from the Demuxer.
  */
-export class AudioDecoder extends MediaTransform implements MediaStream {
-  protected decoder: ffmpeg.AudioDecoderContext | null;
+export class AudioDecoder extends MediaTransform implements MediaDecoder, EncodedMediaWritable, AudioReadable {
+  protected decoder: ffmpeg.AudioDecoderContext;
   protected busy: boolean;
   ready: boolean;
 
-  constructor(options: { _stream?: ffmpeg.Stream; }) {
+  constructor(options: { stream?: ffmpeg.Stream; }) {
     super();
-    this.decoder = null;
-    if (!options._stream) {
+    if (!options.stream) {
       throw new Error('Input is not a demuxed stream');
     }
-    if (!options._stream.isAudio()) {
+    if (!options.stream.isAudio()) {
       throw new Error('Input is not audio');
     }
-    this.decoder = new AudioDecoderContext(options._stream);
+    this.decoder = new AudioDecoderContext(options.stream);
     this.decoder.setRefCountedFrames(true);
     this.busy = false;
     this.ready = false;
@@ -61,8 +60,12 @@ export class AudioDecoder extends MediaTransform implements MediaStream {
       .catch(callback);
   }
 
-  codec() {
+  context() {
     return this.decoder;
+  }
+
+  codec() {
+    return this.decoder.codec();
   }
 
   definition(): AudioStreamDefinition {

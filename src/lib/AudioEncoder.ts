@@ -1,5 +1,5 @@
 import ffmpeg, { AudioEncoderContext, AudioSamples } from '@mmomtchev/ffmpeg';
-import { AudioStreamDefinition, EncodedMediaReadable, MediaStream, MediaTransform } from './MediaStream';
+import { AudioStreamDefinition, AudioWritable, EncodedAudioReadable, MediaEncoder, MediaTransform } from './MediaStream';
 import { TransformCallback } from 'stream';
 
 export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
@@ -9,10 +9,11 @@ export const verbose = (process.env.DEBUG_AUDIO_ENCODER || process.env.DEBUG_ALL
  * and write encoded audio data to a Muxer.
  * Its parameters must be explicitly configured.
  */
-export class AudioEncoder extends MediaTransform implements MediaStream, EncodedMediaReadable {
+export class AudioEncoder extends MediaTransform implements MediaEncoder, EncodedAudioReadable, AudioWritable {
   protected def: AudioStreamDefinition;
   protected encoder: ffmpeg.AudioEncoderContext;
   protected codec_: ffmpeg.Codec;
+  stream_: ffmpeg.Stream;
   protected busy: boolean;
   type = 'Audio' as const;
   ready: boolean;
@@ -37,6 +38,7 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
     this.encoder.setSampleRate(this.def.sampleRate);
     this.busy = false;
     this.ready = false;
+    this.stream_ = this.encoder.stream();
   }
 
   _construct(callback: (error?: Error | null | undefined) => void): void {
@@ -98,15 +100,23 @@ export class AudioEncoder extends MediaTransform implements MediaStream, Encoded
       .catch(callback);
   }
 
-  codec(): ffmpeg.AudioEncoderContext {
-    return this.encoder;
+  get stream(): ffmpeg.Stream {
+    return this.stream_;
+  }
+
+  codec(): ffmpeg.Codec {
+    return this.encoder.codec();
+  }
+
+  codecParameters(): ffmpeg.CodecParametersView {
+    return this.stream_.codecParameters();
   }
 
   definition(): AudioStreamDefinition {
     return this.def;
   }
 
-  get _stream(): any {
+  context(): ffmpeg.AudioEncoderContext {
     return this.encoder;
   }
 
