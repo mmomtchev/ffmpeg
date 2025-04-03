@@ -1,10 +1,10 @@
 from conan import ConanFile
 
-required_conan_version = ">=1.60.0"
+required_conan_version = ">=2.0.0"
 
 class ffmpeg(ConanFile):
     settings = 'os', 'compiler', 'build_type', 'arch'
-    requires = 'ffmpeg/6.1.1'
+    requires = 'ffmpeg/7.1.1'
     tool_requires = 'pkgconf/2.1.0'
     generators = 'MesonToolchain', 'PkgConfigDeps'
 

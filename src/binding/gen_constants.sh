@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FFMPEG=`npx xpm run -q conan -- cache path --folder source ffmpeg/6.1.1`
+FFMPEG=`npx xpm run -q conan -- cache path --folder source ffmpeg/7.1.1`
 
 if [ -z "${SED}" ]; then
   SED=sed
