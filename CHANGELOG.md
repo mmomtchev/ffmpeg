@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 # [2.0.0]
+ - Update `avcpp` to 2.6.0 and `ffmpeg` to 7.1.1
  - Full TypeScript types for all `avcpp` methods and data structures
  - Fully asynchronous bindings, each method has an `...Async` counterpart
  - Fully thread-safe (see warning) in async mode
