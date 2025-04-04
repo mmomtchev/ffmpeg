@@ -14,7 +14,7 @@ export interface MediaStreamDefinition {
   type: StreamType;
   bitRate: number;
   codec: ffmpeg.AVCodecID | ffmpeg.Codec;
-  timeBase: ffmpeg.Rational;
+  timeBase?: ffmpeg.Rational;
   codecOptions?: Record<string, string>;
 }
 
