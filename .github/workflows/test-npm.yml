@@ -37,7 +37,7 @@ jobs:
         node-version: [18.x, 20.x, 22.x]
         options:
           - ''
-          - '--rebuild-from-source'
+          - '--build-from-source'
 
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
