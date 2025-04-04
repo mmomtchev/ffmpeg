@@ -24,7 +24,7 @@ Currently the project has a first beta release on `npm`.
 
 ## Memory safety
 
-You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use. There are many cases in which a video frame will simply be identified by a raw C pointer - in this case trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.
+You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use. **There are many cases in which a video frame will simply be identified by a raw C pointer - in this case trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.**
 
 These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
 
@@ -171,6 +171,7 @@ You should start by looking at the unit tests which are also meant to be used as
   * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
   * [`streaming.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/streaming.test.ts) contains examples for transcoding to various formats and sending the resulting data to a Node.js `WriteStream`
   * [`filtering.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/filtering.test.ts) contains several examples for using ffmpeg's filters including overlaying text or Picture-in-Picture that are fast enough to be used in real-time
+  * [`slideshow.ts`](https://github.com/mmomtchev/guerilla-slides/blob/main/slideshow.ts`) is my quick script that produces the animated GIFs that use for my guerilla presentations made with `mdslides`
 
   ---
 

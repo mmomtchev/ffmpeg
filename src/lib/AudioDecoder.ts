@@ -71,13 +71,13 @@ export class AudioDecoder extends MediaTransform implements MediaDecoder, Encode
   definition(): AudioStreamDefinition {
     return {
       type: 'Audio',
-      bitRate: this.decoder!.bitRate(),
-      codec: this.decoder!.codec(),
-      sampleFormat: this.decoder!.sampleFormat(),
-      sampleRate: this.decoder!.sampleRate(),
-      channelLayout: new ffmpeg.ChannelLayout(this.decoder!.channelLayout()),
-      frameSize: this.decoder!.frameSize(),
-      timeBase: this.decoder!.timeBase()
+      bitRate: this.decoder.bitRate(),
+      codec: this.decoder.codec(),
+      sampleFormat: this.decoder.sampleFormat(),
+      sampleRate: this.decoder.sampleRate(),
+      channelLayout: new ffmpeg.ChannelLayout(this.decoder.channelLayout()),
+      frameSize: this.decoder.frameSize(),
+      timeBase: this.decoder.timeBase()
     } as AudioStreamDefinition;
   }
 }
