@@ -64,7 +64,7 @@ jobs:
       - name: Set up the unit tests
         run: |
           mv node_modules/@mmomtchev/ffmpeg/test .
-          npm install @types/chai@4.3.10 @types/mocha @types/node chai@4.3.10 magickwand.js mocha ts-node readable-stream-clone
+          npm install @types/chai@4.3.16 @types/mocha @types/node chai@4.3.7 magickwand.js mocha ts-node readable-stream-clone
         shell: bash
       - name: Node options
         shell: bash
