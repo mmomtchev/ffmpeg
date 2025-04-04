@@ -102,7 +102,7 @@ jobs:
         fetch-depth: 0
         submodules: true
 
-    - run: npm install --skip-node-ffmpeg-binary
+    - run: npm install --ignore-scripts
     - name: Download the artifact for linux-x64
       uses: actions/download-artifact@v4
       with:
