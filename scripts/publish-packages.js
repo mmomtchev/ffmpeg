@@ -31,7 +31,14 @@ const workflowPublishMatch = /[pP]ublish/;
     process.stdout.write(' no publishing workflow found\n');
     return;
   }
-  const workflowPublish = { ...pkg, workflow_id: workflowPublishId, ref: `v${version}` };
+  const workflowPublish = {
+    ...pkg,
+    workflow_id: workflowPublishId,
+    ref: `v${version}`,
+    inputs: {
+      prerelease: !!process.env.npm_config_preid
+    }
+  };
 
   process.stdout.write(`launching Github actions build on branch ${branch} for ${version}, tag ${workflowPublish.ref}`);
   await octokit.request('POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches', workflowPublish);
