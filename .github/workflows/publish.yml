@@ -102,7 +102,7 @@ jobs:
         fetch-depth: 0
         submodules: true
 
-    - run: npm install
+    - run: npm install --skip-node-ffmpeg-binary
     - run: npm pack
     - name: Get version
       id: version
