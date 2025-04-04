@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Fully thread-safe (see warning) in async mode
  - New [`hadron`](https://github.com/mmomtchev/hadron)-based build with Conan 2
  - Support copying streams without transcoding - by piping an encoded output from a `Demuxer` directly to a `Muxer`
+ - Drop macOS 12 support
 
 ### [1.0.1] 2025-01-15
  - Update ffmpeg to 6.1.1
