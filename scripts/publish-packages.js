@@ -46,9 +46,7 @@ const workflowPublishMatch = /[pP]ublish/;
   let status;
   do {
     process.stdout.write('.');
-    // eslint-disable-next-line no-await-in-loop
     await new Promise((res) => setTimeout(res, 5000));
-    // eslint-disable-next-line no-await-in-loop
     status = await octokit.request(`GET /repos/{owner}/{repo}/actions/workflows/${workflowPublishId}/runs`,
       { ...pkg, per_page: 1, page: 0 });
   } while (status.data.workflow_runs[0].status !== 'completed');
