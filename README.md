@@ -26,7 +26,7 @@ Currently the project has a first beta release on `npm`.
 
 You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use. **There are many cases in which a video frame will simply be identified by a raw C pointer - in this case trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.**
 
-These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched.
 
 The current goal of `node-ffmpeg` is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
 
@@ -171,7 +171,6 @@ You should start by looking at the unit tests which are also meant to be used as
   * [`resample.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/resample.test.ts) contains a simple example for resampling audio using ffmpeg's built-in `libswresample`
   * [`streaming.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/streaming.test.ts) contains examples for transcoding to various formats and sending the resulting data to a Node.js `WriteStream`
   * [`filtering.test.ts`](https://github.com/mmomtchev/ffmpeg/blob/main/test/filtering.test.ts) contains several examples for using ffmpeg's filters including overlaying text or Picture-in-Picture that are fast enough to be used in real-time
-  * [`slideshow.ts`](https://github.com/mmomtchev/guerilla-slides/blob/main/slideshow.ts`) is my quick script that produces the animated GIFs that use for my guerilla presentations made with `mdslides`
 
   ---
 
@@ -182,6 +181,7 @@ You should start by looking at the unit tests which are also meant to be used as
 
   * [`data-is-beautiful/orbital-launches/`](https://github.com/mmomtchev/data-is-beautiful/tree/main/orbital-launches) is a real data visualization generated with `@mmomtchev/ffmpeg` and [`magickwand.js`](https://github.com/mmomtchev/magickwand.js/)
   * [`orbitron`](https://github.com/mmomtchev/orbitron.git) is a tool for making short animations of objects in the Solar System using the NASA/JPL Horizons API - it can produce `mp4` and `gif` videos using `@mmomtchev/ffmpeg`
+  * [`slideshow.ts`](https://github.com/mmomtchev/guerilla-slides/blob/main/slideshow.ts`) is my quick script that produces the animated GIFs that use for my guerilla presentations made with `mdslides`
 
 ## Supported pixel and audio formats
 
@@ -194,6 +194,12 @@ You should start by looking at the unit tests which are also meant to be used as
 * Container Formats
   * [Full List](https://github.com/FFmpeg/FFmpeg/blob/master/libavformat/allformats.c)
   * [Each Invidiual Format](https://github.com/FFmpeg/FFmpeg/tree/master/libavformat)
+
+## Troubleshooting
+
+With `ffmpeg`, very often the most useful information is not in the exception message, but rather in the verbose console output. Use `ffmpeg.setLogLevel` to set the verbose output to `ffmpeg.AV_LOG_DEBUG`, `ffmpeg.AV_LOG_VERBOSE`, `ffmpeg.AV_LOG_WARNING`, `ffmpeg.AV_LOG_ERROR` or `ffmpeg.AV_LOG_QUIET`.
+
+Debug output from the Streams API requires transpiling the TypeScript code in debug mode with `TSC_DEBUG=1` environment variable set by launching `npm run prepare`, then using `DEBUG_AUDIO_DECODER`, `DEBUG_AUDIO_ENCODER`, `DEBUG_AUDIO_TRANSFORM`, `DEBUG_DEMUXER`, `DEBUG_FILTER`, `DEBUG_MUXER`, `DEBUG_VIDEO_DECODER`, `DEBUG_VIDEO_ENCODER` or `DEBUG_ALL`.
 
 # Security
 

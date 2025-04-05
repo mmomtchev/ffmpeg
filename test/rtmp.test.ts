@@ -58,7 +58,7 @@ describe('using ffmpeg built-in networking', () => {
         // The method which binds ffmpeg to the port does not return until a client has connected
         setTimeout(() => {
           // Setup the client
-          const client = new Demuxer({ inputFile: 'rtmp://localhost:9099/show' });
+          const client = new Demuxer({ inputFile: 'rtmp://localhost:9099/video' });
           client.on('error', done);
           // Wait for the client to start streaming
           client.on('ready', () => {
