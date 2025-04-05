@@ -102,19 +102,19 @@ export class Muxer extends EventEmitter {
     this.formatContext = new FormatContext;
     this.formatContext.setOutputFormat(this.outputFormat);
 
+    // Collect all the async events that must
+    // happen for the Muxer to be ready
     for (const idx in this.rawStreams) {
       if (!this.rawStreams[idx].ready) {
-        this.ready[idx] = new Promise((resolve) => {
+        this.ready.push(new Promise((resolve) => {
           this.rawStreams[idx].on('ready', resolve);
-        });
-      } else {
-        this.ready[idx] = Promise.resolve();
+        }));
       }
       this.rawStreams[idx].on('error', this.destroy.bind(this));
       if (this.outputFormat.isFlags(ffmpeg.AV_FMT_GLOBALHEADER)) {
         const context = this.rawStreams[idx].context();
         if (context)
-          context.addFlags(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER);
+          this.ready.push(context.addFlagsAsync(ffmpeg.AV_CODEC_FLAG_GLOBAL_HEADER));
       }
 
       const writable = new Writable({
