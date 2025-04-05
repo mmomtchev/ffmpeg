@@ -26,7 +26,7 @@ Currently the project has a first beta release on `npm`.
 
 You should be aware that `ffmpeg` is a low-level C API and it is very unsafe to use. **There are many cases in which a video frame will simply be identified by a raw C pointer - in this case trying to interpret 720p as 1080p will always end up with a segfault. `avcpp` adds a semi-safe layer on top of it, but mismatching stream parameters will still lead to a segfault. Producing a completely safe wrapper that never segfaults, no matter what the user does, is a gargantuan task that is currently not planned.**
 
-These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched - or if the asynchronous methods are reentered.
+These bindings should never segfault if all the parameters are correctly checked and set up - but may easily segfault if these are mismatched.
 
 The current goal of `node-ffmpeg` is to simply be able to guarantee that a ***correct*** JavaScript code will never segfault on any input file.
 
