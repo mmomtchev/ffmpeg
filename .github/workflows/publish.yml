@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ubuntu-20.04
+          - platform: ubuntu-22.04
             id: linux-x64
           - platform: macos-14
             id: darwin-arm64
