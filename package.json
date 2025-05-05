@@ -64,7 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "c8": "^10.0.0",
     "chai": "^4.3.10",
-    "eslint-plugin-mocha": "^10.2.0",
+    "eslint-plugin-mocha": "^11.0.0",
     "globals": "^16.0.0",
     "magickwand.js": "^2.0.1",
     "mocha": "^11.0.1",
