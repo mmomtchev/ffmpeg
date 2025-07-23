@@ -9,7 +9,7 @@ on:
       debug:
         type: boolean
         default: false
-        description: Debug build
+        description: native-debug build
       codecov:
         type: boolean
         default: false
@@ -68,19 +68,19 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ steps.conan_home.outputs.path }}
-        key: conan-${{ inputs.platform }}-${{ inputs.debug && 'Debug' || 'Release' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
+        key: conan-${{ inputs.platform }}-${{ inputs.debug && 'native-debug' || 'native' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
     - run: npm install --build-from-source --verbose --foreground-scripts
       env:
         PKG_CONFIG_PATH:
 
-    - run: npx xpm run prepare --config ${{ inputs.debug && 'Debug' || 'Release' }}
+    - run: npx xpm run prepare --config ${{ inputs.debug && 'native-debug' || 'native' }}
       if: inputs.asan || inputs.codecov || inputs.debug
       env:
         PKG_CONFIG_PATH:
 
     - name: (ASAN) build and run the TS generator
-      run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+      run: npx xpm run build --config ${{ inputs.debug && 'native-debug' || 'native' }}
       if: inputs.asan
     - name: (ASAN) configure
       run: npx xpm run configure -- -Db_sanitize=address
@@ -89,7 +89,7 @@ jobs:
       run: npx xpm run configure -- -Db_coverage=true -Dbuildtype=debugoptimized '-Dcpp_args="--coverage -ftest-coverage"'
       if: inputs.codecov
 
-    - run: npx xpm run build --config ${{ inputs.debug && 'Debug' || 'Release' }}
+    - run: npx xpm run build --config ${{ inputs.debug && 'native-debug' || 'native' }}
       if: inputs.asan || inputs.codecov || inputs.debug
 
     - run: npm test
