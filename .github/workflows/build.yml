@@ -53,7 +53,7 @@ jobs:
       shell: bash
       if: inputs.debug
 
-    - run: npm install --mmomtchev_ffmpeg_skip_native
+    - run: npm install xpm
     - run: npx xpm install
 
     - name: Get conan home
