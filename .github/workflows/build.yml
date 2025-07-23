@@ -53,8 +53,7 @@ jobs:
       shell: bash
       if: inputs.debug
 
-    - run: npm install magickwand.js
-    - run: npm install --ignore-scripts
+    - run: npm install --mmomtchev_ffmpeg_skip_native
     - run: npx xpm install
 
     - name: Get conan home
@@ -70,7 +69,7 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'native-debug' || 'native' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}
 
-    - run: npm install --build-from-source --verbose --foreground-scripts
+    - run: npm install --mmomtchev_ffmpeg_build_from_source --verbose --foreground-scripts
       env:
         PKG_CONFIG_PATH:
 
