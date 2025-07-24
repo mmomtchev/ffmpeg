@@ -60,6 +60,8 @@ if get_option('b_sanitize') == 'none'
       '@OUTPUT@',
     ],
     install: true,
-    install_dir: '',
+    # The root dir is ./lib/binding/platform-arch
+    # while index.d.ts goes in ./lib/binding
+    install_dir: '..',
   )
 endif
