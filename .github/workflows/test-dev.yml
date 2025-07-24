@@ -2,53 +2,11 @@ name: Node.js CI
 
 on:
   push:
-    branches: main
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'README.md'
-  pull_request:
-    branches: main
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - 'README.md'
+    branches: '*'
 
 jobs:
-  release:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
-    uses:
-      ./.github/workflows/build.yml
-    with:
-      platform: ${{ matrix.platform }}
-
-
-  standalone_build:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
-    uses:
-      ./.github/workflows/build.yml
-    with:
-      platform: ${{ matrix.platform }}
-      extra_npm_options: '--mmomtchev_ffmpeg_enable_standalone_build'
-
-  debug:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ ubuntu-latest, macos-13 ]
-    uses:
-      ./.github/workflows/build.yml
-    with:
-      platform: ${{ matrix.platform }}
-      debug: true
-
-
-  lint:
-    runs-on: ubuntu-latest
+  python:
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -62,22 +20,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.11"
-    - run: npm install --ignore-scripts
-    - run: npm install typescript
-    - run: npm run lint
-
-
-  asan:
-    uses:
-      ./.github/workflows/build.yml
-    with:
-      platform: ubuntu-22.04
-      asan: true
-
-
-  codecov:
-    uses:
-      ./.github/workflows/build.yml
-    with:
-      platform: ubuntu-22.04
-      codecov: true
+    - run: npm install
+    - run: npx xpm install
+    - run: npx xpm run python -- --version
+    - run: npx xpm run conan -- version
