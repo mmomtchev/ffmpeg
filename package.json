@@ -36,7 +36,10 @@
     "hosting": {
       "provider": "github",
       "repo": "mmomtchev/ffmpeg"
-    }
+    },
+    "napi_versions": [
+      6
+    ]
   },
   "author": "Momtchil Momtchev <momtchil@momtchev.com>",
   "license": "ISC",
