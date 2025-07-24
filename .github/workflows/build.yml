@@ -73,7 +73,7 @@ jobs:
         path: ${{ steps.conan_home.outputs.path }}
         key: conan-${{ inputs.platform }}-${{ inputs.debug && 'native-debug' || 'native' }}${{ inputs.codecov && 'codecov' || '' }}${{ inputs.asan && 'asan' || '' }}${{ inputs.extra_npm_options }}
 
-    - run: npm install --mmomtchev_ffmpeg_build_from_source --verbose --foreground-scripts
+    - run: npm install --mmomtchev_ffmpeg_build_from_source --verbose --foreground-scripts ${{ inputs.extra_npm_options }}
       env:
         PKG_CONFIG_PATH:
 
