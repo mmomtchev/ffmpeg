@@ -20,7 +20,7 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: "3.11"
-    - run: npm install
+    - run: npm install --verbose --foreground-scripts
     - run: npx xpm install
     - run: npx xpm run python -- --version
     - run: npx xpm run conan -- version
