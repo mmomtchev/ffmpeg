@@ -21,7 +21,7 @@ jobs:
             id: darwin-arm64
           - platform: macos-13
             id: darwin-x64
-          - platform: windows-2019
+          - platform: windows-2022
             id: win32-x64
 
     uses:
