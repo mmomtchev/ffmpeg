@@ -31,13 +31,23 @@ endif
 avcpp_proj = subproject('avcpp', default_options: ['default_library=static'])
 avcpp_dep = avcpp_proj.get_variable('avcpp_dep')
 
+# This clash between Node.js and meson design principles is horrible:
+#  the path to nobind17 is relative in development and absolute in production
+fs = import('fs')
+nobind17_inc = include_directories(
+  fs.relative_to(
+    run_command('node', '-p', 'require("nobind17").include', check: true).stdout().strip().replace('"', ''),
+    meson.current_source_dir(),
+  ),
+)
+
 # --------------------
 # Build the module
 # --------------------
 binary = napi.extension_module(
   module_name,
   sources,
-  include_directories: ['src', 'node_modules/nobind17/include'],
+  include_directories: ['src', nobind17_inc],
   install: true,
   dependencies: [avcpp_dep],
   cpp_args: cpp_args,
