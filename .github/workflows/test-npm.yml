@@ -60,6 +60,8 @@ jobs:
       - name: Install @mmomtchev/ffmpeg from ${{ inputs.package }}
         run: npm install ${{ inputs.package }} --foreground-scripts --verbose ${{ matrix.options }}
         shell: bash
+        env:
+          PKG_CONFIG_PATH:
       - name: Set up the unit tests
         run: |
           mv node_modules/@mmomtchev/ffmpeg/test .
