@@ -50,7 +50,7 @@
   "homepage": "https://github.com/mmomtchev/ffmpeg#readme",
   "dependencies": {
     "@mmomtchev/prebuild-install": "^1.0.2",
-    "nobind17": "^2.0.0-rc.3",
+    "nobind17": "^2.0.0",
     "node-addon-api": "^8.0.0"
   },
   "devDependencies": {
