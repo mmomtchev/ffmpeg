@@ -472,6 +472,10 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
   REGISTER_ENUM(FilterMediaType, Audio);
   REGISTER_ENUM(FilterMediaType, Video);
 
+  m.typescript_fragment("import { Readable, Writable } from 'stream';\n"
+                        "export class CustomIO { }\n"
+                        "export class WritableCustomIO extends Writable implements CustomIO { }\n"
+                        "export class ReadableCustomIO extends Readable implements CustomIO { }\n");
   m.Exports().Set("WritableCustomIO", WritableCustomIO::GetClass(m.Env()));
   m.Exports().Set("ReadableCustomIO", ReadableCustomIO::GetClass(m.Env()));
 
