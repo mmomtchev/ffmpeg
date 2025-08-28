@@ -1,9 +1,13 @@
 {
+    "env": {
+        "ffmpeg": "${command:Get ffmpeg includedir}"
+    },
     "configurations": [
         {
             "name": "Linux",
             "includePath": [
-                "${env:HOME}/.conan/data/ffmpeg/**",
+                "${env:HOME}/.cache/hadron/p/b/**",
+                "${env:HOME}/.cache/node-hadron/node/**",
                 "${workspaceFolder}/deps/avcpp/src",
                 "/usr/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
@@ -16,9 +20,9 @@
         {
             "name": "macOS",
             "includePath": [
-                "${env:HOME}/.conan/data/ffmpeg/**",
+                "${env:HOME}/Library/Caches/hadron/p/b/**",
+                "${env:HOME}/Library/Caches/node-hadron/node/**",
                 "${workspaceFolder}/deps/avcpp/src",
-                "/usr/local/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
@@ -29,9 +33,9 @@
         {
             "name": "Windows",
             "includePath": [
-                "${env:USERPROFILE}/.conan/data/ffmpeg/**",
+                "${env:USERPROFILE}/AppData/Local/hadron/p/b/**",
+                "${env:USERPROFILE}/AppData/Local/node-hadron/node/**",
                 "${workspaceFolder}/deps/avcpp/src",
-                "${env:USERPROFILE}/AppData/Local/node-gyp/Cache/**",
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
