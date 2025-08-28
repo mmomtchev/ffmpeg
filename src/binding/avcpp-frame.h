@@ -34,7 +34,7 @@ public:
   ToJS(const ToJS &) = delete;
   ToJS(ToJS &&) = delete;
 
-  static const std::string TSType() { return "VideoFrameBuffer"; };
+  static const std::string TSType() { return "Buffer<ArrayBuffer>"; };
 };
 
 } // namespace Typemap

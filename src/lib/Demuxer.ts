@@ -82,10 +82,12 @@ export class Demuxer extends EventEmitter {
       if (this.inputFile) {
         verbose(`Demuxer: opening ${this.inputFile}`, this.openOptions);
         await this.formatContext.openInputOptionsAsync(this.inputFile, this.openOptions);
-      } else {
+      } else if (this.input) {
         verbose('Demuxer: reading from ReadStream');
         const format = new ffmpeg.InputFormat;
         await this.formatContext.openWritableAsync(this.input, format, this.highWaterMark);
+      } else {
+        throw new Error('No filename nor a stream provided');
       }
       await this.formatContext.findStreamInfoAsync();
 

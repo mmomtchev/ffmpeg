@@ -29,13 +29,13 @@ struct BufferWritableItem {
   Napi::ThreadSafeFunction callback;
 };
 
-// This class is very touchy and it is implemented manually.
-// It is far beyond the current scope of nobind17.
+// Theses classes are very touchy and they are implemented manually.
+// This is far beyond the current scope of nobind17.
 //
-// It inherits both from the JS Readable and the C++ av::CustomIO.
+// They inherit both from the JS Readable/Writable and the C++ av::CustomIO.
 //
-// As it must bridge between the sync IO of ffmpeg/avcpp and async IO of Node.js,
-// it is compatible only with async mode. Its C++ read may be called only from a background
+// As they must bridge between the sync IO of ffmpeg/avcpp and async IO of Node.js,
+// this is compatible only with async mode. The C++ read may be called only from a background
 // thread in which case it will block until the main JS thread has delivered more data.
 //
 // This uses my technique for extending JS classes in C++ by using node-addon-api:
