@@ -1,4 +1,3 @@
-export type * as ffmpeg from '../../lib/binding/index.d.ts';
 export { AudioStreamDefinition, VideoStreamDefinition, MediaStream, MediaStreamDefinition, MediaTransform } from './MediaStream';
 export { Muxer } from './Muxer';
 export { Demuxer } from './Demuxer';
