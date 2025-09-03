@@ -67,17 +67,9 @@ jobs:
           mv node_modules/@mmomtchev/ffmpeg/test .
           npm install @types/chai@4.3.16 @types/mocha @types/node chai@4.3.7 magickwand.js mocha ts-node readable-stream-clone
         shell: bash
-      - name: Node options
-        shell: bash
-        run: echo 'MOCHA_NODE_OPTIONS=--v8-expose-gc' >> $GITHUB_ENV
-        if: matrix.node-version != '23.x'
-      - name: Node options
-        shell: bash
-        run: echo 'MOCHA_NODE_OPTIONS=--node-option=no-experimental-strip-types --node-option=expose-gc' >> $GITHUB_ENV
-        if: matrix.node-version == '23.x'
       - name: Run the unit tests
         run: |
           cd test
-          npx mocha ${{ env.MOCHA_NODE_OPTIONS }} --reporter=tap -r ts-node/register --timeout 120000 *.cjs *.mjs *.ts
+          npx mocha --v8-expose-gc --reporter=tap -r ts-node/register --timeout 120000 *.cjs *.mjs *.ts
         env:
           TS_NODE_PROJECT: tsconfig.test.json
