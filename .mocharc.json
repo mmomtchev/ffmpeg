@@ -1,0 +1,11 @@
+{
+  "spec": "test/*.test.@(mjs|cjs|js|ts)",
+  "require": [
+    "tsx",
+    "tsconfig-paths/register",
+    "./test/setup.ts"
+  ],
+  "reporter": "tap",
+  "timeout": 120000,
+  "v8-expose-gc": true
+}

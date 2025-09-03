@@ -103,7 +103,7 @@
         "0",
         "--v8-expose-gc",
         "--require",
-        "ts-node/register",
+        "tsx",
         "--require",
         "tsconfig-paths/register",
         "test/*.test.ts"

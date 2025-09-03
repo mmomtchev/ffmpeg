@@ -22,12 +22,6 @@
       }
     ]
   },
-  "ts-node": {
-    "compilerOptions": {
-      "target": "es2015",
-      "module": "commonjs"
-    }
-  },
   "include": [
     "src/lib/*.ts"
   ],
