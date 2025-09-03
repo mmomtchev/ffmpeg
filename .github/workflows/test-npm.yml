@@ -65,11 +65,11 @@ jobs:
       - name: Set up the unit tests
         run: |
           mv node_modules/@mmomtchev/ffmpeg/test .
-          npm install @types/chai@4.3.16 @types/mocha @types/node chai@4.3.7 magickwand.js mocha ts-node readable-stream-clone
+          npm install @types/chai@4.3.16 @types/mocha @types/node chai@4.3.7 magickwand.js mocha tsx readable-stream-clone
         shell: bash
       - name: Run the unit tests
         run: |
           cd test
-          npx mocha --v8-expose-gc --reporter=tap -r ts-node/register --timeout 120000 *.cjs *.mjs *.ts
+          npx mocha --v8-expose-gc --reporter=tap -r tsx --timeout 120000 *.cjs *.mjs *.ts
         env:
           TS_NODE_PROJECT: tsconfig.test.json
