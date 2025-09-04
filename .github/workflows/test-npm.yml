@@ -70,6 +70,5 @@ jobs:
       - name: Run the unit tests
         run: |
           cd test
+          npx tsc -p test/tsconfig.test.json --noEmit
           npx mocha --v8-expose-gc --reporter=tap -r tsx --timeout 120000 *.cjs *.mjs *.ts
-        env:
-          TS_NODE_PROJECT: tsconfig.test.json
