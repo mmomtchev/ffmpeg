@@ -54,7 +54,7 @@
   "dependencies": {
     "@mmomtchev/hadron": "github:mmomtchev/hadron-js",
     "@mmomtchev/prebuild-install": "^1.0.2",
-    "@mmomtchev/xpm": "github:mmomtchev/xpm-js",
+    "@mmomtchev/xpm": "^0.21.0",
     "nobind17": "^2.0.0",
     "node-addon-api": "^8.0.0"
   },
@@ -91,7 +91,7 @@
     "properties": {
       "module_name": "ffmpeg",
       "native": true,
-      "async": true,
+      "flavor": "async",
       "conan": true,
       "wasm": false
     }
