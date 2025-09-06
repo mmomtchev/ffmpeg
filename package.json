@@ -10,7 +10,6 @@
     "build": "npx xpm run make --config native",
     "test": "npx tsc --noEmit && npx mocha",
     "lint": "bash -c \"clang-format -i src/binding/*.{cc,h}\" && eslint --fix src/lib/*.[jt]s test/*.[jt]s",
-    "clean": "npx xpm run clean && tsc --build --clean",
     "prepare": "npx rollup -c rollup.config.js",
     "preversion": "npm run lint && npm run test",
     "postversion": "git push && git push --tags && node ./scripts/publish-packages.js",
@@ -93,7 +92,10 @@
       "native": true,
       "flavor": "async",
       "conan": true,
-      "wasm": false
+      "wasm": false,
+      "commandClean": [
+        "npx tsc --build --clean"
+      ]
     }
   }
 }
