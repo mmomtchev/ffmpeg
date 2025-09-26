@@ -17,12 +17,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-latest, ubuntu-22.04, windows-latest, macos-13, macos-14 ]
+        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
     uses:
       ./.github/workflows/build.yml
     with:
       platform: ${{ matrix.platform }}
 
+
+  standalone_build:
+    if: false
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
+    uses:
+      ./.github/workflows/build.yml
+    with:
+      platform: ${{ matrix.platform }}
+      extra_npm_options: '--mmomtchev_ffmpeg_enable_standalone_build'
 
   debug:
     strategy:
@@ -37,7 +49,6 @@ jobs:
 
 
   lint:
-
     runs-on: ubuntu-latest
 
     steps:

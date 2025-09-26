@@ -9,10 +9,12 @@
                 "${env:HOME}/.cache/hadron/p/b/**",
                 "${env:HOME}/.cache/node-hadron/node/**",
                 "${workspaceFolder}/deps/avcpp/src",
-                "/usr/include/node",
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
+            "recursiveIncludes": {
+                "priority": "beforeSystemIncludes"
+            },
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
             "cppStandard": "c++17"
@@ -26,6 +28,9 @@
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
+            "recursiveIncludes": {
+                "priority": "beforeSystemIncludes"
+            },
             "compilerPath": "/usr/bin/clang++",
             "cStandard": "c17",
             "cppStandard": "c++17"
@@ -39,6 +44,9 @@
                 "${workspaceFolder}/node_modules/node-addon-api",
                 "${workspaceFolder}/node_modules/nobind17/include"
             ],
+            "recursiveIncludes": {
+                "priority": "beforeSystemIncludes"
+            },
             "compilerPath": "cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++17"
