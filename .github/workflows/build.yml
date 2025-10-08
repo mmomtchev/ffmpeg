@@ -106,7 +106,7 @@ jobs:
       run: while node node_modules/mocha/lib/cli/cli.js; do true; done
       if: inputs.asan
       env:
-        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
+        LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt:verbosity=1:log_threads=1
         LD_PRELOAD: ${{ steps.asan-lib.outputs.LD_PRELOAD }}
 
     - name: (codecov) npm test
