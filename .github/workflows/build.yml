@@ -95,7 +95,7 @@ jobs:
     - run: npx xpm run build --config ${{ inputs.debug && 'native-debug' || 'native' }}
       if: inputs.asan || inputs.codecov || inputs.debug
 
-    - run: npm test
+    - run: while npm test; do true; done
       if: (!inputs.asan) && (!inputs.codecov)
 
     - name: (ASAN) Find library
@@ -103,7 +103,7 @@ jobs:
       run: echo LD_PRELOAD=$(gcc -print-file-name=libasan.so) >> $GITHUB_OUTPUT
       if: inputs.asan
     - name: (ASAN) npm test
-      run: node node_modules/mocha/lib/cli/cli.js
+      run: while node node_modules/mocha/lib/cli/cli.js; do true; done
       if: inputs.asan
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
