@@ -17,9 +17,9 @@ jobs:
         include:
           - platform: ubuntu-22.04
             id: linux-x64
-          - platform: macos-14
+          - platform: macos-15
             id: darwin-arm64
-          - platform: macos-13
+          - platform: macos-15-intel
             id: darwin-x64
           - platform: windows-2022
             id: win32-x64
