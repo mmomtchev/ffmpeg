@@ -17,7 +17,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
+        platform:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - windows-latest
+          - macos-15,
+          - macos-15-intel
     uses:
       ./.github/workflows/build.yml
     with:
@@ -29,7 +34,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-22.04, ubuntu-24.04, windows-latest, macos-13, macos-14 ]
+        platform:
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - windows-latest
+          - macos-15,
+          - macos-15-intel
+
     uses:
       ./.github/workflows/build.yml
     with:
@@ -40,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-latest, macos-13 ]
+        platform: [ ubuntu-latest, macos-15 ]
     uses:
       ./.github/workflows/build.yml
     with:
