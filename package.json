@@ -54,7 +54,7 @@
     "@mmomtchev/hadron": "^1.0.0",
     "@mmomtchev/prebuild-install": "^1.0.2",
     "@mmomtchev/xpm": "^0.21.0",
-    "nobind17": "^2.0.0",
+    "nobind17": "github:mmomtchev/nobind",
     "node-addon-api": "^8.0.0"
   },
   "devDependencies": {
