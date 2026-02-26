@@ -371,8 +371,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioSamples::isNull>(WASYNC("isNull"))
       .def<&AudioSamples::isComplete>(WASYNC("isComplete"))
       .def<&AudioSamples::pts>(WASYNC("pts"))
-      .def<static_cast<void (av::Frame<av::AudioSamples>::*)(const Timestamp &)>(&AudioSamples::setPts)>(
-          WASYNC("setPts"))
+      .def<static_cast<void (FrameCommon::*)(const Timestamp &)>(&FrameCommon::setPts)>(WASYNC("setPts"))
       .def<&AudioSamples::samplesCount>(WASYNC("samplesCount"))
       .def<&AudioSamples::timeBase>(WASYNC("timeBase"))
       .def<&AudioSamples::setTimeBase>(WASYNC("setTimeBase"))
@@ -383,7 +382,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&AudioSamples::channelsCount>(WASYNC("channelsCount"))
       .def<&AudioSamples::channelsLayout>(WASYNC("channelsLayout"))
       .def<&AudioSamples::channelsLayoutString>(WASYNC("channelsLayoutString"))
-      .def<static_cast<size_t (av::Frame<av::AudioSamples>::*)() const>(&AudioSamples::size)>(WASYNC("size"))
+      .def<static_cast<size_t (FrameCommon::*)() const>(&FrameCommon::size)>(WASYNC("size"))
       .def<&AudioSamples::isReferenced>(WASYNC("isReferenced"))
       .def<&AudioSamples::refCount>(WASYNC("refCount"))
       .def<&AudioSamples::streamIndex>(WASYNC("streamIndex"))
