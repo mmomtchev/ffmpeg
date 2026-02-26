@@ -344,8 +344,7 @@ NOBIND_MODULE_DATA(ffmpeg, m, ffmpegInstanceData) {
       .def<&VideoFrame::isComplete>(WASYNC("isComplete"))
       .def<&VideoFrame::setComplete>(WASYNC("setComplete"))
       .def<&VideoFrame::pts>(WASYNC("pts"))
-      .def<static_cast<void (av::FrameCommon<av::VideoFrame>::*)(const Timestamp &)>(&FrameCommon::setPts)>(
-          WASYNC("setPts"))
+      .def<static_cast<void (av::FrameCommon::*)(const Timestamp &)>(&FrameCommon::setPts)>(WASYNC("setPts"))
       .def<&VideoFrame::timeBase>(WASYNC("timeBase"))
       .def<&VideoFrame::setTimeBase>(WASYNC("setTimeBase"))
       .def<&VideoFrame::width>(WASYNC("width"))
