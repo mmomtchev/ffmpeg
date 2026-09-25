@@ -20,14 +20,12 @@ jobs:
         platform:
           - ubuntu-22.04
           - ubuntu-24.04
-          - windows-latest
+          - windows-2022
           - macos-15
           - macos-15-intel
-    uses:
-      ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
     with:
       platform: ${{ matrix.platform }}
-
 
   standalone_build:
     if: false
@@ -37,12 +35,11 @@ jobs:
         platform:
           - ubuntu-22.04
           - ubuntu-24.04
-          - windows-latest
+          - windows-2022
           - macos-15
           - macos-15-intel
 
-    uses:
-      ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
     with:
       platform: ${{ matrix.platform }}
       extra_npm_options: '--mmomtchev_ffmpeg_enable_standalone_build'
@@ -51,45 +48,39 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ ubuntu-latest, macos-15 ]
-    uses:
-      ./.github/workflows/build.yml
+        platform: [ubuntu-latest, macos-15]
+    uses: ./.github/workflows/build.yml
     with:
       platform: ${{ matrix.platform }}
       debug: true
-
 
   lint:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v6
-      with:
-        node-version: 18.x
-    - uses: actions/setup-python@v6
-      with:
-        python-version: "3.11"
-    - run: npm install --ignore-scripts
-    - run: npm install typescript
-    - run: npm run lint
-
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 18.x
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: npm install --ignore-scripts
+      - run: npm install typescript
+      - run: npm run lint
 
   asan:
-    uses:
-      ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
     with:
       platform: ubuntu-22.04
       asan: true
 
-
   codecov:
-    uses:
-      ./.github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
     with:
       platform: ubuntu-22.04
       codecov: true
