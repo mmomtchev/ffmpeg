@@ -4,7 +4,7 @@
 project(
   'FFmpeg bindings for Node.js',
   ['cpp'],
-  default_options: ['buildtype=release', 'cpp_std=c++17', 'b_vscrt=static_from_buildtype'],
+  default_options: ['buildtype=release', 'cpp_std=c++20', 'b_vscrt=static_from_buildtype'],
   subproject_dir: 'deps',
   meson_version: '>=1.5.0',
 )
