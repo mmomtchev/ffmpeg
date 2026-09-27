@@ -5,9 +5,13 @@
     "strictNullChecks": true,
     "target": "es6",
     "module": "es6",
+    "types": [
+      "node"
+    ],
     "esModuleInterop": true,
     "noEmit": true,
     "sourceMap": true,
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@mmomtchev/ffmpeg": [
         "."
