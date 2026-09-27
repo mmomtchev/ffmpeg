@@ -18,3 +18,7 @@ leak:ossl_load_builtin_compressions
 
 # Known leaks in V8
 # (none atm)
+
+# Known leaks produced by SWIG Node-API in magickwand.js
+leak:GetMembers
+leak:Init
