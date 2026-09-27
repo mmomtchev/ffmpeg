@@ -103,7 +103,7 @@ jobs:
       run: echo LD_PRELOAD=$(gcc -print-file-name=libasan.so) >> $GITHUB_OUTPUT
       if: inputs.asan
     - name: (ASAN) npm test
-      run: node node_modules/mocha/lib/cli/cli.js
+      run: node --expose-gc knode_modules/mocha/lib/cli/cli.js
       if: inputs.asan
       env:
         LSAN_OPTIONS: suppressions=${{ github.workspace }}/test/napi-leaks-suppression.txt
