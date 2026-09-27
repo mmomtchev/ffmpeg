@@ -26,8 +26,8 @@ export default [...compat.extends("eslint:recommended"), {
             ...globals.node,
         },
 
-        ecmaVersion: 2020,
-        sourceType: "commonjs",
+        ecmaVersion: 2022,
+        sourceType: "module",
     },
 
     rules: {
@@ -60,10 +60,10 @@ export default [...compat.extends("eslint:recommended"), {
         "@typescript-eslint/no-explicit-any": "off",
     },
 }, {
-    files: ["**/*.mjs", "wasm/*.js"],
+    files: ["**/*.cjs"],
 
     languageOptions: {
-        ecmaVersion: 2022,
-        sourceType: "module",
+        ecmaVersion: 2020,
+        sourceType: "commonjs",
     },
 }];

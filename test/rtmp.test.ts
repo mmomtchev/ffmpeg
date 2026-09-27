@@ -2,7 +2,7 @@ import * as path from 'node:path';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder } from '@mmomtchev/ffmpeg/stream';
 
 // These test-examples uses ffmpeg's built-in network capabilities - which include the RTMP protocol

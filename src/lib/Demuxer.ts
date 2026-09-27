@@ -1,6 +1,7 @@
-import { EventEmitter, ReadableOptions, Writable } from 'node:stream';
-import ffmpeg, { FormatContext } from '@mmomtchev/ffmpeg';
-import { EncodedMediaReadable } from './MediaStream';
+import { ReadableOptions, Writable } from 'node:stream';
+import { EventEmitter } from 'node:events';
+import { FormatContext, Stream, WritableCustomIO, InputFormat } from '@mmomtchev/ffmpeg';
+import { EncodedMediaReadable } from './MediaStream.js';
 
 export const verbose = (process.env.DEBUG_DEMUXER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 
@@ -49,8 +50,8 @@ export interface DemuxerOptions extends ReadableOptions {
 export class Demuxer extends EventEmitter {
   protected inputFile: string | undefined;
   protected highWaterMark: number;
-  protected formatContext: ffmpeg.FormatContext | undefined;
-  protected rawStreams: ffmpeg.Stream[];
+  protected formatContext: FormatContext | undefined;
+  protected rawStreams: Stream[];
   protected openOptions: Record<string, string>;
   streams: EncodedMediaReadable[];
   video: EncodedMediaReadable[];
@@ -64,7 +65,7 @@ export class Demuxer extends EventEmitter {
     this.inputFile = options?.inputFile;
     // Reading from a ReadStream
     if (!this.inputFile) {
-      this.input = new ffmpeg.WritableCustomIO;
+      this.input = new WritableCustomIO;
     }
     this.highWaterMark = options?.highWaterMark ?? (64 * 1024);
     this.openOptions = options?.openOptions ?? {};
@@ -84,7 +85,7 @@ export class Demuxer extends EventEmitter {
         await this.formatContext.openInputOptionsAsync(this.inputFile, this.openOptions);
       } else if (this.input) {
         verbose('Demuxer: reading from ReadStream');
-        const format = new ffmpeg.InputFormat;
+        const format = new InputFormat;
         await this.formatContext.openWritableAsync(this.input, format, this.highWaterMark);
       } else {
         throw new Error('No filename nor a stream provided');

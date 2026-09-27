@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer, AudioDecoder, VideoDecoder } from '@mmomtchev/ffmpeg/stream';
 import { Writable } from 'node:stream';
 

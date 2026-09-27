@@ -4,7 +4,7 @@ import ReadableStreamClone from 'readable-stream-clone';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import {
   Muxer, Demuxer,
   VideoDecoder, VideoEncoder,

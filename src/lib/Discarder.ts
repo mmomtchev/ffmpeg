@@ -1,5 +1,5 @@
 import { Writable, WritableOptions } from 'node:stream';
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 
 
 /**

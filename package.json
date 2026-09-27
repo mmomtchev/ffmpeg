@@ -4,6 +4,7 @@
   "description": "Full native ffmpeg bindings for Node.js with Streams support",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "type": "module",
   "scripts": {
     "install": "npx xpm run npm-install",
     "postinstall": "node scripts/motd",
@@ -54,6 +55,7 @@
     "@mmomtchev/hadron": "^1.0.0",
     "@mmomtchev/prebuild-install": "^1.0.2",
     "@mmomtchev/xpm": "^0.21.0",
+    "@typescript-eslint/parser": "^8.70.1",
     "nobind17": "^2.0.1",
     "node-addon-api": "^8.0.0"
   },
@@ -65,7 +67,7 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^25.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.70.1",
     "c8": "^11.0.0",
     "chai": "^4.3.10",
     "eslint-plugin-mocha": "^11.0.0",
@@ -74,10 +76,10 @@
     "mocha": "^11.0.1",
     "readable-stream-clone": "^1.0.0",
     "rollup": "^4.9.4",
-    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-dts": "^6.5.1",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.5",
-    "typescript": "^5.3.3"
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=18"

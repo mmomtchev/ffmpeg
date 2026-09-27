@@ -1,6 +1,6 @@
-import ffmpeg from '@mmomtchev/ffmpeg';
-import { VideoStreamDefinition, MediaTransform, EncodedMediaWritable, MediaDecoder, VideoReadable } from './MediaStream';
-import { TransformCallback } from 'stream';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
+import { VideoStreamDefinition, MediaTransform, EncodedMediaWritable, MediaDecoder, VideoReadable } from './MediaStream.js';
+import { TransformCallback } from 'node:stream';
 
 const { VideoDecoderContext, Codec } = ffmpeg;
 

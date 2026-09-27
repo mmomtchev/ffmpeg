@@ -60,15 +60,10 @@ npm i @mmomtchev/ffmpeg
 
 You can rebuild it from source using `node-pre-gyp` which will be automatically called by `npm install`. This will pull and build `ffmpeg` using `conan` which will leave a very large directory `${HOME}/.conan` which can be safely deleted.
 
-The package is a CommonJS package that should have identical interface across CJS, ES6 and TS environments:
-
-```js
-const ffmpeg = require('@mmomtchev/ffmpeg');
-const { Demuxer } = require('@mmomtchev/ffmpeg/stream');
-```
+The package is an ES6 package that should have identical interface across ES6 and TS environments as long as TypeScript is transpiled to ES6:
 
 ```ts
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer } from '@mmomtchev/ffmpeg/stream';
 ```
 

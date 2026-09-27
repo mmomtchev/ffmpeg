@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Muxer, Demuxer, AudioDecoder, AudioEncoder, AudioTransform, Discarder, AudioStreamDefinition } from '@mmomtchev/ffmpeg/stream';
 
 const tempFile = path.resolve(__dirname, 'resampled.mkv');

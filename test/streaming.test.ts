@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Muxer, Demuxer, VideoDecoder, VideoEncoder, AudioDecoder, AudioEncoder, AudioTransform, VideoTransform, MediaTransform, VideoStreamDefinition } from '@mmomtchev/ffmpeg/stream';
 import { Readable, Transform, TransformCallback } from 'node:stream';
 import { Magick, MagickCore } from 'magickwand.js/native';

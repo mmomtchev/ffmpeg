@@ -4,7 +4,7 @@ import { Magick } from 'magickwand.js/native';
 
 import { assert } from 'chai';
 
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 import { Demuxer, VideoDecoder, Discarder } from '@mmomtchev/ffmpeg/stream';
 
 

@@ -1,7 +1,7 @@
-const ts = require('typescript');
+import ts from 'typescript';
 
 // This TypeScript transforms removes all `verbose()` statements from the final build
-module.exports = (ctx) => {
+export default function (ctx) {
   return (sourceFile) => {
     function visit(node) {
       if (!process.env.TSC_DEBUG) {

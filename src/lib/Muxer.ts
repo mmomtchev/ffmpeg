@@ -1,6 +1,7 @@
-import { EventEmitter, Readable, Writable, WritableOptions } from 'node:stream';
-import { EncodedMediaReadable, EncodedMediaWritable } from './MediaStream';
-import ffmpeg from '@mmomtchev/ffmpeg';
+import { Readable, Writable, WritableOptions } from 'node:stream';
+import { EventEmitter } from 'node:events';
+import { EncodedMediaReadable, EncodedMediaWritable } from './MediaStream.js';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 
 const { FormatContext, OutputFormat } = ffmpeg;
 

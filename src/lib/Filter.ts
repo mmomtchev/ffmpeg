@@ -1,6 +1,7 @@
-import { EventEmitter, Writable, Readable } from 'node:stream';
-import ffmpeg from '@mmomtchev/ffmpeg';
-import { MediaStreamDefinition, isAudioDefinition, isVideoDefinition } from './MediaStream';
+import { Writable, Readable } from 'node:stream';
+import { EventEmitter } from 'node:events';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
+import { MediaStreamDefinition, isAudioDefinition, isVideoDefinition } from './MediaStream.js';
 
 export const verbose = (process.env.DEBUG_FILTER || process.env.DEBUG_ALL) ? console.debug.bind(console) : () => undefined;
 

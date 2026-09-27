@@ -1,5 +1,5 @@
 import { EventEmitter, Readable, ReadableOptions, Transform, TransformOptions, Writable } from 'node:stream';
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 
 export const StreamTypes = {
   'Audio': 'Audio',

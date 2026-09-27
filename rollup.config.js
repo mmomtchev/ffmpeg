@@ -1,27 +1,29 @@
-const path = require('path');
-const ts = require('@rollup/plugin-typescript');
-const dts = require('rollup-plugin-dts').dts;
+import * as path from "node:path";
+import ts from '@rollup/plugin-typescript';
+import { dts } from 'rollup-plugin-dts';
 
-module.exports = [
+import undebug from './src/undebug.js';
+
+export default [
   {
-    input: path.resolve(__dirname, 'src', 'lib', 'Stream.ts'),
+    input: path.resolve(import.meta.dirname, 'src', 'lib', 'Stream.ts'),
     plugins: [ts({
       transformers: {
         after: [
-          require('./src/undebug.js')
+          undebug
         ]
       }
     })],
     output: [
       {
         file: 'stream.js',
-        format: 'cjs',
+        format: 'es',
         sourcemap: true
       },
     ]
   },
   {
-    input: path.resolve(__dirname, 'src', 'lib', 'Stream.ts'),
+    input: path.resolve(import.meta.dirname, 'src', 'lib', 'Stream.ts'),
     plugins: [dts()],
     output: [
       {

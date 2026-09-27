@@ -1,21 +1,16 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "strict": true,
     "strictNullChecks": true,
     "target": "es6",
-    "module": "es6",
+    "module": "node16",
+    "types": [
+      "node"
+    ],
     "esModuleInterop": true,
     "noEmit": true,
     "sourceMap": true,
-    "paths": {
-      "@mmomtchev/ffmpeg": [
-        "."
-      ],
-      "@mmomtchev/ffmpeg/stream": [
-        "./stream"
-      ]
-    },
     "plugins": [
       {
         "transform": "./src/undebug.js"

@@ -1,6 +1,6 @@
-const { assert } = require('chai');
+import { assert } from 'chai';
 
-const ffmpeg = require('..');
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 
 const { PixelFormat, VideoFrame } = ffmpeg;
 

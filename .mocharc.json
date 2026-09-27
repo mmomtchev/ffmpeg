@@ -2,7 +2,6 @@
   "spec": "test/*.test.@(mjs|cjs|js|ts)",
   "require": [
     "tsx",
-    "tsconfig-paths/register",
     "./test/setup.ts"
   ],
   "reporter": "tap",

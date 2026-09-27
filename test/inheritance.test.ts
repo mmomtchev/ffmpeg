@@ -1,4 +1,4 @@
-import ffmpeg from '@mmomtchev/ffmpeg';
+import * as ffmpeg from '@mmomtchev/ffmpeg';
 
 import { assert } from 'chai';
 
