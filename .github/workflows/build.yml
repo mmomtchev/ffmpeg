@@ -42,7 +42,7 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: 24
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       with:
         python-version: "3.11"
     - name: (if on Ubuntu) install fonts
